@@ -1,0 +1,72 @@
+2025-08-12 14:23:41,218 - INFO - --- Starting Test Episode #0 ---
+2025-08-12 14:23:41,643 - INFO - Sending prompt to Gemini for episode #0...
+2025-08-12 14:23:41,643 - INFO - Prompt for episode #0:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (5, 7). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+You will see walls in your view, but they are not part of the map you need to build. Neglect them. However, if you are facing a wall and go forward, you will not be able to move forward, your position will not change.
+
+
+
+
+        ### WARNING: DATA CORRUPTION ###
+        Your primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:
+        - **Spurious Actions:** The log may contain an action command (e.g., 'left', 'forward') that did not actually occur. In this spurious step, the robot's state (position and direction) remained unchanged.
+
+        You cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.
+        Note: There are 3 flags in the room, and the room is 10x10 (including walls) in size.
+        
+### OBSERVATION LOG ###
+Initial Observation: You're facing East. You see nothing of interest..
+Step1: left.  You see nothing of interest..
+Step2: forward.  You see nothing of interest..
+Step3: forward.  You can see a grey flag at coordinate (4, -2).
+Step4: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2), a grey flag at coordinate (3, -2).
+Step5: left.  You see nothing of interest..
+Step6: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2).
+Step7: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2).
+Step8: left.  You can see a grey flag at coordinate (3, 2).
+Step9: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2).
+Step10: right.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2), a purple flag at coordinate (3, -2), a grey flag at coordinate (3, 0).
+Step11: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2), a purple flag at coordinate (2, -2), a grey flag at coordinate (2, 0).
+Step12: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (4, -1), (3, -1), (2, -1), (4, 0), (3, 0), (2, 0), (4, 1), (3, 1), (2, 1), (4, 2), (3, 2), (2, 2), a purple flag at coordinate (1, -2), a grey flag at coordinate (1, 0).
+Step13: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), a grey flag at coordinate (0, -1).
+Step14: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), a grey flag at coordinate (0, -1).
+Step15: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2).
+Step16: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (4, 0), (4, 1), (4, 2).
+Step17: left.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (4, -1), (3, -1), (2, -1), (4, 0), (3, 0), (2, 0), (4, 1), (3, 1), (2, 1), (4, 2), (3, 2), (2, 2), a grey flag at coordinate (1, -2).
+Step18: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (4, -1), (3, -1), (2, -1), (1, -1), (4, 0), (3, 0), (2, 0), (1, 0), (4, 1), (3, 1), (2, 1), (1, 1), (4, 2), (3, 2), (2, 2), (1, 2), a grey flag at coordinate (0, -2).
+Step19: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (3, -1), (2, -1), (1, -1), (0, -1), (4, 0), (4, 1), (4, 2).
+Step20: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (3, -1), (2, -1), (1, -1), (0, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2).
+Step21: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (3, -1), (2, -1), (1, -1), (0, -1), (4, 0), (3, 0), (2, 0), (4, 1), (3, 1), (2, 1), (4, 2), (3, 2), (2, 2).
+Step22: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&& 
+
+2025-08-12 14:22:17,468 - INFO - ==================================================       14:22:19 [721/1850]
+2025-08-12 14:22:17,468 - INFO - --- EVALUATION SUMMARY ---
+2025-08-12 14:22:17,468 - INFO - Total episodes run: 10
+2025-08-12 14:22:17,468 - INFO - Average Overall Accuracy: 63.00%
+2025-08-12 14:22:17,469 - INFO - Average Goal-Only Accuracy: 70.00%
+2025-08-12 14:22:17,469 - INFO - ==================================================
+2025-08-12 14:22:17,469 - INFO - Full log has been saved to 'my_tests/8.11/corruption/gpt-5-mini/10-3/failure
+/evaluation_log.txt'

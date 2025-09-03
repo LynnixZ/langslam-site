@@ -1,0 +1,3507 @@
+{
+  "config": {
+    "log_dir": "my_tests/9.01/corruption/rbpf",
+    "env_name": "MiniGrid-CarvedPathRoom-v0",
+    "num_episodes": 10,
+    "length": 10,
+    "num_objects": 3,
+    "agent_view_size": 5,
+    "failure_prob": 0.15,
+    "blackout": false,
+    "stale_obs_prob": 0.1,
+    "random_seed": null,
+    "rbpf_num_particles": 200,
+    "list_unseen": false,
+    "list_empty": false,
+    "unseen_example": false
+  },
+  "episodes": [
+    {
+      "episode_id": 0,
+      "start_pos": [
+        8,
+        7
+      ],
+      "start_dir": 3,
+      "prompt": "\nYou are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.\n\n### YOUR COORDINATE SYSTEM ###\nYour view is described using a special (Depth, Side) coordinate system:\n1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.\n2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.\n3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).\n4.  Your movement is governed by your absolute position and direction:\n    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.\n    - 'turnaround': Reverses your direction (East becomes West, West becomes East).\n    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.\n    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.\n\n### YOUR TASK ###\n\n    Your mission is to return the coordinates of **all EMPTY cells** in the global map.\n\n    ## What counts as EMPTY\n    A cell is EMPTY if **either**:\n    1) You **stood on it** or **moved through it** at any time (your traversed path), or\n    2) It was in your local 5×5 field of view at least once and you clearly saw **no wall** in that cell. Note there's empty spaces you haven't stand on but it was in your view. Please identify them as well.\n\n    ## Visibility and Occlusion\n    - You **cannot see through walls**. Any cell *behind* a wall along a line-of-sight ray is **unknown**.\n    - Diagonal shadowing: a cell at (d, s) is **not visible** if both its orthogonal predecessors are walls (i.e., blocked by the two adjacent cells).\n    - \n    - Cells blocked by walls inside your view are not listed in the log.\n    - Empty cells are not explicitly listed in the log.\n \n\n    \nAll coordinates in the final summary must be absolute map coordinates (X, Y) in the room frame, not local (Depth, Side).\nIf you are facing a wall and go forward, you will not be able to move forward, your position will not change.\nYour starting absolute position is (8, 7). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.\n\n\n\n\n### WARNING: DATA CORRUPTION ###\nYour primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:\n- **Action Faults:** Two kinds may occur:\n  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.\n  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. \n- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. \n\nYou cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.\n        \n### OBSERVATION LOG ###\nInitial Observation: You're facing North. You see nothing of interest..\nStep1: forward. You can see grey walls at coordinates (0, -1), (0, 1), (1, -1), (1, 1), (2, 1), (3, 1), (2, -2), (4, -1), (4, 0), (4, 0)..\nStep2: forward. You can see grey walls at coordinates (0, -1), (0, 1), (1, 1), (2, 0), (3, -2), (3, -1), (3, 0), (3, 1)..\nStep3: forward. You can see grey walls at coordinates (0, 1), (1, 1), (2, -2), (2, -1), (2, 0), (2, 1)..\nStep4: forward. You can see grey walls at coordinates (0, -1), (1, -2), (1, -1), (1, 0), (1, 1)..\nStep5: left. You can see grey walls at coordinates (0, 1), (1, -2), (1, 1), (2, -2), (2, 1), (3, -2), (3, 2), (4, -2), (4, 1)..\nStep6: forward. You can see grey walls at coordinates (0, -2), (0, 0), (1, -2), (1, 1), (2, -2), (2, 1), (3, -1), (3, 1), (4, 1)..\nStep7: forward. You can see grey walls at coordinates (0, -2), (0, 1), (1, -2), (1, 1), (2, 1), (3, -2), (3, -1), (3, 0), (3, 1)..\nStep8: forward. You can see grey walls at coordinates (0, -2), (0, 1), (1, 1), (2, -2), (2, -2), (2, 0), (2, 1)..\nStep9: forward. You can see grey walls at coordinates (0, 1), (1, -2), (0, -1), (1, 0), (1, 1)..\nStep10: left. You can see grey walls at coordinates (0, 1), (1, 1), (2, -2), (2, -1), (2, 1), (3, -1), (3, 0), (4, 1)..\nStep11: forward. You can see grey walls at coordinates (0, 1), (1, -2), (1, 1), (1, 1), (2, -1), (0, 1), (3, 1), (4, 1)..\nStep12: left. You can see grey walls at coordinates (0, 1), (1, -2), (1, -1), (2, 1), (2, -1), (2, 1), (3, 0), (4, 1)..\nStep13: forward. You can see grey walls at coordinates (0, -1), (0, 1), (1, -1), (1, 1), (2, 1), (3, 1), (4, -2), (4, -2), (4, 0), (4, 1)..\nStep14: forward. You can see grey walls at coordinates (0, -1), (0, 1), (1, 1), (2, 2), (3, -2), (3, -1), (3, 0), (3, 1)..\nStep15: forward. You can see grey walls at coordinates (0, 1), (1, 1), (2, -2), (2, -1), (2, 0), (2, 1)..\nStep16: left. You can see grey walls at coordinates (0, 2), (0, -2), (1, -1), (1, 2), (2, -1), (3, 2), (3, -2), (3, 2), (4, -1), (4, 1), (4, 1), (4, 2)..\nStep17: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (1, 2), (2, -1), (2, 2), (3, -1), (4, 0), (3, 1), (3, 2)..\nStep18: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (1, 0), (1, 1), (1, 2).\n\n### YOUR RECONSTRUCTION ###\nFirst, reason step-by-step about your position and what you see.\nFinally, provide the final map summary in a new line, wrapped in \"&&&\" delimiters. For example:\n&&&\nempty spaces at coordinates: (1,1), (1,2), (2,1), (2,2)\n&&& \n",
+      "ground_truth": [
+        {
+          "x": 3,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 7,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 7,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 8,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 8,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 8,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 8,
+          "value": "empty"
+        }
+      ],
+      "rbpf": {
+        "raw_text": "&&& empty spaces at coordinates: (4,1), (4,2), (5,1), (5,2), (5,3), (5,4), (5,5), (6,0), (6,1), (6,2), (6,3), (6,4), (6,5), (7,0), (7,1), (7,2), (7,3), (7,4), (7,5), (8,0), (8,1), (8,2), (8,3), (8,4), (8,5), (8,7), (9,0), (9,1), (9,2), (9,3), (9,4) &&&",
+        "rbpf_result": [
+          {
+            "x": 6,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 7,
+            "value": "empty"
+          }
+        ],
+        "metrics": {
+          "is_perfect_match": false,
+          "overall_accuracy": 0.4,
+          "goal_accuracy": 0.4,
+          "euclidean_distance_error": 0.0,
+          "details": "tolerant IoU (r=1): 40.00%; raw IoU: 21.74%  (|GT|=25, |Pred|=31)"
+        },
+        "pred_image": "my_tests/9.01/corruption/rbpf/episode_0_rbpf_pred.png",
+        "trace_gif": "my_tests/9.01/corruption/rbpf/episode_0_trace.gif"
+      }
+    },
+    {
+      "episode_id": 1,
+      "start_pos": [
+        7,
+        6
+      ],
+      "start_dir": 1,
+      "prompt": "\nYou are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.\n\n### YOUR COORDINATE SYSTEM ###\nYour view is described using a special (Depth, Side) coordinate system:\n1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.\n2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.\n3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).\n4.  Your movement is governed by your absolute position and direction:\n    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.\n    - 'turnaround': Reverses your direction (East becomes West, West becomes East).\n    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.\n    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.\n\n### YOUR TASK ###\n\n    Your mission is to return the coordinates of **all EMPTY cells** in the global map.\n\n    ## What counts as EMPTY\n    A cell is EMPTY if **either**:\n    1) You **stood on it** or **moved through it** at any time (your traversed path), or\n    2) It was in your local 5×5 field of view at least once and you clearly saw **no wall** in that cell. Note there's empty spaces you haven't stand on but it was in your view. Please identify them as well.\n\n    ## Visibility and Occlusion\n    - You **cannot see through walls**. Any cell *behind* a wall along a line-of-sight ray is **unknown**.\n    - Diagonal shadowing: a cell at (d, s) is **not visible** if both its orthogonal predecessors are walls (i.e., blocked by the two adjacent cells).\n    - \n    - Cells blocked by walls inside your view are not listed in the log.\n    - Empty cells are not explicitly listed in the log.\n \n\n    \nAll coordinates in the final summary must be absolute map coordinates (X, Y) in the room frame, not local (Depth, Side).\nIf you are facing a wall and go forward, you will not be able to move forward, your position will not change.\nYour starting absolute position is (7, 6). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.\n\n\n\n\n### WARNING: DATA CORRUPTION ###\nYour primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:\n- **Action Faults:** Two kinds may occur:\n  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.\n  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. \n- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. \n\nYou cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.\n        \n### OBSERVATION LOG ###\nInitial Observation: You're facing South. You see nothing of interest..\nStep1: right. You can see grey walls at coordinates (0, -1), (0, 1), (2, -1), (1, 1), (2, -1), (3, -2), (4, -1), (4, 0), (3, 1), (4, 2)..\nStep2: forward. You can see grey walls at coordinates (0, -1), (0, 1), (1, -1), (2, -1), (3, -2), (3, 0), (4, 1), (3, 2)..\nStep3: forward. You can see grey walls at coordinates (0, -1), (2, -1), (2, -2), (2, 0), (2, 1), (2, 2)..\nStep4: forward. You can see grey walls at coordinates (0, -2), (0, 1), (1, -2), (2, 1), (2, -2), (2, 1), (2, -2), (4, -2), (4, -1), (4, 0), (4, 1)..\nStep5: forward. You can see grey walls at coordinates (0, -2), (0, 1), (1, -2), (1, 2), (2, -2), (3, -2), (3, -1), (3, 0), (3, 1), (4, 2), (4, 2)..\nStep6: forward. You can see grey walls at coordinates (0, -2), (1, 1), (1, 0), (2, -2), (2, -1), (2, 0), (2, 1), (3, 1), (3, 2)..\nStep7: left. You can see grey walls at coordinates (0, -2), (0, 2), (1, -2), (1, -2), (2, -1), (2, 0), (2, 2), (3, 1), (3, 2)..\nStep8: forward. You can see grey walls at coordinates (0, -2), (1, -2), (1, -1), (1, 0), (1, 1), (2, 1), (2, 2)..\nStep9: left. You can see grey walls at coordinates (0, -2), (3, -2), (1, -1), (1, 0), (1, 1), (2, 1), (2, 2)..\nStep10: left. You can see grey walls at coordinates (0, 1), (1, 1), (2, -2), (2, -1), (2, 0), (2, 1)..\nStep11: right. You can see grey walls at coordinates (0, -2), (1, -2), (1, -1), (1, 0), (1, 1), (2, 2), (2, 2)..\nStep12: right. You can see grey walls at coordinates (0, -1), (1, -1), (1, 1), (1, 2), (2, -2), (2, 1), (3, -2), (3, 1), (4, -2), (4, -1), (4, 0), (4, 1)..\nStep13: forward. You can see grey walls at coordinates (0, -1), (0, 1), (1, -2), (1, 1), (2, -2), (2, 1), (3, -2), (3, -1), (3, -1), (4, 1)..\nStep14: forward. You can see grey walls at coordinates (0, -2), (0, 1), (1, -2), (1, 1), (2, -2), (2, 1), (2, 0), (2, 1)..\nStep15: forward. You can see grey walls at coordinates (0, -2), (0, 1), (1, -2), (1, 1), (2, -2), (2, -1), (2, 0), (2, 1)..\nStep16: left. You can see grey walls at coordinates (0, 2), (1, -2), (1, -1), (1, 2), (2, -1), (2, 0), (2, 1), (1, 2)..\nStep17: forward. You can see grey walls at coordinates (0, 0), (0, 1), (1, -1), (1, 0), (0, 1), (1, 2)..\nStep18: right. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (1, 2), (2, -1), (2, 0), (2, 1), (2, 2)..\nStep19: right. You can see grey walls at coordinates (0, -2), (0, 1), (1, -2), (0, -2), (2, -1), (2, 0), (3, 1), (3, 1), (4, 1).\n\n### YOUR RECONSTRUCTION ###\nFirst, reason step-by-step about your position and what you see.\nFinally, provide the final map summary in a new line, wrapped in \"&&&\" delimiters. For example:\n&&&\nempty spaces at coordinates: (1,1), (1,2), (2,1), (2,2)\n&&& \n",
+      "ground_truth": [
+        {
+          "x": 7,
+          "y": 1,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 1,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 7,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 7,
+          "y": 6,
+          "value": "empty"
+        }
+      ],
+      "rbpf": {
+        "raw_text": "&&& empty spaces at coordinates: (5,7), (5,8), (5,9), (6,7), (6,8), (6,9), (7,6), (7,7), (7,8), (7,9), (8,5), (8,6), (8,7), (8,8), (8,9), (9,6), (9,7), (9,8), (9,9) &&&",
+        "rbpf_result": [
+          {
+            "x": 8,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 9,
+            "value": "empty"
+          }
+        ],
+        "metrics": {
+          "is_perfect_match": false,
+          "overall_accuracy": 0.13432835820895522,
+          "goal_accuracy": 0.13432835820895522,
+          "euclidean_distance_error": 0.0,
+          "details": "tolerant IoU (r=1): 13.43%; raw IoU: 2.86%  (|GT|=17, |Pred|=19)"
+        },
+        "pred_image": "my_tests/9.01/corruption/rbpf/episode_1_rbpf_pred.png",
+        "trace_gif": "my_tests/9.01/corruption/rbpf/episode_1_trace.gif"
+      }
+    },
+    {
+      "episode_id": 2,
+      "start_pos": [
+        8,
+        6
+      ],
+      "start_dir": 0,
+      "prompt": "\nYou are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.\n\n### YOUR COORDINATE SYSTEM ###\nYour view is described using a special (Depth, Side) coordinate system:\n1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.\n2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.\n3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).\n4.  Your movement is governed by your absolute position and direction:\n    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.\n    - 'turnaround': Reverses your direction (East becomes West, West becomes East).\n    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.\n    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.\n\n### YOUR TASK ###\n\n    Your mission is to return the coordinates of **all EMPTY cells** in the global map.\n\n    ## What counts as EMPTY\n    A cell is EMPTY if **either**:\n    1) You **stood on it** or **moved through it** at any time (your traversed path), or\n    2) It was in your local 5×5 field of view at least once and you clearly saw **no wall** in that cell. Note there's empty spaces you haven't stand on but it was in your view. Please identify them as well.\n\n    ## Visibility and Occlusion\n    - You **cannot see through walls**. Any cell *behind* a wall along a line-of-sight ray is **unknown**.\n    - Diagonal shadowing: a cell at (d, s) is **not visible** if both its orthogonal predecessors are walls (i.e., blocked by the two adjacent cells).\n    - \n    - Cells blocked by walls inside your view are not listed in the log.\n    - Empty cells are not explicitly listed in the log.\n \n\n    \nAll coordinates in the final summary must be absolute map coordinates (X, Y) in the room frame, not local (Depth, Side).\nIf you are facing a wall and go forward, you will not be able to move forward, your position will not change.\nYour starting absolute position is (8, 6). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.\n\n\n\n\n### WARNING: DATA CORRUPTION ###\nYour primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:\n- **Action Faults:** Two kinds may occur:\n  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.\n  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. \n- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. \n\nYou cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.\n        \n### OBSERVATION LOG ###\nInitial Observation: You're facing East. You see nothing of interest..\nStep1: left. You can see grey walls at coordinates (0, -1), (0, 1), (1, 1), (2, 1), (3, -2), (3, -1), (3, 0), (3, 1)..\nStep2: forward. You can see grey walls at coordinates (0, 1), (1, 1), (2, -2), (2, -1), (2, 0), (2, 1)..\nStep3: forward. You can see grey walls at coordinates (0, 1), (1, -2), (1, -1), (2, 0), (1, 1)..\nStep4: left. You can see grey walls at coordinates (1, 1), (1, -2), (1, 1), (2, -2), (2, 2), (3, 0), (4, 0), (4, 1)..\nStep5: forward. You can see grey walls at coordinates (0, -2), (0, 1), (1, -2), (1, 1), (2, 1), (3, 0), (3, 1), (4, 0)..\nStep6: forward. You can see grey walls at coordinates (0, -1), (0, 1), (1, 1), (2, 0), (3, 1), (3, 0)..\nStep7: forward. You can see grey walls at coordinates (0, 2), (1, 2), (0, 1), (2, 0)..\nStep8: left. You can see grey walls at coordinates (0, -1), (2, -2), (2, -1), (3, -1), (3, 0), (3, 2), (3, 2)..\nStep9: forward. You can see grey walls at coordinates (1, -2), (1, -1), (2, -1), (2, 1), (2, 1), (2, 2)..\nStep10: forward. You can see grey walls at coordinates (0, -1), (1, -1), (1, 0), (1, 1), (1, 2)..\nStep11: right. You can see grey walls at coordinates (0, -1), (1, -1), (1, 2), (2, -1), (2, 2), (3, -1), (4, -1)..\nStep12: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (1, 2), (2, -1), (4, -1), (4, -1), (4, 0), (4, 1), (4, 2)..\nStep13: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -2), (2, -1), (2, -1), (3, 0), (3, 1), (3, 2)..\nStep14: left. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (2, -1), (3, -1), (3, 0), (2, 1), (4, 2)..\nStep15: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (2, 2)..\nStep16: forward. You can see grey walls at coordinates (0, -1), (1, -1), (1, 1), (2, 1), (1, 2)..\nStep17: right. You can see grey walls at coordinates (1, -1), (1, -1), (2, -2), (2, 2), (3, -1), (3, 1), (4, -1), (4, 2)..\nStep18: forward. You can see grey walls at coordinates (0, -1), (1, -1), (1, 2), (2, -1), (2, 2), (3, -1), (3, 2), (4, -1), (4, 0), (4, 1), (4, 2)..\nStep19: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -2), (1, 1), (3, -1), (2, 2), (3, 1), (3, 0), (3, 1), (3, 2)..\nStep20: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (1, 2), (2, -1), (2, 2), (3, -1), (3, 0), (3, 0), (3, 2)..\nStep21: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (1, 2), (2, -1), (2, 0), (2, 1), (2, 2)..\nStep22: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (1, 0), (1, 1), (1, 2)..\nStep23: right. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (1, 0), (1, 1), (1, 2)..\nStep24: right. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (2, 2).\n\n### YOUR RECONSTRUCTION ###\nFirst, reason step-by-step about your position and what you see.\nFinally, provide the final map summary in a new line, wrapped in \"&&&\" delimiters. For example:\n&&&\nempty spaces at coordinates: (1,1), (1,2), (2,1), (2,2)\n&&& \n",
+      "ground_truth": [
+        {
+          "x": 1,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 1,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 1,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 7,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 1,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 7,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 1,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 6,
+          "value": "empty"
+        }
+      ],
+      "rbpf": {
+        "raw_text": "&&& empty spaces at coordinates: (1,6), (1,7), (1,8), (2,5), (2,6), (2,7), (2,8), (2,9), (3,4), (3,5), (3,6), (3,7), (3,8), (3,9), (4,4), (4,5), (4,6), (4,7), (4,8), (4,9), (5,5), (5,6), (5,7), (5,8), (5,9), (6,5), (6,6), (6,7), (6,8), (6,9), (7,7), (7,8), (7,9), (8,6), (8,7), (8,8), (8,9) &&&",
+        "rbpf_result": [
+          {
+            "x": 3,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 1,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 1,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 1,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 9,
+            "value": "empty"
+          }
+        ],
+        "metrics": {
+          "is_perfect_match": false,
+          "overall_accuracy": 0.37037037037037035,
+          "goal_accuracy": 0.37037037037037035,
+          "euclidean_distance_error": 0.0,
+          "details": "tolerant IoU (r=1): 37.04%; raw IoU: 22.00%  (|GT|=24, |Pred|=37)"
+        },
+        "pred_image": "my_tests/9.01/corruption/rbpf/episode_2_rbpf_pred.png",
+        "trace_gif": "my_tests/9.01/corruption/rbpf/episode_2_trace.gif"
+      }
+    },
+    {
+      "episode_id": 3,
+      "start_pos": [
+        6,
+        4
+      ],
+      "start_dir": 0,
+      "prompt": "\nYou are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.\n\n### YOUR COORDINATE SYSTEM ###\nYour view is described using a special (Depth, Side) coordinate system:\n1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.\n2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.\n3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).\n4.  Your movement is governed by your absolute position and direction:\n    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.\n    - 'turnaround': Reverses your direction (East becomes West, West becomes East).\n    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.\n    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.\n\n### YOUR TASK ###\n\n    Your mission is to return the coordinates of **all EMPTY cells** in the global map.\n\n    ## What counts as EMPTY\n    A cell is EMPTY if **either**:\n    1) You **stood on it** or **moved through it** at any time (your traversed path), or\n    2) It was in your local 5×5 field of view at least once and you clearly saw **no wall** in that cell. Note there's empty spaces you haven't stand on but it was in your view. Please identify them as well.\n\n    ## Visibility and Occlusion\n    - You **cannot see through walls**. Any cell *behind* a wall along a line-of-sight ray is **unknown**.\n    - Diagonal shadowing: a cell at (d, s) is **not visible** if both its orthogonal predecessors are walls (i.e., blocked by the two adjacent cells).\n    - \n    - Cells blocked by walls inside your view are not listed in the log.\n    - Empty cells are not explicitly listed in the log.\n \n\n    \nAll coordinates in the final summary must be absolute map coordinates (X, Y) in the room frame, not local (Depth, Side).\nIf you are facing a wall and go forward, you will not be able to move forward, your position will not change.\nYour starting absolute position is (6, 4). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.\n\n\n\n\n### WARNING: DATA CORRUPTION ###\nYour primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:\n- **Action Faults:** Two kinds may occur:\n  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.\n  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. \n- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. \n\nYou cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.\n        \n### OBSERVATION LOG ###\nInitial Observation: You're facing East. You see nothing of interest..\nStep1: right. You can see grey walls at coordinates (0, -1), (0, 1), (1, -1), (1, 1), (2, -1), (3, -1), (4, -1), (4, 0), (4, 1), (4, 2)..\nStep2: forward. You can see grey walls at coordinates (0, -1), (0, 1), (1, -1), (2, -1), (3, -2), (3, 0), (3, -1), (3, 2)..\nStep3: left. You can see grey walls at coordinates (0, 1), (0, 1), (1, -1), (0, 0), (3, -1), (3, 1), (3, 1), (3, 2)..\nStep4: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, -1), (2, 1), (2, 2)..\nStep5: right. You can see grey walls at coordinates (0, -1), (1, -1), (2, 0), (2, 2), (2, 1), (2, 2)..\nStep6: right. You can see grey walls at coordinates (0, -2), (1, -2), (1, 1), (1, 2), (3, -2), (2, 1), (3, -2), (4, -2), (4, -1), (4, 0), (4, 0), (4, 2)..\nStep7: forward. You can see grey walls at coordinates (0, -2), (0, 1), (1, -2), (1, 1), (2, -2), (3, -2), (3, -1), (4, 0), (3, 1), (3, 2)..\nStep8: forward. You can see grey walls at coordinates (0, -2), (0, 2), (1, -2), (2, -2), (2, -1), (2, 0), (2, 1), (1, 2)..\nStep9: forward. You can see grey walls at coordinates (0, -2), (1, -1), (1, -1), (1, 0), (1, 1), (1, 2)..\nStep10: right. You can see grey walls at coordinates (0, -1), (1, -1), (1, 1), (1, 2), (1, -1), (2, 1), (3, -1), (4, -1)..\nStep11: forward. You can see grey walls at coordinates (0, -1), (0, 1), (1, -1), (1, 1), (2, -1), (3, -1), (4, -1), (4, 0), (4, 2), (4, 2)..\nStep12: forward. You can see grey walls at coordinates (0, -1), (0, 1), (1, -1), (2, 1), (3, -1), (2, 0), (3, 1), (3, 2)..\nStep13: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (0, 2)..\nStep14: forward. You can see grey walls at coordinates (0, -1), (1, 1), (1, 0), (1, 1), (1, 2)..\nStep15: right. You can see grey walls at coordinates (0, -1), (1, -1), (1, 2), (2, -1), (2, 2), (3, -1), (4, -1), (4, 2)..\nStep16: forward. You can see grey walls at coordinates (0, -1), (2, 2), (1, -1), (1, 2), (2, -1), (2, -1), (3, 2), (4, -1), (4, 2)..\nStep17: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (2, -1), (2, 2), (3, -1), (3, 2), (4, -1), (4, 0), (4, 1), (4, 2)..\nStep18: forward. You can see grey walls at coordinates (0, -1), (1, -1), (1, 2), (2, -1), (2, 2), (4, -1), (3, 0), (3, 1), (3, 2)..\nStep19: forward. You can see grey walls at coordinates (0, -1), (1, 2), (1, -1), (1, 2), (2, -1), (2, 1), (2, 1), (2, 2)..\nStep20: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (1, 0), (1, 1), (1, 2)..\nStep21: right. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (3, 1), (4, 1)..\nStep22: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (3, 1), (4, 1)..\nStep23: right. You can see grey walls at coordinates (0, -2), (0, 1), (1, -2), (1, 1), (2, 1), (3, -2), (3, 1), (4, -2), (4, 1).\n\n### YOUR RECONSTRUCTION ###\nFirst, reason step-by-step about your position and what you see.\nFinally, provide the final map summary in a new line, wrapped in \"&&&\" delimiters. For example:\n&&&\nempty spaces at coordinates: (1,1), (1,2), (2,1), (2,2)\n&&& \n",
+      "ground_truth": [
+        {
+          "x": 3,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 7,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 7,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 7,
+          "value": "empty"
+        }
+      ],
+      "rbpf": {
+        "raw_text": "&&& empty spaces at coordinates: (3,1), (3,2), (3,3), (3,4), (3,5), (4,1), (4,2), (4,3), (4,4), (4,5), (4,7), (5,0), (5,1), (5,2), (5,3), (5,4), (5,5), (5,6), (5,7), (5,8), (6,0), (6,1), (6,2), (6,3), (6,4), (6,5), (6,6), (6,7), (6,8), (7,0), (7,1), (7,2), (7,3), (7,4), (7,5), (7,6), (7,7), (7,8), (8,0), (8,1), (8,2), (8,3), (8,4), (8,5), (8,6), (8,7), (8,8), (9,2), (9,3), (9,4), (9,5), (9,6), (9,7) &&&",
+        "rbpf_result": [
+          {
+            "x": 5,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 8,
+            "value": "empty"
+          }
+        ],
+        "metrics": {
+          "is_perfect_match": false,
+          "overall_accuracy": 0.5714285714285714,
+          "goal_accuracy": 0.5714285714285714,
+          "euclidean_distance_error": 0.0,
+          "details": "tolerant IoU (r=1): 57.14%; raw IoU: 37.50%  (|GT|=24, |Pred|=53)"
+        },
+        "pred_image": "my_tests/9.01/corruption/rbpf/episode_3_rbpf_pred.png",
+        "trace_gif": "my_tests/9.01/corruption/rbpf/episode_3_trace.gif"
+      }
+    },
+    {
+      "episode_id": 4,
+      "start_pos": [
+        6,
+        7
+      ],
+      "start_dir": 1,
+      "prompt": "\nYou are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.\n\n### YOUR COORDINATE SYSTEM ###\nYour view is described using a special (Depth, Side) coordinate system:\n1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.\n2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.\n3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).\n4.  Your movement is governed by your absolute position and direction:\n    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.\n    - 'turnaround': Reverses your direction (East becomes West, West becomes East).\n    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.\n    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.\n\n### YOUR TASK ###\n\n    Your mission is to return the coordinates of **all EMPTY cells** in the global map.\n\n    ## What counts as EMPTY\n    A cell is EMPTY if **either**:\n    1) You **stood on it** or **moved through it** at any time (your traversed path), or\n    2) It was in your local 5×5 field of view at least once and you clearly saw **no wall** in that cell. Note there's empty spaces you haven't stand on but it was in your view. Please identify them as well.\n\n    ## Visibility and Occlusion\n    - You **cannot see through walls**. Any cell *behind* a wall along a line-of-sight ray is **unknown**.\n    - Diagonal shadowing: a cell at (d, s) is **not visible** if both its orthogonal predecessors are walls (i.e., blocked by the two adjacent cells).\n    - \n    - Cells blocked by walls inside your view are not listed in the log.\n    - Empty cells are not explicitly listed in the log.\n \n\n    \nAll coordinates in the final summary must be absolute map coordinates (X, Y) in the room frame, not local (Depth, Side).\nIf you are facing a wall and go forward, you will not be able to move forward, your position will not change.\nYour starting absolute position is (6, 7). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.\n\n\n\n\n### WARNING: DATA CORRUPTION ###\nYour primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:\n- **Action Faults:** Two kinds may occur:\n  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.\n  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. \n- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. \n\nYou cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.\n        \n### OBSERVATION LOG ###\nInitial Observation: You're facing South. You see nothing of interest..\nStep1: right. You can see grey walls at coordinates (0, -1), (0, 2), (0, -1), (1, 2), (2, -1), (3, -1), (4, -1)..\nStep2: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (2, -1), (3, -1), (2, -1)..\nStep3: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (4, -1), (4, 0), (4, 1), (4, 2)..\nStep4: right. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (4, -1), (4, 2), (4, 1), (4, 2)..\nStep5: right. You can see grey walls at coordinates (2, 1), (2, 2), (4, 1), (4, 1)..\nStep6: forward. You can see grey walls at coordinates (2, 1), (1, 2), (2, 1), (3, 1), (4, -2), (4, 0), (4, 0), (4, 0)..\nStep7: forward. You can see grey walls at coordinates (0, 1), (1, 1), (2, 1), (2, -2), (3, -1), (3, 0), (3, 1)..\nStep8: forward. You can see grey walls at coordinates (0, 2), (1, 1), (2, -2), (2, -1), (2, 0), (2, 1)..\nStep9: forward. You can see grey walls at coordinates (0, 1), (1, -2), (1, -1), (1, 0), (0, 1)..\nStep10: right. You can see grey walls at coordinates (0, -2), (1, -1), (1, 0), (1, 1), (1, 2)..\nStep11: right. You can see grey walls at coordinates (0, -1), (2, 0), (2, -1)..\nStep12: left. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1)..\nStep13: right. You can see grey walls at coordinates (0, 1), (1, 1), (2, 1), (3, 1), (4, -2), (4, -1), (4, 0), (4, 1)..\nStep14: forward. You can see grey walls at coordinates (0, 1), (1, 1), (2, 1), (2, -2), (3, -1), (3, 1), (4, 1)..\nStep15: forward. You can see grey walls at coordinates (0, 1), (1, 1), (3, -2), (2, -1), (2, -1), (2, 1)..\nStep16: forward. You can see grey walls at coordinates (0, 1), (1, -2), (1, -1), (1, 0), (1, 1)..\nStep17: left. You can see grey walls at coordinates (0, 1), (1, 2), (2, 1), (3, 1), (4, 1)..\nStep18: forward. You can see grey walls at coordinates (0, 1), (1, 1), (2, 2), (3, 1), (4, -2), (4, -1), (4, 0), (4, 1)..\nStep19: forward. You can see grey walls at coordinates (0, 1), (1, 1), (2, 1), (3, -2), (3, -1), (4, 0), (3, 1)..\nStep20: right. You can see grey walls at coordinates (1, -2), (1, -1), (1, 0), (1, 1), (1, 2)..\nStep21: right. You can see grey walls at coordinates (0, -2), (1, -1), (2, -1), (4, -1), (4, 0), (3, 1), (3, 2)..\nStep22: right. You can see grey walls at coordinates (0, 1), (1, 1), (0, 1), (3, -1), (4, -1), (3, 0), (3, 1)..\nStep23: forward. You can see grey walls at coordinates (0, 1), (1, 0), (2, -2), (2, -1), (2, 0), (2, 1)..\nStep24: forward. You can see grey walls at coordinates (0, 1), (1, 1), (2, 1), (3, -2), (3, 1), (4, -2), (3, 1)..\nStep25: forward. You can see grey walls at coordinates (0, 1), (1, 1), (2, -2), (2, 1), (3, -2), (3, 1), (4, -2), (4, 1)..\nStep26: forward. You can see grey walls at coordinates (0, -2), (0, 1), (1, -2), (1, 1), (2, -2), (2, -1), (2, 0), (2, 2)..\nStep27: forward. You can see grey walls at coordinates (0, -2), (0, 1), (1, -2), (1, -1), (1, 0), (1, 1).\n\n### YOUR RECONSTRUCTION ###\nFirst, reason step-by-step about your position and what you see.\nFinally, provide the final map summary in a new line, wrapped in \"&&&\" delimiters. For example:\n&&&\nempty spaces at coordinates: (1,1), (1,2), (2,1), (2,2)\n&&& \n",
+      "ground_truth": [
+        {
+          "x": 1,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 1,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 1,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 1,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 7,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 1,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 7,
+          "y": 7,
+          "value": "empty"
+        }
+      ],
+      "rbpf": {
+        "raw_text": "&&& empty spaces at coordinates: (3,3), (3,4), (3,5), (3,6), (3,7), (3,9), (4,3), (4,4), (4,5), (4,6), (4,7), (4,8), (4,9), (5,1), (5,2), (5,3), (5,4), (5,5), (5,6), (5,7), (5,8), (5,9), (6,1), (6,2), (6,3), (6,4), (6,5), (6,6), (6,7), (6,8), (6,9), (7,1), (7,2), (7,3), (7,4), (7,5), (7,6), (7,7), (7,8), (7,9), (8,2), (8,3), (8,4), (8,5), (8,6), (8,7), (8,8), (8,9), (9,2), (9,3), (9,4), (9,5), (9,6), (9,7), (9,8), (9,9) &&&",
+        "rbpf_result": [
+          {
+            "x": 5,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 9,
+            "value": "empty"
+          }
+        ],
+        "metrics": {
+          "is_perfect_match": false,
+          "overall_accuracy": 0.35,
+          "goal_accuracy": 0.35,
+          "euclidean_distance_error": 0.0,
+          "details": "tolerant IoU (r=1): 35.00%; raw IoU: 24.24%  (|GT|=26, |Pred|=56)"
+        },
+        "pred_image": "my_tests/9.01/corruption/rbpf/episode_4_rbpf_pred.png",
+        "trace_gif": "my_tests/9.01/corruption/rbpf/episode_4_trace.gif"
+      }
+    },
+    {
+      "episode_id": 5,
+      "start_pos": [
+        2,
+        6
+      ],
+      "start_dir": 2,
+      "prompt": "\nYou are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.\n\n### YOUR COORDINATE SYSTEM ###\nYour view is described using a special (Depth, Side) coordinate system:\n1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.\n2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.\n3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).\n4.  Your movement is governed by your absolute position and direction:\n    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.\n    - 'turnaround': Reverses your direction (East becomes West, West becomes East).\n    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.\n    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.\n\n### YOUR TASK ###\n\n    Your mission is to return the coordinates of **all EMPTY cells** in the global map.\n\n    ## What counts as EMPTY\n    A cell is EMPTY if **either**:\n    1) You **stood on it** or **moved through it** at any time (your traversed path), or\n    2) It was in your local 5×5 field of view at least once and you clearly saw **no wall** in that cell. Note there's empty spaces you haven't stand on but it was in your view. Please identify them as well.\n\n    ## Visibility and Occlusion\n    - You **cannot see through walls**. Any cell *behind* a wall along a line-of-sight ray is **unknown**.\n    - Diagonal shadowing: a cell at (d, s) is **not visible** if both its orthogonal predecessors are walls (i.e., blocked by the two adjacent cells).\n    - \n    - Cells blocked by walls inside your view are not listed in the log.\n    - Empty cells are not explicitly listed in the log.\n \n\n    \nAll coordinates in the final summary must be absolute map coordinates (X, Y) in the room frame, not local (Depth, Side).\nIf you are facing a wall and go forward, you will not be able to move forward, your position will not change.\nYour starting absolute position is (2, 6). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.\n\n\n\n\n### WARNING: DATA CORRUPTION ###\nYour primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:\n- **Action Faults:** Two kinds may occur:\n  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.\n  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. \n- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. \n\nYou cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.\n        \n### OBSERVATION LOG ###\nInitial Observation: You're facing West. You see nothing of interest..\nStep1: right. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (4, -2), (4, 0), (4, 1), (4, 2)..\nStep2: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, 1), (2, 1), (1, 2)..\nStep3: right. You can see grey walls at coordinates (0, -2), (1, -2), (2, -2)..\nStep4: forward. You can see grey walls at coordinates (0, -2), (1, -2), (4, -2), (4, -1), (4, 0), (4, 1), (4, 2)..\nStep5: forward. You can see grey walls at coordinates (0, -2), (3, -2), (3, -1), (3, 0), (3, 1), (3, 2)..\nStep6: forward. You can see grey walls at coordinates (0, -2), (2, -1), (2, 0), (2, 1), (2, 2)..\nStep7: forward. You can see grey walls at coordinates (1, -2), (1, -1), (1, 0), (1, 2), (1, 2)..\nStep8: right. You can see grey walls at coordinates (0, -2), (1, -2), (2, -1), (3, -1), (3, 0), (3, 2), (2, 2)..\nStep9: forward. You can see grey walls at coordinates (0, 0), (1, -2), (1, 1), (2, -2), (2, -1), (2, 0), (3, 1)..\nStep10: forward. You can see grey walls at coordinates (0, -2), (0, 1), (1, -2), (1, -1), (1, 0), (1, 1)..\nStep11: right. You can see grey walls at coordinates (0, 0), (1, -2), (1, 0), (1, 1), (1, 2)..\nStep12: right. You can see grey walls at coordinates (0, 0), (0, 2), (1, -1), (2, -1), (2, -1), (4, -1)..\nStep13: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (4, -1), (4, 0), (4, 1), (4, 2)..\nStep14: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (3, 0), (3, 1), (3, 2)..\nStep15: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (2, 2)..\nStep16: forward. You can see grey walls at coordinates (0, -1), (1, -1), (1, 0), (0, 1), (1, 2)..\nStep17: right. You can see grey walls at coordinates (0, -1), (0, -1), (2, -1), (3, -1), (4, -1)..\nStep18: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (4, -1), (3, 0), (4, 1), (4, 2)..\nStep19: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (3, 0), (3, 1), (3, 2)..\nStep20: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (4, 2).\n\n### YOUR RECONSTRUCTION ###\nFirst, reason step-by-step about your position and what you see.\nFinally, provide the final map summary in a new line, wrapped in \"&&&\" delimiters. For example:\n&&&\nempty spaces at coordinates: (1,1), (1,2), (2,1), (2,2)\n&&& \n",
+      "ground_truth": [
+        {
+          "x": 5,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "value": "empty"
+        }
+      ],
+      "rbpf": {
+        "raw_text": "&&& empty spaces at coordinates: (1,0), (1,1), (1,2), (1,3), (2,0), (2,1), (2,2), (2,3), (2,6), (2,7), (3,0), (3,1), (3,2), (3,3), (3,4), (3,7), (4,0), (4,1), (4,2), (4,3), (4,4), (4,5), (4,6), (4,7), (4,8), (4,9), (5,0), (5,1), (5,2), (5,3), (5,4), (5,5), (5,6), (5,7), (5,8), (5,9), (6,0), (6,1), (6,2), (6,3), (6,4), (6,5), (6,6), (6,7), (6,8), (6,9), (7,0), (7,1), (7,2), (7,3), (7,4), (7,5), (7,6), (7,7), (7,8), (7,9) &&&",
+        "rbpf_result": [
+          {
+            "x": 1,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 1,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 9,
+            "value": "empty"
+          }
+        ],
+        "metrics": {
+          "is_perfect_match": false,
+          "overall_accuracy": 0.43478260869565216,
+          "goal_accuracy": 0.43478260869565216,
+          "euclidean_distance_error": 0.0,
+          "details": "tolerant IoU (r=1): 43.48%; raw IoU: 30.00%  (|GT|=22, |Pred|=56)"
+        },
+        "pred_image": "my_tests/9.01/corruption/rbpf/episode_5_rbpf_pred.png",
+        "trace_gif": "my_tests/9.01/corruption/rbpf/episode_5_trace.gif"
+      }
+    },
+    {
+      "episode_id": 6,
+      "start_pos": [
+        4,
+        8
+      ],
+      "start_dir": 1,
+      "prompt": "\nYou are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.\n\n### YOUR COORDINATE SYSTEM ###\nYour view is described using a special (Depth, Side) coordinate system:\n1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.\n2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.\n3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).\n4.  Your movement is governed by your absolute position and direction:\n    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.\n    - 'turnaround': Reverses your direction (East becomes West, West becomes East).\n    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.\n    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.\n\n### YOUR TASK ###\n\n    Your mission is to return the coordinates of **all EMPTY cells** in the global map.\n\n    ## What counts as EMPTY\n    A cell is EMPTY if **either**:\n    1) You **stood on it** or **moved through it** at any time (your traversed path), or\n    2) It was in your local 5×5 field of view at least once and you clearly saw **no wall** in that cell. Note there's empty spaces you haven't stand on but it was in your view. Please identify them as well.\n\n    ## Visibility and Occlusion\n    - You **cannot see through walls**. Any cell *behind* a wall along a line-of-sight ray is **unknown**.\n    - Diagonal shadowing: a cell at (d, s) is **not visible** if both its orthogonal predecessors are walls (i.e., blocked by the two adjacent cells).\n    - \n    - Cells blocked by walls inside your view are not listed in the log.\n    - Empty cells are not explicitly listed in the log.\n \n\n    \nAll coordinates in the final summary must be absolute map coordinates (X, Y) in the room frame, not local (Depth, Side).\nIf you are facing a wall and go forward, you will not be able to move forward, your position will not change.\nYour starting absolute position is (4, 8). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.\n\n\n\n\n### WARNING: DATA CORRUPTION ###\nYour primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:\n- **Action Faults:** Two kinds may occur:\n  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.\n  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. \n- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. \n\nYou cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.\n        \n### OBSERVATION LOG ###\nInitial Observation: You're facing South. You see nothing of interest..\nStep1: left. You can see grey walls at coordinates (0, 1), (1, 1), (2, 1), (3, -2), (3, -1), (3, 0), (3, 1)..\nStep2: forward. You can see grey walls at coordinates (0, 1), (1, 1), (2, -2), (2, -1), (2, 0), (2, 1)..\nStep3: forward. You can see grey walls at coordinates (0, 1), (1, -2), (1, -1), (1, 0), (1, 1)..\nStep4: left. You can see grey walls at coordinates (0, 1), (1, 1), (2, 1), (3, 1), (4, 1)..\nStep5: forward. You can see grey walls at coordinates (0, -2), (1, 0), (2, 0), (3, 1), (4, -1), (2, 0), (4, 1)..\nStep6: forward. You can see grey walls at coordinates (0, 1), (1, 1), (3, 1), (3, -1), (3, 0), (3, 1), (4, -1)..\nStep7: forward. You can see grey walls at coordinates (0, 1), (1, 1), (2, -1), (2, 0), (4, 1), (3, -1), (4, -2), (4, -1)..\nStep8: forward. You can see grey walls at coordinates (0, 1), (1, -1), (1, 0), (1, 1), (2, -1), (3, -2), (3, -2)..\nStep9: left. You can see grey walls at coordinates (0, 1), (1, 1)..\nStep10: forward. You can see grey walls at coordinates (0, 1), (4, -1), (4, -1), (4, 0), (4, 1), (4, 2)..\nStep11: forward. You can see grey walls at coordinates (3, -2), (3, -1), (3, 0), (3, 1), (3, 2)..\nStep12: forward. You can see grey walls at coordinates (2, -2), (2, -1), (1, 0), (3, 2), (2, 2)..\nStep13: left. You can see grey walls at coordinates (0, 2), (1, 2), (2, 2), (3, 0), (3, 1), (4, 2), (4, 0)..\nStep14: forward. You can see grey walls at coordinates (0, 2), (1, 2), (2, 0), (2, 1), (2, 2), (3, 0), (4, -2), (4, -1), (4, 0)..\nStep15: forward. You can see grey walls at coordinates (0, 2), (0, 0), (1, 0), (1, 2), (2, 0), (4, -2), (3, -1), (3, 0)..\nStep16: right. You can see grey walls at coordinates (0, -2), (1, -1), (2, -1), (2, 0), (0, 1), (2, 2)..\nStep17: right. You can see grey walls at coordinates (0, -1), (1, -1), (1, -1), (2, 0), (2, 1), (2, 2)..\nStep18: right. You can see grey walls at coordinates (0, -2), (1, -2), (2, -2), (3, -2), (3, 2), (4, -2), (4, 2)..\nStep19: forward. You can see grey walls at coordinates (0, -2), (2, -2), (2, -2), (2, 2), (3, -2), (3, 2), (4, -2), (4, -1), (4, -1), (2, 1), (4, 2)..\nStep20: forward. You can see grey walls at coordinates (0, -2), (1, -2), (1, 2), (1, -2), (2, 2), (3, -2), (3, -1), (3, 0), (3, 1), (3, 2)..\nStep21: forward. You can see grey walls at coordinates (0, -2), (0, 2), (1, -2), (1, 2), (2, -2), (2, -1), (2, 0), (2, 1), (2, 2)..\nStep22: forward. You can see grey walls at coordinates (0, -2), (0, 2), (1, -2), (1, -1), (1, 0), (1, 1), (1, 2)..\nStep23: left. You can see grey walls at coordinates (0, 1), (1, 1), (2, 0), (2, -1), (2, 0), (2, 1)..\nStep24: forward. You can see grey walls at coordinates (0, 1), (1, -2), (1, -1), (0, 0), (1, 1)..\nStep25: right. You can see grey walls at coordinates (0, -1), (1, -2), (1, 0), (1, 1), (1, 2).\n\n### YOUR RECONSTRUCTION ###\nFirst, reason step-by-step about your position and what you see.\nFinally, provide the final map summary in a new line, wrapped in \"&&&\" delimiters. For example:\n&&&\nempty spaces at coordinates: (1,1), (1,2), (2,1), (2,2)\n&&& \n",
+      "ground_truth": [
+        {
+          "x": 2,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 8,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 8,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 8,
+          "value": "empty"
+        }
+      ],
+      "rbpf": {
+        "raw_text": "&&& empty spaces at coordinates: (0,4), (0,5), (0,6), (0,7), (0,8), (0,9), (1,4), (1,5), (1,6), (1,7), (1,8), (1,9), (2,4), (2,5), (2,6), (2,7), (2,8), (2,9), (3,4), (3,5), (3,6), (3,7), (3,8), (3,9), (4,4), (4,5), (4,6), (4,7), (4,8), (4,9), (5,5), (5,6), (5,7), (5,8), (5,9), (6,5), (6,6), (6,7), (6,8), (6,9) &&&",
+        "rbpf_result": [
+          {
+            "x": 0,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 1,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 0,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 1,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 0,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 1,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 0,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 1,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 0,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 1,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 0,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 1,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 9,
+            "value": "empty"
+          }
+        ],
+        "metrics": {
+          "is_perfect_match": false,
+          "overall_accuracy": 0.5,
+          "goal_accuracy": 0.5,
+          "euclidean_distance_error": 0.0,
+          "details": "tolerant IoU (r=1): 50.00%; raw IoU: 39.58%  (|GT|=27, |Pred|=40)"
+        },
+        "pred_image": "my_tests/9.01/corruption/rbpf/episode_6_rbpf_pred.png",
+        "trace_gif": "my_tests/9.01/corruption/rbpf/episode_6_trace.gif"
+      }
+    },
+    {
+      "episode_id": 7,
+      "start_pos": [
+        3,
+        7
+      ],
+      "start_dir": 0,
+      "prompt": "\nYou are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.\n\n### YOUR COORDINATE SYSTEM ###\nYour view is described using a special (Depth, Side) coordinate system:\n1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.\n2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.\n3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).\n4.  Your movement is governed by your absolute position and direction:\n    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.\n    - 'turnaround': Reverses your direction (East becomes West, West becomes East).\n    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.\n    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.\n\n### YOUR TASK ###\n\n    Your mission is to return the coordinates of **all EMPTY cells** in the global map.\n\n    ## What counts as EMPTY\n    A cell is EMPTY if **either**:\n    1) You **stood on it** or **moved through it** at any time (your traversed path), or\n    2) It was in your local 5×5 field of view at least once and you clearly saw **no wall** in that cell. Note there's empty spaces you haven't stand on but it was in your view. Please identify them as well.\n\n    ## Visibility and Occlusion\n    - You **cannot see through walls**. Any cell *behind* a wall along a line-of-sight ray is **unknown**.\n    - Diagonal shadowing: a cell at (d, s) is **not visible** if both its orthogonal predecessors are walls (i.e., blocked by the two adjacent cells).\n    - \n    - Cells blocked by walls inside your view are not listed in the log.\n    - Empty cells are not explicitly listed in the log.\n \n\n    \nAll coordinates in the final summary must be absolute map coordinates (X, Y) in the room frame, not local (Depth, Side).\nIf you are facing a wall and go forward, you will not be able to move forward, your position will not change.\nYour starting absolute position is (3, 7). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.\n\n\n\n\n### WARNING: DATA CORRUPTION ###\nYour primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:\n- **Action Faults:** Two kinds may occur:\n  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.\n  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. \n- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. \n\nYou cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.\n        \n### OBSERVATION LOG ###\nInitial Observation: You're facing East. You see nothing of interest..\nStep1: left. You can see grey walls at coordinates (0, -2), (0, -2), (1, 1), (1, 2), (2, -2), (2, 1), (3, -2), (3, 1), (3, -1)..\nStep2: forward. You can see grey walls at coordinates (0, -2), (0, 1), (2, -2), (1, 1), (2, -1), (2, 1), (3, -2), (4, -2), (4, -1)..\nStep3: forward. You can see grey walls at coordinates (0, -2), (0, 1), (1, -2), (1, 1), (2, -2), (3, -2), (3, -1), (4, -1), (4, 0), (4, 1), (4, 2)..\nStep4: forward. You can see grey walls at coordinates (0, -2), (0, 1), (1, -2), (1, 1), (2, -2), (3, -2), (3, -1), (4, -1), (4, 0), (4, 0), (4, 2)..\nStep5: forward. You can see grey walls at coordinates (0, -2), (0, 0), (1, -1), (2, -2), (2, -1), (3, -1), (3, 0), (3, 0), (3, 2)..\nStep6: forward. You can see grey walls at coordinates (0, -2), (1, -2), (1, -1), (4, -1), (2, 0), (2, 1), (2, 2)..\nStep7: right. You can see grey walls at coordinates (0, -2), (1, -2), (1, 1), (1, 2), (1, -2), (2, 1), (3, -2), (3, -1), (3, 0), (3, 1)..\nStep8: forward. You can see grey walls at coordinates (0, -2), (0, 1), (1, -2), (1, 1), (2, -2), (2, -1), (2, 0), (2, 1)..\nStep9: forward. You can see grey walls at coordinates (0, -2), (0, 1), (1, -1), (1, -1), (1, 0), (1, -1)..\nStep10: right. You can see grey walls at coordinates (0, -1), (1, -1), (1, 0), (1, 2), (2, 1), (3, 1)..\nStep11: right. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (1, 2), (2, 2), (3, 1), (4, 2), (4, -2), (4, -1), (4, 0), (4, 1)..\nStep12: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, 2), (1, 1), (2, 2), (3, -1), (3, -1), (3, 0), (3, 1)..\nStep13: left. You can see grey walls at coordinates (0, -1), (0, 2), (1, 2), (2, 1), (2, 2), (2, -2), (3, -1), (3, 0), (3, 1)..\nStep14: forward. You can see grey walls at coordinates (0, 2), (1, 1), (1, 2), (2, -2), (2, -1), (2, 0), (2, 1)..\nStep15: left. You can see grey walls at coordinates (0, 2), (1, -2), (1, -1), (1, 2), (2, -1), (2, 2), (2, -1), (3, 2), (4, 2)..\nStep16: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (1, 2), (1, -1), (2, 2), (3, 2), (4, 1), (4, 2)..\nStep17: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (1, 2), (2, 2), (3, 1), (3, 2), (4, -2), (4, -1), (4, 0), (4, 1)..\nStep18: left. You can see grey walls at coordinates (1, -1), (0, 2), (1, -1), (3, 2), (2, 2), (3, 1), (3, 2), (4, -2), (4, -1), (4, 2), (4, 1)..\nStep19: forward. You can see grey walls at coordinates (0, -2), (0, 2), (1, 2), (2, 1), (3, 2), (3, -2), (3, -1), (3, 0), (3, 1)..\nStep20: forward. You can see grey walls at coordinates (0, 2), (1, 1), (1, 2), (2, -2), (2, -1), (2, 0), (0, 1)..\nStep21: right. You can see grey walls at coordinates (0, 2), (1, 1), (1, 2), (2, -2), (2, -1), (2, 0), (2, 1)..\nStep22: right. You can see grey walls at coordinates (0, -2), (1, -2), (0, -1), (2, -1), (2, 0), (2, 1), (2, 1)..\nStep23: right. You can see grey walls at coordinates (0, -2), (1, -2), (3, 1), (1, 2), (2, -2), (2, 1), (3, -2), (3, 1), (4, -2)..\nStep24: right. You can see grey walls at coordinates (0, -2), (1, -2), (2, 1), (1, 2), (2, -2), (2, 1), (3, -2), (3, 1), (4, -2)..\nStep25: right. You can see grey walls at coordinates (0, 2), (1, -2), (2, -1), (1, 1), (2, -1), (2, 2), (3, -2), (3, 2), (4, -2), (4, 2)..\nStep26: forward. You can see grey walls at coordinates (0, 2), (1, -2), (1, -1), (1, 2), (2, -1), (2, 1), (4, -2), (3, 2), (4, -2), (4, 2)..\nStep27: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (1, 2), (2, -2), (2, 2), (3, -2), (3, 1), (4, -2), (3, -1), (4, 0), (4, 1), (4, 2)..\nStep28: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -2), (1, 2), (2, -1), (2, 2), (2, -2), (3, -1), (3, 0), (3, 1), (3, 2)..\nStep29: forward. You can see grey walls at coordinates (1, -2), (0, 2), (1, -2), (1, 2), (2, -2), (2, -1), (2, -1), (2, 1), (2, 2)..\nStep30: forward. You can see grey walls at coordinates (0, -2), (0, 2), (1, -2), (1, -1), (1, 0), (1, 1), (1, 2)..\nStep31: left. You can see grey walls at coordinates (0, 1), (1, -2), (1, 1), (2, -2), (2, -1), (2, -1), (2, 1)..\nStep32: forward. You can see grey walls at coordinates (0, -2), (0, 1), (1, -2), (1, -2), (1, 0), (1, 1)..\nStep33: right. You can see grey walls at coordinates (0, -1), (1, -1), (1, 0), (1, 1), (1, 2).\n\n### YOUR RECONSTRUCTION ###\nFirst, reason step-by-step about your position and what you see.\nFinally, provide the final map summary in a new line, wrapped in \"&&&\" delimiters. For example:\n&&&\nempty spaces at coordinates: (1,1), (1,2), (2,1), (2,2)\n&&& \n",
+      "ground_truth": [
+        {
+          "x": 3,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 7,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 7,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 8,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 8,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 8,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 8,
+          "value": "empty"
+        },
+        {
+          "x": 7,
+          "y": 8,
+          "value": "empty"
+        }
+      ],
+      "rbpf": {
+        "raw_text": "&&& empty spaces at coordinates: (1,8), (1,9), (2,7), (2,8), (2,9), (3,7), (3,8), (3,9), (4,5), (4,6), (4,7), (4,8), (4,9), (5,5), (5,6), (5,7), (5,8), (5,9), (6,5), (6,6), (6,7), (6,8), (6,9), (7,5), (7,6), (7,7), (7,8), (7,9), (8,6), (8,7), (8,8), (8,9), (9,6), (9,7), (9,8), (9,9) &&&",
+        "rbpf_result": [
+          {
+            "x": 4,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 1,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 8,
+            "value": "empty"
+          },
+          {
+            "x": 1,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 9,
+            "value": "empty"
+          },
+          {
+            "x": 9,
+            "y": 9,
+            "value": "empty"
+          }
+        ],
+        "metrics": {
+          "is_perfect_match": false,
+          "overall_accuracy": 0.4074074074074074,
+          "goal_accuracy": 0.4074074074074074,
+          "euclidean_distance_error": 0.0,
+          "details": "tolerant IoU (r=1): 40.74%; raw IoU: 26.53%  (|GT|=26, |Pred|=36)"
+        },
+        "pred_image": "my_tests/9.01/corruption/rbpf/episode_7_rbpf_pred.png",
+        "trace_gif": "my_tests/9.01/corruption/rbpf/episode_7_trace.gif"
+      }
+    },
+    {
+      "episode_id": 8,
+      "start_pos": [
+        8,
+        1
+      ],
+      "start_dir": 1,
+      "prompt": "\nYou are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.\n\n### YOUR COORDINATE SYSTEM ###\nYour view is described using a special (Depth, Side) coordinate system:\n1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.\n2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.\n3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).\n4.  Your movement is governed by your absolute position and direction:\n    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.\n    - 'turnaround': Reverses your direction (East becomes West, West becomes East).\n    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.\n    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.\n\n### YOUR TASK ###\n\n    Your mission is to return the coordinates of **all EMPTY cells** in the global map.\n\n    ## What counts as EMPTY\n    A cell is EMPTY if **either**:\n    1) You **stood on it** or **moved through it** at any time (your traversed path), or\n    2) It was in your local 5×5 field of view at least once and you clearly saw **no wall** in that cell. Note there's empty spaces you haven't stand on but it was in your view. Please identify them as well.\n\n    ## Visibility and Occlusion\n    - You **cannot see through walls**. Any cell *behind* a wall along a line-of-sight ray is **unknown**.\n    - Diagonal shadowing: a cell at (d, s) is **not visible** if both its orthogonal predecessors are walls (i.e., blocked by the two adjacent cells).\n    - \n    - Cells blocked by walls inside your view are not listed in the log.\n    - Empty cells are not explicitly listed in the log.\n \n\n    \nAll coordinates in the final summary must be absolute map coordinates (X, Y) in the room frame, not local (Depth, Side).\nIf you are facing a wall and go forward, you will not be able to move forward, your position will not change.\nYour starting absolute position is (8, 1). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.\n\n\n\n\n### WARNING: DATA CORRUPTION ###\nYour primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:\n- **Action Faults:** Two kinds may occur:\n  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.\n  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. \n- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. \n\nYou cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.\n        \n### OBSERVATION LOG ###\nInitial Observation: You're facing South. You see nothing of interest..\nStep1: forward. You can see grey walls at coordinates (0, -1), (0, 1), (1, -1), (1, 1), (2, -1), (2, 0), (3, -1), (4, -1)..\nStep2: forward. You can see grey walls at coordinates (0, -1), (0, 1), (1, -1), (2, 1), (2, -1), (2, 1), (3, -1), (4, -1)..\nStep3: forward. You can see grey walls at coordinates (0, -1), (0, 1), (1, 1), (1, 1), (2, -1), (3, -1), (4, -1), (4, -1), (4, 1), (4, 2)..\nStep4: forward. You can see grey walls at coordinates (0, -1), (0, 1), (0, -1), (2, -1), (3, -1), (3, 0), (3, 1), (3, 1)..\nStep5: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (1, 2)..\nStep6: right. You can see grey walls at coordinates (0, -2), (1, -2), (1, 1), (1, 2), (0, -2), (2, 1), (3, -2), (4, -2)..\nStep7: forward. You can see grey walls at coordinates (1, -2), (0, 1), (1, -2), (2, -2)..\nStep8: forward. You can see grey walls at coordinates (0, -2), (1, -2), (4, -2), (4, 0), (4, -1), (4, 2), (4, 2)..\nStep9: right. You can see grey walls at coordinates (1, 1), (1, 2), (2, 1), (3, 1), (4, -2), (4, -1), (4, -1), (4, 1)..\nStep10: forward. You can see grey walls at coordinates (0, 1), (1, 1), (3, 1), (3, -2), (3, -1), (3, 1), (3, 1)..\nStep11: forward. You can see grey walls at coordinates (0, 1), (1, 1), (3, -2), (2, -1), (2, 0), (2, 1)..\nStep12: left. You can see grey walls at coordinates (0, 2), (1, 2), (2, 2), (3, 1), (3, 2), (4, -2), (4, -1), (4, 0), (4, 1)..\nStep13: forward. You can see grey walls at coordinates (0, 2), (1, 2), (2, 1), (2, 2), (3, -2), (3, -1), (3, 0), (3, 1)..\nStep14: forward. You can see grey walls at coordinates (0, 2), (1, 2), (1, 2), (2, -2), (1, -1), (2, 0), (2, 1)..\nStep15: left. You can see grey walls at coordinates (0, 2), (1, 2), (2, 2), (4, 2), (4, -2), (4, -1), (4, 2)..\nStep16: forward. You can see grey walls at coordinates (0, 2), (1, 2), (2, 2), (3, -2), (3, -1), (3, 1), (4, -1), (4, 0), (2, 1), (4, 2)..\nStep17: right. You can see grey walls at coordinates (0, 2), (1, 2), (2, 2), (4, -2), (3, -1), (3, 2), (4, -1), (3, 0), (4, 1), (4, 2)..\nStep18: forward. You can see grey walls at coordinates (0, 2), (1, 2), (2, -2), (2, -1), (2, 2), (3, -1), (3, 1), (3, -1), (3, 2)..\nStep19: forward. You can see grey walls at coordinates (0, 2), (1, -2), (1, -1), (1, 2), (2, -1), (2, 0), (2, 2), (2, 2)..\nStep20: forward. You can see grey walls at coordinates (0, -1), (0, 2), (3, -1), (1, 0), (1, 1), (2, 2).\n\n### YOUR RECONSTRUCTION ###\nFirst, reason step-by-step about your position and what you see.\nFinally, provide the final map summary in a new line, wrapped in \"&&&\" delimiters. For example:\n&&&\nempty spaces at coordinates: (1,1), (1,2), (2,1), (2,2)\n&&& \n",
+      "ground_truth": [
+        {
+          "x": 8,
+          "y": 1,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 7,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 5,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 7,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 6,
+          "value": "empty"
+        },
+        {
+          "x": 2,
+          "y": 7,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 7,
+          "value": "empty"
+        }
+      ],
+      "rbpf": {
+        "raw_text": "&&& empty spaces at coordinates: (1,2), (1,3), (2,0), (2,1), (2,2), (2,3), (3,0), (3,1), (3,2), (3,3), (3,4), (3,5), (3,6), (3,7), (4,0), (4,1), (4,2), (4,3), (4,4), (4,5), (4,6), (4,7), (5,0), (5,1), (5,2), (5,3), (5,4), (5,5), (5,6), (5,7), (6,0), (6,1), (6,2), (6,3), (6,4), (6,5), (6,6), (6,7), (7,1), (7,2), (7,3), (7,4), (7,5), (7,6), (7,7), (7,8), (8,1), (8,2), (8,3), (8,4), (8,5) &&&",
+        "rbpf_result": [
+          {
+            "x": 2,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 1,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 4,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 5,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 6,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 7,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 8,
+            "value": "empty"
+          }
+        ],
+        "metrics": {
+          "is_perfect_match": false,
+          "overall_accuracy": 0.6588235294117647,
+          "goal_accuracy": 0.6588235294117647,
+          "euclidean_distance_error": 0.0,
+          "details": "tolerant IoU (r=1): 65.88%; raw IoU: 46.43%  (|GT|=31, |Pred|=51)"
+        },
+        "pred_image": "my_tests/9.01/corruption/rbpf/episode_8_rbpf_pred.png",
+        "trace_gif": "my_tests/9.01/corruption/rbpf/episode_8_trace.gif"
+      }
+    },
+    {
+      "episode_id": 9,
+      "start_pos": [
+        7,
+        2
+      ],
+      "start_dir": 2,
+      "prompt": "\nYou are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.\n\n### YOUR COORDINATE SYSTEM ###\nYour view is described using a special (Depth, Side) coordinate system:\n1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.\n2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.\n3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).\n4.  Your movement is governed by your absolute position and direction:\n    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.\n    - 'turnaround': Reverses your direction (East becomes West, West becomes East).\n    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.\n    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.\n\n### YOUR TASK ###\n\n    Your mission is to return the coordinates of **all EMPTY cells** in the global map.\n\n    ## What counts as EMPTY\n    A cell is EMPTY if **either**:\n    1) You **stood on it** or **moved through it** at any time (your traversed path), or\n    2) It was in your local 5×5 field of view at least once and you clearly saw **no wall** in that cell. Note there's empty spaces you haven't stand on but it was in your view. Please identify them as well.\n\n    ## Visibility and Occlusion\n    - You **cannot see through walls**. Any cell *behind* a wall along a line-of-sight ray is **unknown**.\n    - Diagonal shadowing: a cell at (d, s) is **not visible** if both its orthogonal predecessors are walls (i.e., blocked by the two adjacent cells).\n    - \n    - Cells blocked by walls inside your view are not listed in the log.\n    - Empty cells are not explicitly listed in the log.\n \n\n    \nAll coordinates in the final summary must be absolute map coordinates (X, Y) in the room frame, not local (Depth, Side).\nIf you are facing a wall and go forward, you will not be able to move forward, your position will not change.\nYour starting absolute position is (7, 2). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.\n\n\n\n\n### WARNING: DATA CORRUPTION ###\nYour primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:\n- **Action Faults:** Two kinds may occur:\n  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.\n  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. \n- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. \n\nYou cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.\n        \n### OBSERVATION LOG ###\nInitial Observation: You're facing West. You see nothing of interest..\nStep1: forward. You can see grey walls at coordinates (0, 1), (1, 1), (2, 1), (3, 1), (4, -2), (4, -1), (4, 0), (4, 1)..\nStep2: left. You can see grey walls at coordinates (0, 1), (1, 1), (2, 1), (3, 1), (4, -2), (3, -1), (4, 0), (4, 1)..\nStep3: forward. You can see grey walls at coordinates (0, 1), (1, 2), (2, 1), (3, -2), (3, -1), (3, 0), (3, 1)..\nStep4: forward. You can see grey walls at coordinates (0, 1), (1, 1), (2, -2), (2, -2), (2, 0), (2, 1)..\nStep5: forward. You can see grey walls at coordinates (0, 1), (0, -2), (1, -2), (1, 0), (1, 1)..\nStep6: left. You can see grey walls at coordinates (0, 1), (1, 1), (2, 2), (3, -2), (3, -1), (3, 0), (3, 1)..\nStep7: forward. You can see grey walls at coordinates (0, 1), (1, 0), (1, 0), (2, -1), (2, -1), (2, 1)..\nStep8: left. You can see grey walls at coordinates (0, 2), (1, 1), (2, 0), (3, 1), (4, 1)..\nStep9: left. You can see grey walls at coordinates (0, 1), (1, 1), (2, 1), (3, 1), (4, 1)..\nStep10: forward. You can see grey walls at coordinates (0, 1), (1, 1), (2, 1), (3, 0), (4, 1)..\nStep11: forward. You can see grey walls at coordinates (0, 1), (1, 1), (2, 1), (3, 1), (4, -2), (4, -1), (4, 1), (4, 1)..\nStep12: forward. You can see grey walls at coordinates (0, 1), (1, 2), (2, 0), (3, -2), (3, -1), (3, 0), (3, 1)..\nStep13: forward. You can see grey walls at coordinates (0, 1), (1, 1), (2, -2), (2, -1), (2, 0), (2, 1)..\nStep14: right. You can see grey walls at coordinates (0, -2), (1, -1), (0, -1), (1, 0), (1, 1), (1, 2)..\nStep15: right. You can see grey walls at coordinates (0, -2), (1, -1), (2, -1), (3, -1), (4, -1)..\nStep16: right. You can see grey walls at coordinates (0, 2), (1, 2), (2, 2), (3, -2), (2, -1), (3, 2), (4, -1), (4, 0), (4, 1), (3, 2)..\nStep17: forward. You can see grey walls at coordinates (0, 2), (1, 2), (2, -2), (2, -1), (2, 2), (3, -1), (3, 0), (3, 1), (3, 2)..\nStep18: forward. You can see grey walls at coordinates (0, 2), (1, -2), (1, 0), (1, 2), (2, -1), (2, 0), (2, 1), (2, 2)..\nStep19: forward. You can see grey walls at coordinates (0, -1), (0, 1), (1, -1), (1, 0), (1, 1), (1, 2)..\nStep20: right. You can see grey walls at coordinates (0, -1), (1, 0), (2, 0), (2, -1), (3, 1), (2, 2).\n\n### YOUR RECONSTRUCTION ###\nFirst, reason step-by-step about your position and what you see.\nFinally, provide the final map summary in a new line, wrapped in \"&&&\" delimiters. For example:\n&&&\nempty spaces at coordinates: (1,1), (1,2), (2,1), (2,2)\n&&& \n",
+      "ground_truth": [
+        {
+          "x": 7,
+          "y": 1,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 1,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 7,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 2,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 7,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 3,
+          "value": "empty"
+        },
+        {
+          "x": 3,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 4,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 5,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 6,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 7,
+          "y": 4,
+          "value": "empty"
+        },
+        {
+          "x": 8,
+          "y": 4,
+          "value": "empty"
+        }
+      ],
+      "rbpf": {
+        "raw_text": "&&& empty spaces at coordinates: (1,0), (1,1), (1,2), (2,0), (2,1), (2,2), (3,0), (3,1), (3,2), (4,0), (4,1), (4,2), (5,0), (5,1), (5,2), (5,3), (5,4), (6,0), (6,1), (6,2), (7,0), (7,1), (7,2), (8,0), (8,1) &&&",
+        "rbpf_result": [
+          {
+            "x": 1,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 0,
+            "value": "empty"
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 8,
+            "y": 1,
+            "value": "empty"
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 2,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 4,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 6,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 7,
+            "y": 2,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 3,
+            "value": "empty"
+          },
+          {
+            "x": 5,
+            "y": 4,
+            "value": "empty"
+          }
+        ],
+        "metrics": {
+          "is_perfect_match": false,
+          "overall_accuracy": 0.4262295081967213,
+          "goal_accuracy": 0.4262295081967213,
+          "euclidean_distance_error": 0.0,
+          "details": "tolerant IoU (r=1): 42.62%; raw IoU: 25.00%  (|GT|=20, |Pred|=25)"
+        },
+        "pred_image": "my_tests/9.01/corruption/rbpf/episode_9_rbpf_pred.png",
+        "trace_gif": "my_tests/9.01/corruption/rbpf/episode_9_trace.gif"
+      }
+    }
+  ],
+  "summary": {
+    "total_episodes": 10,
+    "avg_is_perfect_match": 0.0,
+    "avg_overall_accuracy": 0.4253370353719442,
+    "avg_goal_accuracy": 0.4253370353719442,
+    "avg_euclidean_distance_error": 0.0
+  }
+}

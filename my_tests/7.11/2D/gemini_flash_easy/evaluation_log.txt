@@ -1,0 +1,1757 @@
+2025-07-11 13:41:09,952 - INFO - --- Starting Test Episode #0 ---
+2025-07-11 13:41:10,294 - INFO - Sending prompt to Gemini for episode #0...
+2025-07-11 13:41:10,294 - INFO - Prompt for episode #0:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 7x7 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-6)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (0-6)**: Represents the left-right direction. Side 3 is your center line. Numbers greater than 3 are to your left; numbers less than 3 are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 3) in this system. The space directly in front of you is (1, 3).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right': Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (1, 1). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+Note that you will see walls in your view, but they are not part of the map you need to build. Neglect them.
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a blue flag at coordinate (1, 3), a yellow flag at coordinate (1, 4).
+Step1: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (0, 4).
+Step2: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step3: right. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (1, 4), a blue flag at coordinate (0, 4).
+Step4: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (0, 4).
+Step5: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step6: right. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (1, 4), a blue flag at coordinate (1, 5).
+Step7: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (0, 4), a blue flag at coordinate (0, 5).
+Step8: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step9: right. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a blue flag at coordinate (2, 4), a yellow flag at coordinate (1, 4).
+Step10: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a blue flag at coordinate (1, 4), a yellow flag at coordinate (0, 4).
+Step11: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a blue flag at coordinate (0, 4)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&&
+
+2025-07-11 13:41:38,581 - INFO - LLM Response for episode #0:
+The robot starts at absolute position (1, 1) facing East.
+The coordinate system translation:
+- Absolute X increases East, decreases West.
+- Absolute Y increases South, decreases North.
+
+My current state will be tracked as `(absolute_x, absolute_y, facing_direction_vector, right_vector)`.
+`facing_direction_vector` is `(dx, dy)`.
+`right_vector` is `(rx, ry)`.
+An observed object at local `(D, S)` from robot's absolute `(px, py)` is translated to `(px + D*dx + (S-3)*rx, py + D*dy + (S-3)*ry)`.
+
+**Initial State:**
+- Absolute Position: `(1, 1)`
+- Facing: `East`
+- `dir_vec = (1, 0)` (East)
+- `right_vec = (0, 1)` (South)
+- `map_objects = {}`
+
+**Initial Observation:**
+- `blue flag at (1, 3)` (local): `D=1, S=3`
+    - Abs Pos: `(1 + 1*1 + (3-3)*0, 1 + 1*0 + (3-3)*1) = (2, 1)`
+    - Add `('blue flag', 2, 1)` to map.
+- `yellow flag at (1, 4)` (local): `D=1, S=4`
+    - Abs Pos: `(1 + 1*1 + (4-3)*0, 1 + 1*0 + (4-3)*1) = (2, 2)`
+    - Add `('yellow flag', 2, 2)` to map.
+- `map_objects = {('blue flag', 2, 1), ('yellow flag', 2, 2)}`
+
+**Step1: forward.**
+- Absolute Position: `(1+1, 1) = (2, 1)`
+- Facing: `East`
+- `dir_vec = (1, 0)`, `right_vec = (0, 1)`
+- Observation:
+    - `yellow flag at (0, 4)` (local): `D=0, S=4`
+        - Abs Pos: `(2 + 0*1 + (4-3)*0, 1 + 0*0 + (4-3)*1) = (2, 2)`
+        - `('yellow flag', 2, 2)` is already in map.
+- `map_objects` unchanged.
+
+**Step2: forward.**
+- Absolute Position: `(2+1, 1) = (3, 1)`
+- Facing: `East`
+- `dir_vec = (1, 0)`, `right_vec = (0, 1)`
+- Observation: No flags seen.
+- `map_objects` unchanged.
+
+**Step3: right.**
+- Absolute Position: `(3, 1)` (position does not change on turn)
+- Facing: `South` (was East, turned right)
+- `dir_vec = (0, 1)` (South)
+- `right_vec = (-1, 0)` (West, relative to South)
+- Observation:
+    - `yellow flag at (1, 4)` (local): `D=1, S=4`
+        - Abs Pos: `(3 + 1*0 + (4-3)*(-1), 1 + 1*1 + (4-3)*0) = (2, 2)`
+        - `('yellow flag', 2, 2)` is already in map.
+    - `blue flag at (0, 4)` (local): `D=0, S=4`
+        - Abs Pos: `(3 + 0*0 + (4-3)*(-1), 1 + 0*1 + (4-3)*0) = (2, 1)`
+        - `('blue flag', 2, 1)` is already in map.
+- `map_objects` unchanged.
+
+**Step4: forward.**
+- Absolute Position: `(3, 1+1) = (3, 2)`
+- Facing: `South`
+- `dir_vec = (0, 1)`, `right_vec = (-1, 0)`
+- Observation:
+    - `yellow flag at (0, 4)` (local): `D=0, S=4`
+        - Abs Pos: `(3 + 0*0 + (4-3)*(-1), 2 + 0*1 + (4-3)*0) = (2, 2)`
+        - `('yellow flag', 2, 2)` is already in map.
+- `map_objects` unchanged.
+
+**Step5: forward.**
+- Absolute Position: `(3, 2+1) = (3, 3)`
+- Facing: `South`
+- `dir_vec = (0, 1)`, `right_vec = (-1, 0)`
+- Observation: No flags seen.
+- `map_objects` unchanged.
+
+**Step6: right.**
+- Absolute Position: `(3, 3)`
+- Facing: `West` (was South, turned right)
+- `dir_vec = (-1, 0)` (West)
+- `right_vec = (0, -1)` (North, relative to West)
+- Observation:
+    - `yellow flag at (1, 4)` (local): `D=1, S=4`
+        - Abs Pos: `(3 + 1*(-1) + (4-3)*0, 3 + 1*0 + (4-3)*(-1)) = (2, 2)`
+        - `('yellow flag', 2, 2)` is already in map.
+    - `blue flag at (1, 5)` (local): `D=1, S=5`
+        - Abs Pos: `(3 + 1*(-1) + (5-3)*0, 3 + 1*0 + (5-3)*(-1)) = (2, 1)`
+        - `('blue flag', 2, 1)` is already in map.
+- `map_objects` unchanged.
+
+**Step7: forward.**
+- Absolute Position: `(3-1, 3) = (2, 3)`
+- Facing: `West`
+- `dir_vec = (-1, 0)`, `right_vec = (0, -1)`
+- Observation:
+    - `yellow flag at (0, 4)` (local): `D=0, S=4`
+        - Abs Pos: `(2 + 0*(-1) + (4-3)*0, 3 + 0*0 + (4-3)*(-1)) = (2, 2)`
+        - `('yellow flag', 2, 2)` is already in map.
+    - `blue flag at (0, 5)` (local): `D=0, S=5`
+        - Abs Pos: `(2 + 0*(-1) + (5-3)*0, 3 + 0*0 + (5-3)*(-1)) = (2, 1)`
+        - `('blue flag', 2, 1)` is already in map.
+- `map_objects` unchanged.
+
+**Step8: forward.**
+- Absolute Position: `(2-1, 3) = (1, 3)`
+- Facing: `West`
+- `dir_vec = (-1, 0)`, `right_vec = (0, -1)`
+- Observation: No flags seen.
+- `map_objects` unchanged.
+
+**Step9: right.**
+- Absolute Position: `(1, 3)`
+- Facing: `North` (was West, turned right)
+- `dir_vec = (0, -1)` (North)
+- `right_vec = (1, 0)` (East, relative to North)
+- Observation:
+    - `blue flag at (2, 4)` (local): `D=2, S=4`
+        - Abs Pos: `(1 + 2*0 + (4-3)*1, 3 + 2*(-1) + (4-3)*0) = (2, 1)`
+        - `('blue flag', 2, 1)` is already in map.
+    - `yellow flag at (1, 4)` (local): `D=1, S=4`
+        - Abs Pos: `(1 + 1*0 + (4-3)*1, 3 + 1*(-1) + (4-3)*0) = (2, 2)`
+        - `('yellow flag', 2, 2)` is already in map.
+- `map_objects` unchanged.
+
+**Step10: forward.**
+- Absolute Position: `(1, 3-1) = (1, 2)`
+- Facing: `North`
+- `dir_vec = (0, -1)`, `right_vec = (1, 0)`
+- Observation:
+    - `blue flag at (1, 4)` (local): `D=1, S=4`
+        - Abs Pos: `(1 + 1*0 + (4-3)*1, 2 + 1*(-1) + (4-3)*0) = (2, 1)`
+        - `('blue flag', 2, 1)` is already in map.
+    - `yellow flag at (0, 4)` (local): `D=0, S=4`
+        - Abs Pos: `(1 + 0*0 + (4-3)*1, 2 + 0*(-1) + (4-3)*0) = (2, 2)`
+        - `('yellow flag', 2, 2)` is already in map.
+- `map_objects` unchanged.
+
+**Step11: forward.**
+- Absolute Position: `(1, 2-1) = (1, 1)`
+- Facing: `North`
+- `dir_vec = (0, -1)`, `right_vec = (1, 0)`
+- Observation:
+    - `blue flag at (0, 4)` (local): `D=0, S=4`
+        - Abs Pos: `(1 + 0*0 + (4-3)*1, 1 + 0*(-1) + (4-3)*0) = (2, 1)`
+        - `('blue flag', 2, 1)` is already in map.
+- `map_objects` unchanged.
+
+Final `map_objects` contains: `{('blue flag', 2, 1), ('yellow flag', 2, 2)}`
+
+### YOUR RECONSTRUCTION ###
+&&&
+a blue flag at coordinate (2,1) a yellow flag at coordinate (2,2).
+&&&
+2025-07-11 13:41:38,583 - INFO - --- Judgment for Episode #0 ---
+2025-07-11 13:41:38,583 - INFO - Result: PERFECT MATCH
+2025-07-11 13:41:38,583 - INFO - Ground Truth: {(2, 1): ('blue', 'flag'), (2, 2): ('yellow', 'flag')}
+LLM's Map   : {(2, 1): ('blue', 'flag'), (2, 2): ('yellow', 'flag')}
+Overall Accuracy (Jaccard): 100.00%
+Goal-Only Accuracy (Jaccard): 100.00%
+2025-07-11 13:41:38,583 - INFO - --- Finished Test Episode #0 ---
+
+2025-07-11 13:44:27,338 - INFO - --- Starting Test Episode #1 ---
+2025-07-11 13:44:27,486 - INFO - Sending prompt to Gemini for episode #1...
+2025-07-11 13:44:27,486 - INFO - Prompt for episode #1:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 7x7 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-6)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (0-6)**: Represents the left-right direction. Side 3 is your center line. Numbers greater than 3 are to your left; numbers less than 3 are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 3) in this system. The space directly in front of you is (1, 3).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right': Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (1, 1). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+Note that you will see walls in your view, but they are not part of the map you need to build. Neglect them.
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), purple flags at coordinates: (0, 4), (0, 5).
+Step1: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step2: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step3: right. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), purple flags at coordinates: (2, 5), (1, 5).
+Step4: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), purple flags at coordinates: (1, 5), (0, 5).
+Step5: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a purple flag at coordinate (0, 5).
+Step6: right. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), purple flags at coordinates: (2, 3), (2, 4).
+Step7: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), purple flags at coordinates: (1, 3), (1, 4).
+Step8: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a purple flag at coordinate (0, 4).
+Step9: right. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a purple flag at coordinate (1, 3).
+Step10: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step11: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&&
+
+2025-07-11 13:45:10,441 - INFO - LLM Response for episode #1:
+The robot's initial absolute position is (1, 1) and it is facing East.
+The map will store `(x, y, object_type)` tuples.
+
+**Initial Observation:**
+*   Current Position: `(1, 1)`, Facing: `East`
+*   Purple flags at local `(0, 4), (0, 5)`
+    *   Local `(0, 4)`: Depth 0 (same X), Side 4 (1 unit left relative to current Y). Absolute: `(1 + 0, 1 + (3-4)) = (1, 0)`.
+    *   Local `(0, 5)`: Depth 0 (same X), Side 5 (2 units left relative to current Y). Absolute: `(1 + 0, 1 + (3-5)) = (1, -1)`.
+*   Map: `{ (1, 0): 'purple flag', (1, -1): 'purple flag' }`
+
+**Step 1: forward.**
+*   Action: Move forward.
+*   Current Position: `(1, 1)`, Facing: `East`
+*   New Position: `(2, 1)`, Facing: `East`
+*   Observation: No new flags.
+*   Map remains unchanged.
+
+**Step 2: forward.**
+*   Action: Move forward.
+*   Current Position: `(2, 1)`, Facing: `East`
+*   New Position: `(3, 1)`, Facing: `East`
+*   Observation: No new flags.
+*   Map remains unchanged.
+
+**Step 3: right.**
+*   Action: Turn right.
+*   Current Position: `(3, 1)`, Facing: `East`
+*   New Position: `(3, 1)`, Facing: `South`
+*   Purple flags at local `(2, 5), (1, 5)`
+    *   Local `(2, 5)`: Depth 2 (2 units forward in Y), Side 5 (2 units left relative to current X). Absolute: `(3 + (5-3), 1 + 2) = (5, 3)`.
+    *   Local `(1, 5)`: Depth 1 (1 unit forward in Y), Side 5 (2 units left relative to current X). Absolute: `(3 + (5-3), 1 + 1) = (5, 2)`.
+*   Map: `{ (1, 0): 'purple flag', (1, -1): 'purple flag', (5, 3): 'purple flag', (5, 2): 'purple flag' }`
+
+**Step 4: forward.**
+*   Action: Move forward.
+*   Current Position: `(3, 1)`, Facing: `South`
+*   New Position: `(3, 2)`, Facing: `South`
+*   Purple flags at local `(1, 5), (0, 5)`
+    *   Local `(1, 5)`: Depth 1, Side 5. Absolute: `(3 + (5-3), 2 + 1) = (5, 3)`. (Already in map)
+    *   Local `(0, 5)`: Depth 0, Side 5. Absolute: `(3 + (5-3), 2 + 0) = (5, 2)`. (Already in map)
+*   Map remains unchanged.
+
+**Step 5: forward.**
+*   Action: Move forward.
+*   Current Position: `(3, 2)`, Facing: `South`
+*   New Position: `(3, 3)`, Facing: `South`
+*   A purple flag at local `(0, 5)`
+    *   Local `(0, 5)`: Depth 0, Side 5. Absolute: `(3 + (5-3), 3 + 0) = (5, 3)`. (Already in map)
+*   Map remains unchanged.
+
+**Step 6: right.**
+*   Action: Turn right.
+*   Current Position: `(3, 3)`, Facing: `South`
+*   New Position: `(3, 3)`, Facing: `West`
+*   Purple flags at local `(2, 3), (2, 4)`
+    *   Local `(2, 3)`: Depth 2 (2 units forward in X, so -X), Side 3 (0 units relative to current Y). Absolute: `(3 - 2, 3 + (3-3)) = (1, 3)`.
+    *   Local `(2, 4)`: Depth 2, Side 4 (1 unit left relative to current Y, so +Y). Absolute: `(3 - 2, 3 + (4-3)) = (1, 4)`.
+*   Map: `{ (1, 0): 'purple flag', (1, -1): 'purple flag', (5, 3): 'purple flag', (5, 2): 'purple flag', (1, 3): 'purple flag', (1, 4): 'purple flag' }`
+
+**Step 7: forward.**
+*   Action: Move forward.
+*   Current Position: `(3, 3)`, Facing: `West`
+*   New Position: `(2, 3)`, Facing: `West`
+*   Purple flags at local `(1, 3), (1, 4)`
+    *   Local `(1, 3)`: Depth 1, Side 3. Absolute: `(2 - 1, 3 + (3-3)) = (1, 3)`. (Already in map)
+    *   Local `(1, 4)`: Depth 1, Side 4. Absolute: `(2 - 1, 3 + (4-3)) = (1, 4)`. (Already in map)
+*   Map remains unchanged.
+
+**Step 8: forward.**
+*   Action: Move forward.
+*   Current Position: `(2, 3)`, Facing: `West`
+*   New Position: `(1, 3)`, Facing: `West`
+*   A purple flag at local `(0, 4)`
+    *   Local `(0, 4)`: Depth 0, Side 4. Absolute: `(1 - 0, 3 + (4-3)) = (1, 4)`. (Already in map)
+*   Map remains unchanged.
+
+**Step 9: right.**
+*   Action: Turn right.
+*   Current Position: `(1, 3)`, Facing: `West`
+*   New Position: `(1, 3)`, Facing: `North`
+*   A purple flag at local `(1, 3)`
+    *   Local `(1, 3)`: Depth 1 (1 unit forward in Y, so -Y), Side 3 (0 units relative to current X). Absolute: `(1 + (3-3), 3 - 1) = (1, 2)`.
+*   Map: `{ (1, 0): 'purple flag', (1, -1): 'purple flag', (5, 3): 'purple flag', (5, 2): 'purple flag', (1, 3): 'purple flag', (1, 4): 'purple flag', (1, 2): 'purple flag' }`
+
+**Step 10: forward.**
+*   Action: Move forward.
+*   Current Position: `(1, 3)`, Facing: `North`
+*   New Position: `(1, 2)`, Facing: `North`
+*   Observation: No new flags.
+*   Map remains unchanged.
+
+**Step 11: forward.**
+*   Action: Move forward.
+*   Current Position: `(1, 2)`, Facing: `North`
+*   New Position: `(1, 1)`, Facing: `North`
+*   Observation: No new flags.
+*   Map remains unchanged.
+
+### YOUR RECONSTRUCTION ###
+&&&
+a purple flag at coordinate (1,-1) a purple flag at coordinate (1,0) a purple flag at coordinate (1,2) a purple flag at coordinate (1,3) a purple flag at coordinate (1,4) a purple flag at coordinate (5,2) a purple flag at coordinate (5,3).
+&&&
+2025-07-11 13:45:10,443 - INFO - --- Judgment for Episode #1 ---
+2025-07-11 13:45:10,443 - INFO - Result: IMPERFECT
+2025-07-11 13:45:10,443 - INFO - Ground Truth: {(1, 2): ('purple', 'flag'), (1, 3): ('purple', 'flag')}
+LLM's Map   : {(1, -1): ('purple', 'flag'), (1, 0): ('purple', 'flag'), (1, 2): ('purple', 'flag'), (1, 3): ('purple', 'flag'), (1, 4): ('purple', 'flag'), (5, 2): ('purple', 'flag'), (5, 3): ('purple', 'flag')}
+Overall Accuracy (Jaccard): 28.57%
+Goal-Only Accuracy (Jaccard): 100.00%
+2025-07-11 13:45:10,443 - INFO - --- Finished Test Episode #1 ---
+
+2025-07-11 13:46:35,276 - INFO - --- Starting Test Episode #2 ---
+2025-07-11 13:46:35,374 - INFO - Sending prompt to Gemini for episode #2...
+2025-07-11 13:46:35,374 - INFO - Prompt for episode #2:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 7x7 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-6)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (0-6)**: Represents the left-right direction. Side 3 is your center line. Numbers greater than 3 are to your left; numbers less than 3 are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 3) in this system. The space directly in front of you is (1, 3).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right': Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (1, 1). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+Note that you will see walls in your view, but they are not part of the map you need to build. Neglect them.
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a blue flag at coordinate (1, 4), a grey flag at coordinate (1, 5).
+Step1: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a blue flag at coordinate (0, 4), a grey flag at coordinate (0, 5).
+Step2: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step3: right. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (2, 4), a blue flag at coordinate (1, 4).
+Step4: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (1, 4), a blue flag at coordinate (0, 4).
+Step5: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (0, 4).
+Step6: right. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (1, 3), a blue flag at coordinate (1, 4).
+Step7: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a blue flag at coordinate (0, 4).
+Step8: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step9: right. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a blue flag at coordinate (1, 4), a grey flag at coordinate (0, 4).
+Step10: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a blue flag at coordinate (0, 4).
+Step11: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&&
+
+2025-07-11 14:00:30,051 - INFO - LLM Response for episode #2:
+An error occurred with the Gemini API: 504 Deadline Exceeded
+2025-07-11 14:00:30,052 - INFO - --- Judgment for Episode #2 ---
+2025-07-11 14:00:30,052 - INFO - Result: IMPERFECT
+2025-07-11 14:00:30,052 - INFO - Ground Truth: {(2, 2): ('blue', 'flag'), (2, 3): ('grey', 'flag')}
+LLM's Map   : {}
+Overall Accuracy (Jaccard): 0.00%
+Goal-Only Accuracy (Jaccard): 0.00%
+2025-07-11 14:00:30,052 - INFO - --- Finished Test Episode #2 ---
+
+2025-07-11 14:00:35,063 - INFO - --- Starting Test Episode #3 ---
+2025-07-11 14:00:35,159 - INFO - Sending prompt to Gemini for episode #3...
+2025-07-11 14:00:35,159 - INFO - Prompt for episode #3:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 7x7 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-6)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (0-6)**: Represents the left-right direction. Side 3 is your center line. Numbers greater than 3 are to your left; numbers less than 3 are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 3) in this system. The space directly in front of you is (1, 3).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right': Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (1, 1). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+Note that you will see walls in your view, but they are not part of the map you need to build. Neglect them.
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a blue flag at coordinate (0, 4), a purple flag at coordinate (1, 5).
+Step1: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a purple flag at coordinate (0, 5).
+Step2: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step3: right. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a purple flag at coordinate (2, 4), a blue flag at coordinate (1, 5).
+Step4: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a purple flag at coordinate (1, 4), a blue flag at coordinate (0, 5).
+Step5: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a purple flag at coordinate (0, 4).
+Step6: right. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a purple flag at coordinate (1, 3), a blue flag at coordinate (2, 4).
+Step7: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a blue flag at coordinate (1, 4).
+Step8: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a blue flag at coordinate (0, 4).
+Step9: right. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a blue flag at coordinate (1, 3), a purple flag at coordinate (0, 4).
+Step10: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step11: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&&
+
+2025-07-11 14:01:12,602 - INFO - LLM Response for episode #3:
+Here's a step-by-step reasoning for building the map:
+
+**Coordinate System and Transformation Logic:**
+*   **Absolute Position:** `(abs_x, abs_y)`
+*   **Direction Vector:** `(dir_dx, dir_dy)`
+    *   East: `(1, 0)`
+    *   South: `(0, 1)`
+    *   West: `(-1, 0)`
+    *   North: `(0, -1)`
+*   **Local View (Depth, Side):** `(d, s)` where `d` is depth, `s` is side.
+    *   `d` is forward distance.
+    *   `s=3` is center, `s<3` is right, `s>3` is left.
+    *   Relative side offset: `(s - 3)`
+*   **Transformation from Local (d, s) to Absolute (abs_obj_x, abs_obj_y):**
+    `abs_obj_x = abs_x + (d * dir_dx) + ((s - 3) * dir_dy)`
+    `abs_obj_y = abs_y + (d * dir_dy) + ((s - 3) * -dir_dx)`
+
+**Initial State:**
+*   Absolute Position: `(1, 1)`
+*   Facing: East (`dir_dx = 1, dir_dy = 0`)
+*   Map: `{}`
+
+**Initial Observation:**
+*   You're facing East.
+*   blue flag at local `(0, 4)`:
+    *   `abs_x = 1 + (0*1) + ((4-3)*0) = 1`
+    *   `abs_y = 1 + (0*0) + ((4-3)*-1) = 1 - 1 = 0`
+    *   Map: `{(1, 0): 'blue flag'}`
+*   purple flag at local `(1, 5)`:
+    *   `abs_x = 1 + (1*1) + ((5-3)*0) = 1 + 1 = 2`
+    *   `abs_y = 1 + (1*0) + ((5-3)*-1) = 1 - 2 = -1`
+    *   Map: `{(1, 0): 'blue flag', (2, -1): 'purple flag'}`
+
+**Step 1: forward.**
+*   Action: Move forward.
+*   New Absolute Position: `(1+1, 1+0) = (2, 1)`
+*   Facing: East (`dir_dx = 1, dir_dy = 0`)
+*   purple flag at local `(0, 5)`:
+    *   `abs_x = 2 + (0*1) + ((5-3)*0) = 2`
+    *   `abs_y = 1 + (0*0) + ((5-3)*-1) = 1 - 2 = -1`
+    *   Map: `{(1, 0): 'blue flag', (2, -1): 'purple flag'}` (No change, already mapped)
+
+**Step 2: forward.**
+*   Action: Move forward.
+*   New Absolute Position: `(2+1, 1+0) = (3, 1)`
+*   Facing: East (`dir_dx = 1, dir_dy = 0`)
+*   No flags observed. Map remains unchanged.
+
+**Step 3: right.**
+*   Action: Turn right.
+*   Absolute Position: `(3, 1)`
+*   New Direction: South (`dir_dx = 0, dir_dy = 1`)
+*   purple flag at local `(2, 4)`:
+    *   `abs_x = 3 + (2*0) + ((4-3)*1) = 3 + 1 = 4`
+    *   `abs_y = 1 + (2*1) + ((4-3)*0) = 1 + 2 = 3`
+    *   Map: `{(1, 0): 'blue flag', (2, -1): 'purple flag', (4, 3): 'purple flag'}`
+*   blue flag at local `(1, 5)`:
+    *   `abs_x = 3 + (1*0) + ((5-3)*1) = 3 + 2 = 5`
+    *   `abs_y = 1 + (1*1) + ((5-3)*0) = 1 + 1 = 2`
+    *   Map: `{(1, 0): 'blue flag', (2, -1): 'purple flag', (4, 3): 'purple flag', (5, 2): 'blue flag'}`
+
+**Step 4: forward.**
+*   Action: Move forward.
+*   New Absolute Position: `(3+0, 1+1) = (3, 2)`
+*   Facing: South (`dir_dx = 0, dir_dy = 1`)
+*   purple flag at local `(1, 4)`:
+    *   `abs_x = 3 + (1*0) + ((4-3)*1) = 3 + 1 = 4`
+    *   `abs_y = 2 + (1*1) + ((4-3)*0) = 2 + 1 = 3`
+    *   Map: `{(1, 0): 'blue flag', (2, -1): 'purple flag', (4, 3): 'purple flag', (5, 2): 'blue flag'}` (No change, already mapped)
+*   blue flag at local `(0, 5)`:
+    *   `abs_x = 3 + (0*0) + ((5-3)*1) = 3 + 2 = 5`
+    *   `abs_y = 2 + (0*1) + ((5-3)*0) = 2 + 0 = 2`
+    *   Map: `{(1, 0): 'blue flag', (2, -1): 'purple flag', (4, 3): 'purple flag', (5, 2): 'blue flag'}` (No change, already mapped)
+
+**Step 5: forward.**
+*   Action: Move forward.
+*   New Absolute Position: `(3+0, 2+1) = (3, 3)`
+*   Facing: South (`dir_dx = 0, dir_dy = 1`)
+*   purple flag at local `(0, 4)`:
+    *   `abs_x = 3 + (0*0) + ((4-3)*1) = 3 + 1 = 4`
+    *   `abs_y = 3 + (0*1) + ((4-3)*0) = 3 + 0 = 3`
+    *   Map: `{(1, 0): 'blue flag', (2, -1): 'purple flag', (4, 3): 'purple flag', (5, 2): 'blue flag'}` (No change, already mapped)
+
+**Step 6: right.**
+*   Action: Turn right.
+*   Absolute Position: `(3, 3)`
+*   New Direction: West (`dir_dx = -1, dir_dy = 0`)
+*   purple flag at local `(1, 3)`:
+    *   `abs_x = 3 + (1*-1) + ((3-3)*0) = 3 - 1 = 2`
+    *   `abs_y = 3 + (1*0) + ((3-3)*-1) = 3 + 0 = 3`
+    *   Map: `{(1, 0): 'blue flag', (2, -1): 'purple flag', (4, 3): 'purple flag', (5, 2): 'blue flag', (2, 3): 'purple flag'}`
+*   blue flag at local `(2, 4)`:
+    *   `abs_x = 3 + (2*-1) + ((4-3)*0) = 3 - 2 = 1`
+    *   `abs_y = 3 + (2*0) + ((4-3)*-1) = 3 - 1 = 2`
+    *   Map: `{(1, 0): 'blue flag', (2, -1): 'purple flag', (4, 3): 'purple flag', (5, 2): 'blue flag', (2, 3): 'purple flag', (1, 2): 'blue flag'}`
+
+**Step 7: forward.**
+*   Action: Move forward.
+*   New Absolute Position: `(3-1, 3+0) = (2, 3)`
+*   Facing: West (`dir_dx = -1, dir_dy = 0`)
+*   blue flag at local `(1, 4)`:
+    *   `abs_x = 2 + (1*-1) + ((4-3)*0) = 2 - 1 = 1`
+    *   `abs_y = 3 + (1*0) + ((4-3)*-1) = 3 - 1 = 2`
+    *   Map: `{(1, 0): 'blue flag', (2, -1): 'purple flag', (4, 3): 'purple flag', (5, 2): 'blue flag', (2, 3): 'purple flag', (1, 2): 'blue flag'}` (No change, already mapped)
+
+**Step 8: forward.**
+*   Action: Move forward.
+*   New Absolute Position: `(2-1, 3+0) = (1, 3)`
+*   Facing: West (`dir_dx = -1, dir_dy = 0`)
+*   blue flag at local `(0, 4)`:
+    *   `abs_x = 1 + (0*-1) + ((4-3)*0) = 1`
+    *   `abs_y = 3 + (0*0) + ((4-3)*-1) = 3 - 1 = 2`
+    *   Map: `{(1, 0): 'blue flag', (2, -1): 'purple flag', (4, 3): 'purple flag', (5, 2): 'blue flag', (2, 3): 'purple flag', (1, 2): 'blue flag'}` (No change, already mapped)
+
+**Step 9: right.**
+*   Action: Turn right.
+*   Absolute Position: `(1, 3)`
+*   New Direction: North (`dir_dx = 0, dir_dy = -1`)
+*   blue flag at local `(1, 3)`:
+    *   `abs_x = 1 + (1*0) + ((3-3)*-1) = 1`
+    *   `abs_y = 3 + (1*-1) + ((3-3)*0) = 3 - 1 = 2`
+    *   Map: `{(1, 0): 'blue flag', (2, -1): 'purple flag', (4, 3): 'purple flag', (5, 2): 'blue flag', (2, 3): 'purple flag', (1, 2): 'blue flag'}` (No change, already mapped)
+*   purple flag at local `(0, 4)`:
+    *   `abs_x = 1 + (0*0) + ((4-3)*-1) = 1 - 1 = 0`
+    *   `abs_y = 3 + (0*-1) + ((4-3)*0) = 3`
+    *   Map: `{(1, 0): 'blue flag', (2, -1): 'purple flag', (4, 3): 'purple flag', (5, 2): 'blue flag', (2, 3): 'purple flag', (1, 2): 'blue flag', (0, 3): 'purple flag'}`
+
+**Step 10: forward.**
+*   Action: Move forward.
+*   New Absolute Position: `(1+0, 3-1) = (1, 2)`
+*   Facing: North (`dir_dx = 0, dir_dy = -1`)
+*   No flags observed. Map remains unchanged.
+
+**Step 11: forward.**
+*   Action: Move forward.
+*   New Absolute Position: `(1+0, 2-1) = (1, 1)`
+*   Facing: North (`dir_dx = 0, dir_dy = -1`)
+*   No flags observed. Map remains unchanged.
+
+**Final Map Summary:**
+Sorting the flags by X then Y for a consistent output.
+
+&&&
+a purple flag at coordinate (0,3) a blue flag at coordinate (1,0) a blue flag at coordinate (1,2) a purple flag at coordinate (2,-1) a purple flag at coordinate (2,3) a purple flag at coordinate (4,3) a blue flag at coordinate (5,2)
+&&&
+2025-07-11 14:01:12,604 - INFO - --- Judgment for Episode #3 ---
+2025-07-11 14:01:12,604 - INFO - Result: IMPERFECT
+2025-07-11 14:01:12,604 - INFO - Ground Truth: {(1, 2): ('blue', 'flag'), (2, 3): ('purple', 'flag')}
+LLM's Map   : {(0, 3): ('purple', 'flag'), (1, 0): ('blue', 'flag'), (1, 2): ('blue', 'flag'), (2, -1): ('purple', 'flag'), (2, 3): ('purple', 'flag'), (4, 3): ('purple', 'flag'), (5, 2): ('blue', 'flag')}
+Overall Accuracy (Jaccard): 28.57%
+Goal-Only Accuracy (Jaccard): 100.00%
+2025-07-11 14:01:12,604 - INFO - --- Finished Test Episode #3 ---
+
+2025-07-11 14:01:17,608 - INFO - --- Starting Test Episode #4 ---
+2025-07-11 14:01:17,796 - INFO - Sending prompt to Gemini for episode #4...
+2025-07-11 14:01:17,796 - INFO - Prompt for episode #4:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 7x7 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-6)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (0-6)**: Represents the left-right direction. Side 3 is your center line. Numbers greater than 3 are to your left; numbers less than 3 are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 3) in this system. The space directly in front of you is (1, 3).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right': Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (1, 1). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+Note that you will see walls in your view, but they are not part of the map you need to build. Neglect them.
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (2, 3), a purple flag at coordinate (2, 5).
+Step1: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (1, 3), a purple flag at coordinate (1, 5).
+Step2: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a purple flag at coordinate (0, 5).
+Step3: right. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a purple flag at coordinate (2, 3).
+Step4: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a purple flag at coordinate (1, 3).
+Step5: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step6: right. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (0, 5).
+Step7: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step8: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step9: right. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (2, 5), a purple flag at coordinate (0, 5).
+Step10: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (1, 5).
+Step11: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (0, 5)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&&
+
+2025-07-11 14:01:39,655 - INFO - LLM Response for episode #4:
+The robot starts at absolute position (1, 1) facing East.
+
+**Robot State:**
+*   Absolute Position: (Rx, Ry)
+*   Direction: D (East, South, West, North)
+
+**Transformation Rules (Local (Depth, Side) to Global (X, Y)):**
+*   **Facing East:** (Rx + Depth, Ry - (Side - 3))
+*   **Facing South:** (Rx + (Side - 3), Ry + Depth)
+*   **Facing West:** (Rx - Depth, Ry + (Side - 3))
+*   **Facing North:** (Rx - (Side - 3), Ry - Depth)
+
+**Map of Objects:** `map_objects = set()`
+
+---
+
+**Initial State:**
+*   `Rx, Ry = 1, 1`
+*   `D = 'East'`
+
+**Initial Observation:**
+*   Grey flag at (2, 3): (1 + 2, 1 - (3 - 3)) = (3, 1). Add `('grey', 'flag', 3, 1)` to `map_objects`.
+*   Purple flag at (2, 5): (1 + 2, 1 - (5 - 3)) = (3, -1). Add `('purple', 'flag', 3, -1)` to `map_objects`.
+
+---
+
+**Step 1: forward.**
+*   `Rx, Ry` becomes (1+1, 1) = (2, 1).
+*   `D` remains 'East'.
+
+**Step 1 Observation:**
+*   Grey flag at (1, 3): (2 + 1, 1 - (3 - 3)) = (3, 1). Already in `map_objects`.
+*   Purple flag at (1, 5): (2 + 1, 1 - (5 - 3)) = (3, -1). Already in `map_objects`.
+
+---
+
+**Step 2: forward.**
+*   `Rx, Ry` becomes (2+1, 1) = (3, 1).
+*   `D` remains 'East'.
+
+**Step 2 Observation:**
+*   Purple flag at (0, 5): (3 + 0, 1 - (5 - 3)) = (3, -1). Already in `map_objects`.
+
+---
+
+**Step 3: right.**
+*   `Rx, Ry` remains (3, 1).
+*   `D` becomes 'South'.
+
+**Step 3 Observation:**
+*   Purple flag at (2, 3): (3 + (3 - 3), 1 + 2) = (3, 3). Add `('purple', 'flag', 3, 3)` to `map_objects`.
+
+---
+
+**Step 4: forward.**
+*   `Rx, Ry` becomes (3, 1+1) = (3, 2).
+*   `D` remains 'South'.
+
+**Step 4 Observation:**
+*   Purple flag at (1, 3): (3 + (3 - 3), 2 + 1) = (3, 3). Already in `map_objects`.
+
+---
+
+**Step 5: forward.**
+*   `Rx, Ry` becomes (3, 2+1) = (3, 3).
+*   `D` remains 'South'.
+
+**Step 5 Observation:**
+*   No flags observed.
+
+---
+
+**Step 6: right.**
+*   `Rx, Ry` remains (3, 3).
+*   `D` becomes 'West'.
+
+**Step 6 Observation:**
+*   Grey flag at (0, 5): (3 - 0, 3 + (5 - 3)) = (3, 5). Add `('grey', 'flag', 3, 5)` to `map_objects`.
+
+---
+
+**Step 7: forward.**
+*   `Rx, Ry` becomes (3-1, 3) = (2, 3).
+*   `D` remains 'West'.
+
+**Step 7 Observation:**
+*   No flags observed.
+
+---
+
+**Step 8: forward.**
+*   `Rx, Ry` becomes (2-1, 3) = (1, 3).
+*   `D` remains 'West'.
+
+**Step 8 Observation:**
+*   No flags observed.
+
+---
+
+**Step 9: right.**
+*   `Rx, Ry` remains (1, 3).
+*   `D` becomes 'North'.
+
+**Step 9 Observation:**
+*   Grey flag at (2, 5): (1 - (5 - 3), 3 - 2) = (-1, 1). Add `('grey', 'flag', -1, 1)` to `map_objects`.
+*   Purple flag at (0, 5): (1 - (5 - 3), 3 - 0) = (-1, 3). Add `('purple', 'flag', -1, 3)` to `map_objects`.
+
+---
+
+**Step 10: forward.**
+*   `Rx, Ry` becomes (1, 3-1) = (1, 2).
+*   `D` remains 'North'.
+
+**Step 10 Observation:**
+*   Grey flag at (1, 5): (1 - (5 - 3), 2 - 1) = (-1, 1). Already in `map_objects`.
+
+---
+
+**Step 11: forward.**
+*   `Rx, Ry` becomes (1, 2-1) = (1, 1).
+*   `D` remains 'North'.
+
+**Step 11 Observation:**
+*   Grey flag at (0, 5): (1 - (5 - 3), 1 - 0) = (-1, 1). Already in `map_objects`.
+
+---
+
+**Final Map Objects:**
+*   grey flag at coordinate (-1, 1)
+*   grey flag at coordinate (3, 1)
+*   grey flag at coordinate (3, 5)
+*   purple flag at coordinate (-1, 3)
+*   purple flag at coordinate (3, -1)
+*   purple flag at coordinate (3, 3)
+
+&&&
+a grey flag at coordinate (-1,1) a grey flag at coordinate (3,1) a grey flag at coordinate (3,5) a purple flag at coordinate (-1,3) a purple flag at coordinate (3,-1) a purple flag at coordinate (3,3)
+&&&
+2025-07-11 14:01:39,656 - INFO - --- Judgment for Episode #4 ---
+2025-07-11 14:01:39,656 - INFO - Result: IMPERFECT
+2025-07-11 14:01:39,656 - INFO - Ground Truth: {(3, 1): ('grey', 'flag'), (3, 3): ('purple', 'flag')}
+LLM's Map   : {(-1, 1): ('grey', 'flag'), (3, 1): ('grey', 'flag'), (3, 5): ('grey', 'flag'), (-1, 3): ('purple', 'flag'), (3, -1): ('purple', 'flag'), (3, 3): ('purple', 'flag')}
+Overall Accuracy (Jaccard): 33.33%
+Goal-Only Accuracy (Jaccard): 100.00%
+2025-07-11 14:01:39,656 - INFO - --- Finished Test Episode #4 ---
+
+2025-07-11 14:01:44,662 - INFO - --- Starting Test Episode #5 ---
+2025-07-11 14:01:44,693 - INFO - Sending prompt to Gemini for episode #5...
+2025-07-11 14:01:44,693 - INFO - Prompt for episode #5:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 7x7 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-6)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (0-6)**: Represents the left-right direction. Side 3 is your center line. Numbers greater than 3 are to your left; numbers less than 3 are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 3) in this system. The space directly in front of you is (1, 3).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right': Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (1, 1). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+Note that you will see walls in your view, but they are not part of the map you need to build. Neglect them.
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (1, 3), a yellow flag at coordinate (1, 4).
+Step1: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (0, 4).
+Step2: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step3: right. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (1, 4), a grey flag at coordinate (0, 4).
+Step4: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (0, 4).
+Step5: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step6: right. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (1, 4), a grey flag at coordinate (1, 5).
+Step7: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (0, 4), a grey flag at coordinate (0, 5).
+Step8: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step9: right. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (2, 4), a yellow flag at coordinate (1, 4).
+Step10: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (1, 4), a yellow flag at coordinate (0, 4).
+Step11: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (0, 4)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&&
+
+2025-07-11 14:02:19,164 - INFO - LLM Response for episode #5:
+The robot starts at absolute position (1,1) facing East.
+
+Let's define the current state as (Absolute X, Absolute Y, Direction X, Direction Y).
+Directions:
+- East: (1, 0)
+- South: (0, 1)
+- West: (-1, 0)
+- North: (0, -1)
+
+To convert a local view coordinate (Depth, Side) to an absolute coordinate (AbsX_obj, AbsY_obj):
+- `rel_x`: relative X offset from robot
+- `rel_y`: relative Y offset from robot
+- `d_local = Depth`
+- `s_local = Side`
+- `side_offset = s_local - 3` (positive for left, negative for right)
+
+Conversion rules based on `current_dir`:
+- If facing East (1, 0): `rel_x = d_local`, `rel_y = side_offset`
+- If facing South (0, 1): `rel_x = -side_offset`, `rel_y = d_local`
+- If facing West (-1, 0): `rel_x = -d_local`, `rel_y = -side_offset`
+- If facing North (0, -1): `rel_x = side_offset`, `rel_y = -d_local`
+
+Then, `AbsX_obj = current_pos_x + rel_x` and `AbsY_obj = current_pos_y + rel_y`.
+
+Let's track the robot's state and detected objects:
+- `current_pos = (x, y)`
+- `current_dir = (dx, dy)`
+- `map_objects = { (abs_x, abs_y): "object_type", ... }`
+
+**Initial State:**
+`current_pos = (1, 1)`
+`current_dir = (1, 0)` (East)
+`map_objects = {}`
+
+**Initial Observation:** (Facing East)
+- Grey flag at (1, 3): `d=1`, `s=3`. `side_offset = 3-3=0`.
+  `rel_x = 1`, `rel_y = 0`.
+  `AbsX_obj = 1 + 1 = 2`, `AbsY_obj = 1 + 0 = 1`.
+  `map_objects[(2, 1)] = 'grey flag'`
+- Yellow flag at (1, 4): `d=1`, `s=4`. `side_offset = 4-3=1`.
+  `rel_x = 1`, `rel_y = 1`.
+  `AbsX_obj = 1 + 1 = 2`, `AbsY_obj = 1 + 1 = 2`.
+  `map_objects[(2, 2)] = 'yellow flag'`
+`Map: {(2, 1): 'grey flag', (2, 2): 'yellow flag'}`
+
+**Step1: forward.** (Facing East)
+`current_pos = (1 + 1, 1 + 0) = (2, 1)`
+`current_dir = (1, 0)`
+Observation:
+- Yellow flag at (0, 4): `d=0`, `s=4`. `side_offset = 4-3=1`.
+  `rel_x = 0`, `rel_y = 1`.
+  `AbsX_obj = 2 + 0 = 2`, `AbsY_obj = 1 + 1 = 2`.
+  Consistent with `map_objects[(2, 2)] = 'yellow flag'`.
+
+**Step2: forward.** (Facing East)
+`current_pos = (2 + 1, 1 + 0) = (3, 1)`
+`current_dir = (1, 0)`
+Observation: None.
+
+**Step3: right.** (Facing South)
+`current_pos = (3, 1)`
+`current_dir = (0, 1)` (East (1,0) -> South (0,1))
+Observation:
+- Yellow flag at (1, 4): `d=1`, `s=4`. `side_offset = 4-3=1`.
+  `rel_x = -1`, `rel_y = 1`.
+  `AbsX_obj = 3 + (-1) = 2`, `AbsY_obj = 1 + 1 = 2`.
+  Consistent.
+- Grey flag at (0, 4): `d=0`, `s=4`. `side_offset = 4-3=1`.
+  `rel_x = -1`, `rel_y = 0`.
+  `AbsX_obj = 3 + (-1) = 2`, `AbsY_obj = 1 + 0 = 1`.
+  Consistent.
+
+**Step4: forward.** (Facing South)
+`current_pos = (3 + 0, 1 + 1) = (3, 2)`
+`current_dir = (0, 1)`
+Observation:
+- Yellow flag at (0, 4): `d=0`, `s=4`. `side_offset = 4-3=1`.
+  `rel_x = -1`, `rel_y = 0`.
+  `AbsX_obj = 3 + (-1) = 2`, `AbsY_obj = 2 + 0 = 2`.
+  Consistent.
+
+**Step5: forward.** (Facing South)
+`current_pos = (3 + 0, 2 + 1) = (3, 3)`
+`current_dir = (0, 1)`
+Observation: None.
+
+**Step6: right.** (Facing West)
+`current_pos = (3, 3)`
+`current_dir = (-1, 0)` (South (0,1) -> West (-1,0))
+Observation:
+- Yellow flag at (1, 4): `d=1`, `s=4`. `side_offset = 4-3=1`.
+  `rel_x = -1`, `rel_y = -1`.
+  `AbsX_obj = 3 + (-1) = 2`, `AbsY_obj = 3 + (-1) = 2`.
+  Consistent.
+- Grey flag at (1, 5): `d=1`, `s=5`. `side_offset = 5-3=2`.
+  `rel_x = -1`, `rel_y = -2`.
+  `AbsX_obj = 3 + (-1) = 2`, `AbsY_obj = 3 + (-2) = 1`.
+  Consistent.
+
+**Step7: forward.** (Facing West)
+`current_pos = (3 - 1, 3 + 0) = (2, 3)`
+`current_dir = (-1, 0)`
+Observation:
+- Yellow flag at (0, 4): `d=0`, `s=4`. `side_offset = 4-3=1`.
+  `rel_x = 0`, `rel_y = -1`.
+  `AbsX_obj = 2 + 0 = 2`, `AbsY_obj = 3 + (-1) = 2`.
+  Consistent.
+- Grey flag at (0, 5): `d=0`, `s=5`. `side_offset = 5-3=2`.
+  `rel_x = 0`, `rel_y = -2`.
+  `AbsX_obj = 2 + 0 = 2`, `AbsY_obj = 3 + (-2) = 1`.
+  Consistent.
+
+**Step8: forward.** (Facing West)
+`current_pos = (2 - 1, 3 + 0) = (1, 3)`
+`current_dir = (-1, 0)`
+Observation: None.
+
+**Step9: right.** (Facing North)
+`current_pos = (1, 3)`
+`current_dir = (0, -1)` (West (-1,0) -> North (0,-1))
+Observation:
+- Grey flag at (2, 4): `d=2`, `s=4`. `side_offset = 4-3=1`.
+  `rel_x = 1`, `rel_y = -2`.
+  `AbsX_obj = 1 + 1 = 2`, `AbsY_obj = 3 + (-2) = 1`.
+  Consistent.
+- Yellow flag at (1, 4): `d=1`, `s=4`. `side_offset = 4-3=1`.
+  `rel_x = 1`, `rel_y = -1`.
+  `AbsX_obj = 1 + 1 = 2`, `AbsY_obj = 3 + (-1) = 2`.
+  Consistent.
+
+**Step10: forward.** (Facing North)
+`current_pos = (1 + 0, 3 - 1) = (1, 2)`
+`current_dir = (0, -1)`
+Observation:
+- Grey flag at (1, 4): `d=1`, `s=4`. `side_offset = 4-3=1`.
+  `rel_x = 1`, `rel_y = -1`.
+  `AbsX_obj = 1 + 1 = 2`, `AbsY_obj = 2 + (-1) = 1`.
+  Consistent.
+- Yellow flag at (0, 4): `d=0`, `s=4`. `side_offset = 4-3=1`.
+  `rel_x = 1`, `rel_y = 0`.
+  `AbsX_obj = 1 + 1 = 2`, `AbsY_obj = 2 + 0 = 2`.
+  Consistent.
+
+**Step11: forward.** (Facing North)
+`current_pos = (1 + 0, 2 - 1) = (1, 1)`
+`current_dir = (0, -1)`
+Observation:
+- Grey flag at (0, 4): `d=0`, `s=4`. `side_offset = 4-3=1`.
+  `rel_x = 1`, `rel_y = 0`.
+  `AbsX_obj = 1 + 1 = 2`, `AbsY_obj = 1 + 0 = 1`.
+  Consistent.
+
+The map consistently shows two objects: a grey flag at (2,1) and a yellow flag at (2,2).
+
+### YOUR RECONSTRUCTION ###
+&&&
+a grey flag at coordinate (2,1) a yellow flag at coordinate (2,2).
+&&&
+2025-07-11 14:02:19,167 - INFO - --- Judgment for Episode #5 ---
+2025-07-11 14:02:19,168 - INFO - Result: PERFECT MATCH
+2025-07-11 14:02:19,168 - INFO - Ground Truth: {(2, 1): ('grey', 'flag'), (2, 2): ('yellow', 'flag')}
+LLM's Map   : {(2, 1): ('grey', 'flag'), (2, 2): ('yellow', 'flag')}
+Overall Accuracy (Jaccard): 100.00%
+Goal-Only Accuracy (Jaccard): 100.00%
+2025-07-11 14:02:19,168 - INFO - --- Finished Test Episode #5 ---
+
+2025-07-11 14:02:24,170 - INFO - --- Starting Test Episode #6 ---
+2025-07-11 14:02:24,278 - INFO - Sending prompt to Gemini for episode #6...
+2025-07-11 14:02:24,278 - INFO - Prompt for episode #6:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 7x7 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-6)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (0-6)**: Represents the left-right direction. Side 3 is your center line. Numbers greater than 3 are to your left; numbers less than 3 are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 3) in this system. The space directly in front of you is (1, 3).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right': Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (1, 1). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+Note that you will see walls in your view, but they are not part of the map you need to build. Neglect them.
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (1, 4), a green flag at coordinate (0, 4).
+Step1: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (0, 4).
+Step2: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step3: right. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (1, 4), a green flag at coordinate (1, 5).
+Step4: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (0, 4), a green flag at coordinate (0, 5).
+Step5: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step6: right. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a green flag at coordinate (2, 4), a yellow flag at coordinate (1, 4).
+Step7: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a green flag at coordinate (1, 4), a yellow flag at coordinate (0, 4).
+Step8: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a green flag at coordinate (0, 4).
+Step9: right. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a green flag at coordinate (1, 3), a yellow flag at coordinate (1, 4).
+Step10: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (0, 4).
+Step11: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&&
+
+2025-07-11 14:02:54,567 - INFO - LLM Response for episode #6:
+**Current State Tracking:**
+
+*   **Initial State:**
+    *   Absolute Position: (1, 1)
+    *   Facing: East (dx=1, dy=0)
+    *   Map: {}
+
+*   **Initial Observation:**
+    *   `yellow flag at (1, 4)` (local):
+        *   Absolute X: `1 (px) + 1 (d) = 2`
+        *   Absolute Y: `1 (py) - (4 (s) - 3) = 1 - 1 = 0`
+        *   Adds: `(2, 0): 'yellow flag'`
+    *   `green flag at (0, 4)` (local):
+        *   Absolute X: `1 (px) + 0 (d) = 1`
+        *   Absolute Y: `1 (py) - (4 (s) - 3) = 1 - 1 = 0`
+        *   Adds: `(1, 0): 'green flag'`
+    *   Current Map: `{(1, 0): 'green flag', (2, 0): 'yellow flag'}`
+
+*   **Step 1: forward.**
+    *   New Absolute Position: (2, 1)
+    *   Facing: East
+    *   Observation: `yellow flag at (0, 4)` (local):
+        *   Absolute X: `2 (px) + 0 (d) = 2`
+        *   Absolute Y: `1 (py) - (4 (s) - 3) = 1 - 1 = 0`
+        *   Consistent with `(2, 0): 'yellow flag'`
+    *   Current Map: `{(1, 0): 'green flag', (2, 0): 'yellow flag'}`
+
+*   **Step 2: forward.**
+    *   New Absolute Position: (3, 1)
+    *   Facing: East
+    *   Observation: No flags.
+    *   Current Map: `{(1, 0): 'green flag', (2, 0): 'yellow flag'}`
+
+*   **Step 3: right.**
+    *   New Absolute Position: (3, 1) (no change on turn)
+    *   Facing: South (dx=0, dy=1)
+    *   Observation: `yellow flag at (1, 4)` (local):
+        *   Absolute X: `3 (px) + (4 (s) - 3) = 3 + 1 = 4`
+        *   Absolute Y: `1 (py) + 1 (d) = 2`
+        *   Adds: `(4, 2): 'yellow flag'`
+    *   Observation: `green flag at (1, 5)` (local):
+        *   Absolute X: `3 (px) + (5 (s) - 3) = 3 + 2 = 5`
+        *   Absolute Y: `1 (py) + 1 (d) = 2`
+        *   Adds: `(5, 2): 'green flag'`
+    *   Current Map: `{(1, 0): 'green flag', (2, 0): 'yellow flag', (4, 2): 'yellow flag', (5, 2): 'green flag'}`
+
+*   **Step 4: forward.**
+    *   New Absolute Position: (3, 2)
+    *   Facing: South
+    *   Observation: `yellow flag at (0, 4)` (local):
+        *   Absolute X: `3 (px) + (4 (s) - 3) = 3 + 1 = 4`
+        *   Absolute Y: `2 (py) + 0 (d) = 2`
+        *   Consistent with `(4, 2): 'yellow flag'`
+    *   Observation: `green flag at (0, 5)` (local):
+        *   Absolute X: `3 (px) + (5 (s) - 3) = 3 + 2 = 5`
+        *   Absolute Y: `2 (py) + 0 (d) = 2`
+        *   Consistent with `(5, 2): 'green flag'`
+    *   Current Map: `{(1, 0): 'green flag', (2, 0): 'yellow flag', (4, 2): 'yellow flag', (5, 2): 'green flag'}`
+
+*   **Step 5: forward.**
+    *   New Absolute Position: (3, 3)
+    *   Facing: South
+    *   Observation: No flags.
+    *   Current Map: `{(1, 0): 'green flag', (2, 0): 'yellow flag', (4, 2): 'yellow flag', (5, 2): 'green flag'}`
+
+*   **Step 6: right.**
+    *   New Absolute Position: (3, 3) (no change on turn)
+    *   Facing: West (dx=-1, dy=0)
+    *   Observation: `green flag at (2, 4)` (local):
+        *   Absolute X: `3 (px) - 2 (d) = 1`
+        *   Absolute Y: `3 (py) + (4 (s) - 3) = 3 + 1 = 4`
+        *   Adds: `(1, 4): 'green flag'`
+    *   Observation: `yellow flag at (1, 4)` (local):
+        *   Absolute X: `3 (px) - 1 (d) = 2`
+        *   Absolute Y: `3 (py) + (4 (s) - 3) = 3 + 1 = 4`
+        *   Adds: `(2, 4): 'yellow flag'`
+    *   Current Map: `{(1, 0): 'green flag', (2, 0): 'yellow flag', (4, 2): 'yellow flag', (5, 2): 'green flag', (1, 4): 'green flag', (2, 4): 'yellow flag'}`
+
+*   **Step 7: forward.**
+    *   New Absolute Position: (2, 3)
+    *   Facing: West
+    *   Observation: `green flag at (1, 4)` (local):
+        *   Absolute X: `2 (px) - 1 (d) = 1`
+        *   Absolute Y: `3 (py) + (4 (s) - 3) = 3 + 1 = 4`
+        *   Consistent with `(1, 4): 'green flag'`
+    *   Observation: `yellow flag at (0, 4)` (local):
+        *   Absolute X: `2 (px) - 0 (d) = 2`
+        *   Absolute Y: `3 (py) + (4 (s) - 3) = 3 + 1 = 4`
+        *   Consistent with `(2, 4): 'yellow flag'`
+    *   Current Map: `{(1, 0): 'green flag', (2, 0): 'yellow flag', (4, 2): 'yellow flag', (5, 2): 'green flag', (1, 4): 'green flag', (2, 4): 'yellow flag'}`
+
+*   **Step 8: forward.**
+    *   New Absolute Position: (1, 3)
+    *   Facing: West
+    *   Observation: `green flag at (0, 4)` (local):
+        *   Absolute X: `1 (px) - 0 (d) = 1`
+        *   Absolute Y: `3 (py) + (4 (s) - 3) = 3 + 1 = 4`
+        *   Consistent with `(1, 4): 'green flag'`
+    *   Current Map: `{(1, 0): 'green flag', (2, 0): 'yellow flag', (4, 2): 'yellow flag', (5, 2): 'green flag', (1, 4): 'green flag', (2, 4): 'yellow flag'}`
+
+*   **Step 9: right.**
+    *   New Absolute Position: (1, 3) (no change on turn)
+    *   Facing: North (dx=0, dy=-1)
+    *   Observation: `green flag at (1, 3)` (local):
+        *   Absolute X: `1 (px) - (3 (s) - 3) = 1 - 0 = 1`
+        *   Absolute Y: `3 (py) - 1 (d) = 2`
+        *   Adds: `(1, 2): 'green flag'`
+    *   Observation: `yellow flag at (1, 4)` (local):
+        *   Absolute X: `1 (px) - (4 (s) - 3) = 1 - 1 = 0`
+        *   Absolute Y: `3 (py) - 1 (d) = 2`
+        *   Adds: `(0, 2): 'yellow flag'`
+    *   Current Map: `{(1, 0): 'green flag', (2, 0): 'yellow flag', (4, 2): 'yellow flag', (5, 2): 'green flag', (1, 4): 'green flag', (2, 4): 'yellow flag', (1, 2): 'green flag', (0, 2): 'yellow flag'}`
+
+*   **Step 10: forward.**
+    *   New Absolute Position: (1, 2)
+    *   Facing: North
+    *   Observation: `yellow flag at (0, 4)` (local):
+        *   Absolute X: `1 (px) - (4 (s) - 3) = 1 - 1 = 0`
+        *   Absolute Y: `2 (py) - 0 (d) = 2`
+        *   Consistent with `(0, 2): 'yellow flag'`
+    *   Current Map: `{(1, 0): 'green flag', (2, 0): 'yellow flag', (4, 2): 'yellow flag', (5, 2): 'green flag', (1, 4): 'green flag', (2, 4): 'yellow flag', (1, 2): 'green flag', (0, 2): 'yellow flag'}`
+
+*   **Step 11: forward.**
+    *   New Absolute Position: (1, 1)
+    *   Facing: North
+    *   Observation: No flags.
+    *   Current Map: `{(1, 0): 'green flag', (2, 0): 'yellow flag', (4, 2): 'yellow flag', (5, 2): 'green flag', (1, 4): 'green flag', (2, 4): 'yellow flag', (1, 2): 'green flag', (0, 2): 'yellow flag'}`
+
+---
+**Final Map Summary:**
+&&&
+a yellow flag at coordinate (0,2) a green flag at coordinate (1,0) a green flag at coordinate (1,2) a green flag at coordinate (1,4) a yellow flag at coordinate (2,0) a yellow flag at coordinate (2,4) a yellow flag at coordinate (4,2) a green flag at coordinate (5,2)
+&&&
+2025-07-11 14:02:54,568 - INFO - --- Judgment for Episode #6 ---
+2025-07-11 14:02:54,568 - INFO - Result: IMPERFECT
+2025-07-11 14:02:54,568 - INFO - Ground Truth: {(1, 2): ('green', 'flag'), (2, 2): ('yellow', 'flag')}
+LLM's Map   : {(0, 2): ('yellow', 'flag'), (1, 0): ('green', 'flag'), (1, 2): ('green', 'flag'), (1, 4): ('green', 'flag'), (2, 0): ('yellow', 'flag'), (2, 4): ('yellow', 'flag'), (4, 2): ('yellow', 'flag'), (5, 2): ('green', 'flag')}
+Overall Accuracy (Jaccard): 11.11%
+Goal-Only Accuracy (Jaccard): 50.00%
+2025-07-11 14:02:54,568 - INFO - --- Finished Test Episode #6 ---
+
+2025-07-11 14:02:59,573 - INFO - --- Starting Test Episode #7 ---
+2025-07-11 14:02:59,704 - INFO - Sending prompt to Gemini for episode #7...
+2025-07-11 14:02:59,705 - INFO - Prompt for episode #7:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 7x7 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-6)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (0-6)**: Represents the left-right direction. Side 3 is your center line. Numbers greater than 3 are to your left; numbers less than 3 are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 3) in this system. The space directly in front of you is (1, 3).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right': Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (1, 1). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+Note that you will see walls in your view, but they are not part of the map you need to build. Neglect them.
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), green flags at coordinates: (2, 5), (1, 5).
+Step1: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), green flags at coordinates: (1, 5), (0, 5).
+Step2: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a green flag at coordinate (0, 5).
+Step3: right. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), green flags at coordinates: (2, 3), (2, 4).
+Step4: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), green flags at coordinates: (1, 3), (1, 4).
+Step5: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a green flag at coordinate (0, 4).
+Step6: right. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a green flag at coordinate (1, 3).
+Step7: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step8: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step9: right. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), green flags at coordinates: (0, 4), (0, 5).
+Step10: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step11: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&&
+
+2025-07-11 14:03:26,432 - INFO - LLM Response for episode #7:
+**Reasoning:**
+
+I will track the robot's absolute position `(x, y)` and its `direction` (East, North, West, South). I will also maintain a set `map_objects` to store the unique absolute coordinates of observed green flags.
+
+**Initial State:**
+- `current_position = (1, 1)`
+- `current_direction = 'East'`
+- `map_objects = set()`
+
+**Local to Absolute Coordinate Conversion Rules:**
+Given a local coordinate `(D, S)`:
+- If `current_direction` is 'East': `(x, y) = (current_position.x + D, current_position.y + (S - 3))`
+- If `current_direction` is 'North': `(x, y) = (current_position.x - (S - 3), current_position.y - D)`
+- If `current_direction` is 'West': `(x, y) = (current_position.x - D, current_position.y - (S - 3))`
+- If `current_direction` is 'South': `(x, y) = (current_position.x + (S - 3), current_position.y + D)`
+
+---
+
+**Initial Observation:**
+- `current_position = (1, 1)`, `current_direction = 'East'`
+- Green flags at: (2, 5), (1, 5)
+    - (D=2, S=5) -> `(1 + 2, 1 + (5 - 3)) = (3, 1 + 2) = (3, 3)`. Add `('green flag', 3, 3)` to `map_objects`.
+    - (D=1, S=5) -> `(1 + 1, 1 + (5 - 3)) = (2, 1 + 2) = (2, 3)`. Add `('green flag', 2, 3)` to `map_objects`.
+- `map_objects = {('green flag', 3, 3), ('green flag', 2, 3)}`
+
+---
+
+**Step1: forward.**
+- Robot moves one step in the current direction (East).
+- `current_position = (1 + 1, 1) = (2, 1)`
+- `current_direction = 'East'`
+- Green flags at: (1, 5), (0, 5)
+    - (D=1, S=5) -> `(2 + 1, 1 + (5 - 3)) = (3, 3)`. Already in `map_objects`.
+    - (D=0, S=5) -> `(2 + 0, 1 + (5 - 3)) = (2, 3)`. Already in `map_objects`.
+- `map_objects` remains `{('green flag', 3, 3), ('green flag', 2, 3)}`
+
+---
+
+**Step2: forward.**
+- Robot moves one step in the current direction (East).
+- `current_position = (2 + 1, 1) = (3, 1)`
+- `current_direction = 'East'`
+- Green flag at: (0, 5)
+    - (D=0, S=5) -> `(3 + 0, 1 + (5 - 3)) = (3, 3)`. Already in `map_objects`.
+- `map_objects` remains `{('green flag', 3, 3), ('green flag', 2, 3)}`
+
+---
+
+**Step3: right.**
+- Robot turns right. Position remains the same.
+- `current_position = (3, 1)`
+- `current_direction` changes from 'East' to 'South'.
+- Green flags at: (2, 3), (2, 4)
+    - (D=2, S=3) -> `(3 + (3 - 3), 1 + 2) = (3, 3)`. Already in `map_objects`.
+    - (D=2, S=4) -> `(3 + (4 - 3), 1 + 2) = (4, 3)`. Add `('green flag', 4, 3)` to `map_objects`.
+- `map_objects = {('green flag', 3, 3), ('green flag', 2, 3), ('green flag', 4, 3)}`
+
+---
+
+**Step4: forward.**
+- Robot moves one step in the current direction (South).
+- `current_position = (3, 1 + 1) = (3, 2)`
+- `current_direction = 'South'`
+- Green flags at: (1, 3), (1, 4)
+    - (D=1, S=3) -> `(3 + (3 - 3), 2 + 1) = (3, 3)`. Already in `map_objects`.
+    - (D=1, S=4) -> `(3 + (4 - 3), 2 + 1) = (4, 3)`. Already in `map_objects`.
+- `map_objects` remains `{('green flag', 3, 3), ('green flag', 2, 3), ('green flag', 4, 3)}`
+
+---
+
+**Step5: forward.**
+- Robot moves one step in the current direction (South).
+- `current_position = (3, 2 + 1) = (3, 3)`
+- `current_direction = 'South'`
+- Green flag at: (0, 4)
+    - (D=0, S=4) -> `(3 + (4 - 3), 3 + 0) = (4, 3)`. Already in `map_objects`.
+- `map_objects` remains `{('green flag', 3, 3), ('green flag', 2, 3), ('green flag', 4, 3)}`
+
+---
+
+**Step6: right.**
+- Robot turns right. Position remains the same.
+- `current_position = (3, 3)`
+- `current_direction` changes from 'South' to 'West'.
+- Green flag at: (1, 3)
+    - (D=1, S=3) -> `(3 - 1, 3 - (3 - 3)) = (2, 3)`. Already in `map_objects`.
+- `map_objects` remains `{('green flag', 3, 3), ('green flag', 2, 3), ('green flag', 4, 3)}`
+
+---
+
+**Step7: forward.**
+- Robot moves one step in the current direction (West).
+- `current_position = (3 - 1, 3) = (2, 3)`
+- `current_direction = 'West'`
+- No flags observed.
+- `map_objects` remains `{('green flag', 3, 3), ('green flag', 2, 3), ('green flag', 4, 3)}`
+
+---
+
+**Step8: forward.**
+- Robot moves one step in the current direction (West).
+- `current_position = (2 - 1, 3) = (1, 3)`
+- `current_direction = 'West'`
+- No flags observed.
+- `map_objects` remains `{('green flag', 3, 3), ('green flag', 2, 3), ('green flag', 4, 3)}`
+
+---
+
+**Step9: right.**
+- Robot turns right. Position remains the same.
+- `current_position = (1, 3)`
+- `current_direction` changes from 'West' to 'North'.
+- Green flags at: (0, 4), (0, 5)
+    - (D=0, S=4) -> `(1 - (4 - 3), 3 - 0) = (0, 3)`. Add `('green flag', 0, 3)` to `map_objects`.
+    - (D=0, S=5) -> `(1 - (5 - 3), 3 - 0) = (-1, 3)`. Add `('green flag', -1, 3)` to `map_objects`.
+- `map_objects = {('green flag', 3, 3), ('green flag', 2, 3), ('green flag', 4, 3), ('green flag', 0, 3), ('green flag', -1, 3)}`
+
+---
+
+**Step10: forward.**
+- Robot moves one step in the current direction (North).
+- `current_position = (1, 3 - 1) = (1, 2)`
+- `current_direction = 'North'`
+- No flags observed.
+- `map_objects` remains the same.
+
+---
+
+**Step11: forward.**
+- Robot moves one step in the current direction (North).
+- `current_position = (1, 2 - 1) = (1, 1)`
+- `current_direction = 'North'`
+- No flags observed.
+- `map_objects` remains the same.
+
+---
+
+**Final Map Summary:**
+
+The unique green flag locations discovered are:
+(-1, 3), (0, 3), (2, 3), (3, 3), (4, 3).
+
+&&&
+a green flag at coordinate (-1,3) a green flag at coordinate (0,3) a green flag at coordinate (2,3) a green flag at coordinate (3,3) a green flag at coordinate (4,3).
+&&&
+2025-07-11 14:03:26,435 - INFO - --- Judgment for Episode #7 ---
+2025-07-11 14:03:26,435 - INFO - Result: IMPERFECT
+2025-07-11 14:03:26,435 - INFO - Ground Truth: {(2, 3): ('green', 'flag'), (3, 3): ('green', 'flag')}
+LLM's Map   : {(-1, 3): ('green', 'flag'), (0, 3): ('green', 'flag'), (2, 3): ('green', 'flag'), (3, 3): ('green', 'flag'), (4, 3): ('green', 'flag')}
+Overall Accuracy (Jaccard): 40.00%
+Goal-Only Accuracy (Jaccard): 100.00%
+2025-07-11 14:03:26,435 - INFO - --- Finished Test Episode #7 ---
+
+2025-07-11 14:03:31,440 - INFO - --- Starting Test Episode #8 ---
+2025-07-11 14:03:31,472 - INFO - Sending prompt to Gemini for episode #8...
+2025-07-11 14:03:31,472 - INFO - Prompt for episode #8:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 7x7 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-6)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (0-6)**: Represents the left-right direction. Side 3 is your center line. Numbers greater than 3 are to your left; numbers less than 3 are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 3) in this system. The space directly in front of you is (1, 3).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right': Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (1, 1). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+Note that you will see walls in your view, but they are not part of the map you need to build. Neglect them.
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (2, 3), a yellow flag at coordinate (1, 4).
+Step1: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (1, 3), a yellow flag at coordinate (0, 4).
+Step2: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step3: right. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (1, 4).
+Step4: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (0, 4).
+Step5: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step6: right. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (1, 4), a grey flag at coordinate (0, 5).
+Step7: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (0, 4).
+Step8: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step9: right. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (1, 4), a grey flag at coordinate (2, 5).
+Step10: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (0, 4), a grey flag at coordinate (1, 5).
+Step11: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (0, 5)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&&
+
+2025-07-11 14:04:02,681 - INFO - LLM Response for episode #8:
+The robot's initial absolute position is (1, 1) and it is facing East.
+The map will be built by converting local (Depth, Side) coordinates to absolute (x, y) coordinates based on the robot's current absolute position and direction. Walls are ignored.
+
+**Coordinate Transformation Rules (Local (D, S) to Global (x, y) for current position (Px, Py)):**
+*   **Facing East:**
+    *   x = Px + D
+    *   y = Py + (3 - S)
+*   **Facing West:**
+    *   x = Px - D
+    *   y = Py + (S - 3)
+*   **Facing North:**
+    *   x = Px + (S - 3)
+    *   y = Py - D
+*   **Facing South:**
+    *   x = Px + (3 - S)
+    *   y = Py + D
+
+**Robot State Tracking:**
+*   `abs_pos = (current_x, current_y)`
+*   `abs_dir = 'East' | 'West' | 'North' | 'South'`
+*   `map_objects = set()` (stores `(type, x, y)` tuples)
+
+---
+
+**Initial State:**
+*   `abs_pos = (1, 1)`
+*   `abs_dir = 'East'`
+*   `map_objects = set()`
+
+**Initial Observation:**
+*   Grey flag at (2, 3) local:
+    *   `global_coords = (1 + 2, 1 + (3 - 3)) = (3, 1)`
+    *   Add `('grey flag', 3, 1)` to `map_objects`.
+*   Yellow flag at (1, 4) local:
+    *   `global_coords = (1 + 1, 1 + (3 - 4)) = (2, 0)`
+    *   Add `('yellow flag', 2, 0)` to `map_objects`.
+*   `map_objects = {('grey flag', 3, 1), ('yellow flag', 2, 0)}`
+
+---
+
+**Step1: forward.**
+*   `abs_pos = (1 + 1, 1) = (2, 1)`
+*   `abs_dir = 'East'` (unchanged)
+*   Observation:
+    *   Grey flag at (1, 3) local:
+        *   `global_coords = (2 + 1, 1 + (3 - 3)) = (3, 1)` (Already in map)
+    *   Yellow flag at (0, 4) local:
+        *   `global_coords = (2 + 0, 1 + (3 - 4)) = (2, 0)` (Already in map)
+*   `map_objects` remains `{('grey flag', 3, 1), ('yellow flag', 2, 0)}`
+
+---
+
+**Step2: forward.**
+*   `abs_pos = (2 + 1, 1) = (3, 1)`
+*   `abs_dir = 'East'` (unchanged)
+*   Observation: No flags.
+*   `map_objects` remains `{('grey flag', 3, 1), ('yellow flag', 2, 0)}`
+
+---
+
+**Step3: right.**
+*   `abs_pos = (3, 1)` (unchanged by turn)
+*   `abs_dir = 'South'`
+*   Observation:
+    *   Yellow flag at (1, 4) local:
+        *   `global_coords = (3 + (3 - 4), 1 + 1) = (2, 2)`
+        *   Add `('yellow flag', 2, 2)` to `map_objects`.
+*   `map_objects = {('grey flag', 3, 1), ('yellow flag', 2, 0), ('yellow flag', 2, 2)}`
+
+---
+
+**Step4: forward.**
+*   `abs_pos = (3, 1 + 1) = (3, 2)`
+*   `abs_dir = 'South'` (unchanged)
+*   Observation:
+    *   Yellow flag at (0, 4) local:
+        *   `global_coords = (3 + (3 - 4), 2 + 0) = (2, 2)` (Already in map)
+*   `map_objects` remains `{('grey flag', 3, 1), ('yellow flag', 2, 0), ('yellow flag', 2, 2)}`
+
+---
+
+**Step5: forward.**
+*   `abs_pos = (3, 2 + 1) = (3, 3)`
+*   `abs_dir = 'South'` (unchanged)
+*   Observation: No flags.
+*   `map_objects` remains `{('grey flag', 3, 1), ('yellow flag', 2, 0), ('yellow flag', 2, 2)}`
+
+---
+
+**Step6: right.**
+*   `abs_pos = (3, 3)` (unchanged by turn)
+*   `abs_dir = 'West'`
+*   Observation:
+    *   Yellow flag at (1, 4) local:
+        *   `global_coords = (3 - 1, 3 + (4 - 3)) = (2, 4)`
+        *   Add `('yellow flag', 2, 4)` to `map_objects`.
+    *   Grey flag at (0, 5) local:
+        *   `global_coords = (3 - 0, 3 + (5 - 3)) = (3, 5)`
+        *   Add `('grey flag', 3, 5)` to `map_objects`.
+*   `map_objects = {('grey flag', 3, 1), ('yellow flag', 2, 0), ('yellow flag', 2, 2), ('yellow flag', 2, 4), ('grey flag', 3, 5)}`
+
+---
+
+**Step7: forward.**
+*   `abs_pos = (3 - 1, 3) = (2, 3)`
+*   `abs_dir = 'West'` (unchanged)
+*   Observation:
+    *   Yellow flag at (0, 4) local:
+        *   `global_coords = (2 - 0, 3 + (4 - 3)) = (2, 4)` (Already in map)
+*   `map_objects` remains `{('grey flag', 3, 1), ('yellow flag', 2, 0), ('yellow flag', 2, 2), ('yellow flag', 2, 4), ('grey flag', 3, 5)}`
+
+---
+
+**Step8: forward.**
+*   `abs_pos = (2 - 1, 3) = (1, 3)`
+*   `abs_dir = 'West'` (unchanged)
+*   Observation: No flags.
+*   `map_objects` remains `{('grey flag', 3, 1), ('yellow flag', 2, 0), ('yellow flag', 2, 2), ('yellow flag', 2, 4), ('grey flag', 3, 5)}`
+
+---
+
+**Step9: right.**
+*   `abs_pos = (1, 3)` (unchanged by turn)
+*   `abs_dir = 'North'`
+*   Observation:
+    *   Yellow flag at (1, 4) local:
+        *   `global_coords = (1 + (4 - 3), 3 - 1) = (2, 2)` (Already in map)
+    *   Grey flag at (2, 5) local:
+        *   `global_coords = (1 + (5 - 3), 3 - 2) = (3, 1)` (Already in map)
+*   `map_objects` remains `{('grey flag', 3, 1), ('yellow flag', 2, 0), ('yellow flag', 2, 2), ('yellow flag', 2, 4), ('grey flag', 3, 5)}`
+
+---
+
+**Step10: forward.**
+*   `abs_pos = (1, 3 - 1) = (1, 2)`
+*   `abs_dir = 'North'` (unchanged)
+*   Observation:
+    *   Yellow flag at (0, 4) local:
+        *   `global_coords = (1 + (4 - 3), 2 - 0) = (2, 2)` (Already in map)
+    *   Grey flag at (1, 5) local:
+        *   `global_coords = (1 + (5 - 3), 2 - 1) = (3, 1)` (Already in map)
+*   `map_objects` remains `{('grey flag', 3, 1), ('yellow flag', 2, 0), ('yellow flag', 2, 2), ('yellow flag', 2, 4), ('grey flag', 3, 5)}`
+
+---
+
+**Step11: forward.**
+*   `abs_pos = (1, 2 - 1) = (1, 1)`
+*   `abs_dir = 'North'` (unchanged)
+*   Observation:
+    *   Grey flag at (0, 5) local:
+        *   `global_coords = (1 + (5 - 3), 1 - 0) = (3, 1)` (Already in map)
+*   `map_objects` remains `{('grey flag', 3, 1), ('yellow flag', 2, 0), ('yellow flag', 2, 2), ('yellow flag', 2, 4), ('grey flag', 3, 5)}`
+
+---
+
+**Final Map Summary:**
+The unique objects discovered are:
+*   A grey flag at (3, 1)
+*   A grey flag at (3, 5)
+*   A yellow flag at (2, 0)
+*   A yellow flag at (2, 2)
+*   A yellow flag at (2, 4)
+
+&&&
+a grey flag at coordinate (3,1) a grey flag at coordinate (3,5) a yellow flag at coordinate (2,0) a yellow flag at coordinate (2,2) a yellow flag at coordinate (2,4)
+&&&
+2025-07-11 14:04:02,682 - INFO - --- Judgment for Episode #8 ---
+2025-07-11 14:04:02,682 - INFO - Result: IMPERFECT
+2025-07-11 14:04:02,682 - INFO - Ground Truth: {(2, 2): ('yellow', 'flag'), (3, 1): ('grey', 'flag')}
+LLM's Map   : {(3, 1): ('grey', 'flag'), (3, 5): ('grey', 'flag'), (2, 0): ('yellow', 'flag'), (2, 2): ('yellow', 'flag'), (2, 4): ('yellow', 'flag')}
+Overall Accuracy (Jaccard): 40.00%
+Goal-Only Accuracy (Jaccard): 100.00%
+2025-07-11 14:04:02,682 - INFO - --- Finished Test Episode #8 ---
+
+2025-07-11 14:04:07,686 - INFO - --- Starting Test Episode #9 ---
+2025-07-11 14:04:07,767 - INFO - Sending prompt to Gemini for episode #9...
+2025-07-11 14:04:07,768 - INFO - Prompt for episode #9:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 7x7 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-6)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (0-6)**: Represents the left-right direction. Side 3 is your center line. Numbers greater than 3 are to your left; numbers less than 3 are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 3) in this system. The space directly in front of you is (1, 3).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right': Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (1, 1). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+Note that you will see walls in your view, but they are not part of the map you need to build. Neglect them.
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (1, 4), a yellow flag at coordinate (1, 5).
+Step1: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (0, 4), a yellow flag at coordinate (0, 5).
+Step2: forward. You're facing East.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step3: right. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (2, 4), a grey flag at coordinate (1, 4).
+Step4: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (1, 4), a grey flag at coordinate (0, 4).
+Step5: forward. You're facing South.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (0, 4).
+Step6: right. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a yellow flag at coordinate (1, 3), a grey flag at coordinate (1, 4).
+Step7: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (0, 4).
+Step8: forward. You're facing West.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6).
+Step9: right. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (6, 4), (5, 4), (4, 4), (3, 4), (6, 5), (5, 5), (4, 5), (3, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (1, 4), a yellow flag at coordinate (0, 4).
+Step10: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6), a grey flag at coordinate (0, 4).
+Step11: forward. You're facing North.You can see grey walls at coordinates: (6, 0), (5, 0), (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (6, 2), (5, 2), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (6, 3), (5, 3), (4, 3), (3, 3), (2, 3), (1, 3), (6, 4), (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (6, 5), (5, 5), (4, 5), (3, 5), (2, 5), (1, 5), (6, 6), (5, 6), (4, 6), (3, 6), (2, 6), (1, 6), (0, 6)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&&
+
+2025-07-11 14:04:32,425 - INFO - LLM Response for episode #9:
+The robot's absolute position and direction are updated at each step, and the local view coordinates are translated to absolute coordinates to build a consistent map.
+
+**Coordinate System Translation Logic:**
+- `(depth, side)` is the local view coordinate.
+- `(x_robot, y_robot)` is the robot's current absolute position.
+- `side_offset = side - 3` (negative for right, positive for left).
+
+1.  **Facing East:**
+    - `global_x = x_robot + depth`
+    - `global_y = y_robot - side_offset` (Left is -Y, Right is +Y)
+2.  **Facing South:**
+    - `global_x = x_robot + side_offset` (Left is +X, Right is -X)
+    - `global_y = y_robot + depth`
+3.  **Facing West:**
+    - `global_x = x_robot - depth`
+    - `global_y = y_robot + side_offset` (Left is +Y, Right is -Y)
+4.  **Facing North:**
+    - `global_x = x_robot - side_offset` (Left is -X, Right is +X)
+    - `global_y = y_robot - depth`
+
+---
+
+**Step-by-step Map Building:**
+
+*   **Initial State:**
+    *   **Position:** (1, 1), **Direction:** East
+    *   **Observation:**
+        *   grey flag at (1, 4) local: `depth=1, side=4, side_offset=1`. Global: `(1+1, 1-1) = (2, 0)`.
+        *   yellow flag at (1, 5) local: `depth=1, side=5, side_offset=2`. Global: `(1+1, 1-2) = (2, -1)`.
+    *   **Map:** `{(2, 0): 'grey flag', (2, -1): 'yellow flag'}`
+
+*   **Step 1: forward**
+    *   **Position:** (2, 1), **Direction:** East
+    *   **Observation:**
+        *   grey flag at (0, 4) local: `depth=0, side=4, side_offset=1`. Global: `(2+0, 1-1) = (2, 0)`. (Consistent)
+        *   yellow flag at (0, 5) local: `depth=0, side=5, side_offset=2`. Global: `(2+0, 1-2) = (2, -1)`. (Consistent)
+    *   **Map:** `{(2, 0): 'grey flag', (2, -1): 'yellow flag'}`
+
+*   **Step 2: forward**
+    *   **Position:** (3, 1), **Direction:** East
+    *   **Observation:** No flags.
+    *   **Map:** `(unchanged)`
+
+*   **Step 3: right**
+    *   **Position:** (3, 1), **Direction:** South
+    *   **Observation:**
+        *   yellow flag at (2, 4) local: `depth=2, side=4, side_offset=1`. Global: `(3+1, 1+2) = (4, 3)`.
+        *   grey flag at (1, 4) local: `depth=1, side=4, side_offset=1`. Global: `(3+1, 1+1) = (4, 2)`.
+    *   **Map:** `{(2, 0): 'grey flag', (2, -1): 'yellow flag', (4, 3): 'yellow flag', (4, 2): 'grey flag'}`
+
+*   **Step 4: forward**
+    *   **Position:** (3, 2), **Direction:** South
+    *   **Observation:**
+        *   yellow flag at (1, 4) local: `depth=1, side=4, side_offset=1`. Global: `(3+1, 2+1) = (4, 3)`. (Consistent)
+        *   grey flag at (0, 4) local: `depth=0, side=4, side_offset=1`. Global: `(3+1, 2+0) = (4, 2)`. (Consistent)
+    *   **Map:** `(unchanged)`
+
+*   **Step 5: forward**
+    *   **Position:** (3, 3), **Direction:** South
+    *   **Observation:**
+        *   yellow flag at (0, 4) local: `depth=0, side=4, side_offset=1`. Global: `(3+1, 3+0) = (4, 3)`. (Consistent)
+    *   **Map:** `(unchanged)`
+
+*   **Step 6: right**
+    *   **Position:** (3, 3), **Direction:** West
+    *   **Observation:**
+        *   yellow flag at (1, 3) local: `depth=1, side=3, side_offset=0`. Global: `(3-1, 3+0) = (2, 3)`.
+        *   grey flag at (1, 4) local: `depth=1, side=4, side_offset=1`. Global: `(3-1, 3+1) = (2, 4)`.
+    *   **Map:** `{(2, 0): 'grey flag', (2, -1): 'yellow flag', (4, 3): 'yellow flag', (4, 2): 'grey flag', (2, 3): 'yellow flag', (2, 4): 'grey flag'}`
+
+*   **Step 7: forward**
+    *   **Position:** (2, 3), **Direction:** West
+    *   **Observation:**
+        *   grey flag at (0, 4) local: `depth=0, side=4, side_offset=1`. Global: `(2-0, 3+1) = (2, 4)`. (Consistent)
+    *   **Map:** `(unchanged)`
+
+*   **Step 8: forward**
+    *   **Position:** (1, 3), **Direction:** West
+    *   **Observation:** No flags.
+    *   **Map:** `(unchanged)`
+
+*   **Step 9: right**
+    *   **Position:** (1, 3), **Direction:** North
+    *   **Observation:**
+        *   grey flag at (1, 4) local: `depth=1, side=4, side_offset=1`. Global: `(1-1, 3-1) = (0, 2)`.
+        *   yellow flag at (0, 4) local: `depth=0, side=4, side_offset=1`. Global: `(1-1, 3-0) = (0, 3)`.
+    *   **Map:** `{(2, 0): 'grey flag', (2, -1): 'yellow flag', (4, 3): 'yellow flag', (4, 2): 'grey flag', (2, 3): 'yellow flag', (2, 4): 'grey flag', (0, 2): 'grey flag', (0, 3): 'yellow flag'}`
+
+*   **Step 10: forward**
+    *   **Position:** (1, 2), **Direction:** North
+    *   **Observation:**
+        *   grey flag at (0, 4) local: `depth=0, side=4, side_offset=1`. Global: `(1-1, 2-0) = (0, 2)`. (Consistent)
+    *   **Map:** `(unchanged)`
+
+*   **Step 11: forward**
+    *   **Position:** (1, 1), **Direction:** North
+    *   **Observation:** No flags.
+    *   **Map:** `(unchanged)`
+
+---
+**Final Map Summary:**
+&&&
+a grey flag at coordinate (0, 2)
+a yellow flag at coordinate (0, 3)
+a yellow flag at coordinate (2, -1)
+a grey flag at coordinate (2, 0)
+a yellow flag at coordinate (2, 3)
+a grey flag at coordinate (2, 4)
+a grey flag at coordinate (4, 2)
+a yellow flag at coordinate (4, 3)
+&&&
+2025-07-11 14:04:32,427 - INFO - --- Judgment for Episode #9 ---
+2025-07-11 14:04:32,427 - INFO - Result: IMPERFECT
+2025-07-11 14:04:32,427 - INFO - Ground Truth: {(2, 2): ('grey', 'flag'), (2, 3): ('yellow', 'flag')}
+LLM's Map   : {(0, 2): ('grey', 'flag'), (0, 3): ('yellow', 'flag'), (2, -1): ('yellow', 'flag'), (2, 0): ('grey', 'flag'), (2, 3): ('yellow', 'flag'), (2, 4): ('grey', 'flag'), (4, 2): ('grey', 'flag'), (4, 3): ('yellow', 'flag')}
+Overall Accuracy (Jaccard): 11.11%
+Goal-Only Accuracy (Jaccard): 50.00%
+2025-07-11 14:04:32,427 - INFO - --- Finished Test Episode #9 ---
+
+2025-07-11 14:04:32,427 - INFO - ==================================================
+2025-07-11 14:04:32,427 - INFO - --- EVALUATION SUMMARY ---
+2025-07-11 14:04:32,427 - INFO - Total episodes run: 10
+2025-07-11 14:04:32,427 - INFO - Average Overall Accuracy: 39.27%
+2025-07-11 14:04:32,428 - INFO - Average Goal-Only Accuracy: 80.00%
+2025-07-11 14:04:32,428 - INFO - ==================================================
+2025-07-11 14:04:32,428 - INFO - Full log has been saved to 'my_tests/2D/gemini_flash_easy/evaluation_log.txt'

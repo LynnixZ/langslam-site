@@ -1,0 +1,141 @@
+2025-08-25 03:02:33,217 - INFO - --- Starting Test Episode #0 ---
+2025-08-25 03:02:40,898 - INFO - Sending prompt to Gemini for episode #0...
+2025-08-25 03:02:40,899 - INFO - Prompt for episode #0:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (1, 10). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+You will see walls in your view, but they are not part of the map you need to build. Neglect them. However, if you are facing a wall and go forward, you will not be able to move forward, your position will not change.
+Note that each flag is uniquely colored. 
+
+
+
+
+### WARNING: DATA CORRUPTION ###
+Your primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:
+- **Action Faults:** Two kinds may occur:
+  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.
+  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. 
+
+You cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.
+        
+### OBSERVATION LOG ###
+Initial Observation: You're facing South. You see nothing of interest..
+Step1: left.  You can see a grey flag at coordinate (4, 1), a purple flag at coordinate (3, 2).
+Step2: forward.  You can see a grey flag at coordinate (2, 1), a purple flag at coordinate (1, 2).
+Step3: forward.  You can see a grey flag at coordinate (1, 1), a purple flag at coordinate (0, 2).
+Step4: forward.  You can see a grey flag at coordinate (0, 1).
+Step5: forward.  You see nothing of interest..
+Step6: forward.  You see nothing of interest..
+Step7: left.  You see nothing of interest..
+Step8: forward.  You see nothing of interest..
+Step9: forward.  You can see a green flag at coordinate (4, -2), a red flag at coordinate (4, 0).
+Step10: right.  You see nothing of interest..
+Step11: right.  You can see a grey flag at coordinate (3, 2).
+Step12: right.  You see nothing of interest..
+Step13: forward.  You see nothing of interest..
+Step14: forward.  You see nothing of interest..
+Step15: right.  You can see a green flag at coordinate (4, 0), a red flag at coordinate (4, 2).
+Step16: forward.  You can see a green flag at coordinate (3, 0), a red flag at coordinate (3, 2).
+Step17: forward.  You can see a green flag at coordinate (2, 0), a red flag at coordinate (2, 2).
+Step18: forward.  You can see a green flag at coordinate (1, 0), a red flag at coordinate (1, 2).
+Step19: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2), a red flag at coordinate (0, 2).
+Step20: left.  You see nothing of interest..
+Step21: right.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2), a red flag at coordinate (0, 2).
+Step22: forward.  You see nothing of interest..
+Step23: forward.  You see nothing of interest..
+Step24: forward.  You see nothing of interest..
+Step25: right.  You see nothing of interest..
+Step26: forward.  You see nothing of interest..
+Step27: forward.  You see nothing of interest..
+Step28: right.  You can see a red flag at coordinate (4, 2).
+Step29: right.  You see nothing of interest..
+Step30: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2).
+Step31: forward.  You can see a blue flag at coordinate (4, -2).
+Step32: forward.  You can see a blue flag at coordinate (3, -2).
+Step33: forward.  You can see a blue flag at coordinate (2, -2).
+Step34: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2), a blue flag at coordinate (1, -2).
+Step35: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2), a blue flag at coordinate (0, -2).
+Step36: right.  You see nothing of interest..
+Step37: right.  You can see a blue flag at coordinate (0, 2).
+Step38: forward.  You see nothing of interest..
+Step39: forward.  You see nothing of interest..
+Step40: forward.  You see nothing of interest..
+Step41: forward.  You see nothing of interest..
+Step42: forward.  You see nothing of interest..
+Step43: forward.  You see nothing of interest..
+Step44: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2).
+Step45: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2).
+Step46: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (4, -1), (3, -1), (2, -1), (4, 0), (3, 0), (2, 0), (4, 1), (3, 1), (2, 1), (4, 2), (3, 2), (2, 2).
+Step47: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (3, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2).
+Step48: right.  You see nothing of interest..
+Step49: forward.  You see nothing of interest..
+Step50: forward.  You see nothing of interest..
+Step51: forward.  You see nothing of interest..
+Step52: forward.  You see nothing of interest..
+Step53: forward.  You can see a blue flag at coordinate (4, -2).
+Step54: forward.  You can see a blue flag at coordinate (3, -2).
+Step55: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2), a blue flag at coordinate (1, -2).
+Step56: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2), a blue flag at coordinate (0, -2).
+Step57: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (4, -1), (3, -1), (2, -1), (4, 0), (3, 0), (2, 0), (4, 1), (3, 1), (2, 1), (4, 2), (3, 2), (2, 2).
+Step58: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2).
+Step59: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2).
+Step60: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), a grey flag at coordinate (4, 1).
+Step61: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), a purple flag at coordinate (4, 0), a grey flag at coordinate (3, 1).
+Step62: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), a purple flag at coordinate (3, 0), a grey flag at coordinate (2, 1).
+Step63: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), a purple flag at coordinate (2, 0), a grey flag at coordinate (1, 1).
+Step64: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), a purple flag at coordinate (1, 0), a grey flag at coordinate (0, 1).
+Step65: right.  You can see a grey flag at coordinate (1, -1), grey walls at coordinates: (4, 2), (3, 2), (2, 2), (1, 2), (0, 2).
+Step66: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (4, -1), (3, -1), (2, -1), (4, 0), (3, 0), (2, 0), (4, 1), (3, 1), (2, 1), (4, 2), (3, 2), (2, 2).
+Step67: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (4, 0), (4, 1), (4, 2).
+Step68: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (3, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2).
+Step69: right.  You can see a purple flag at coordinate (0, 1), a grey flag at coordinate (1, 2).
+Step70: forward.  You can see a grey flag at coordinate (0, 2).
+Step71: forward.  You see nothing of interest..
+Step72: forward.  You see nothing of interest..
+Step73: forward.  You can see a green flag at coordinate (4, 2).
+Step74: forward.  You can see a green flag at coordinate (3, 2).
+Step75: forward.  You can see a green flag at coordinate (2, 2).
+Step76: forward.  You can see a green flag at coordinate (1, 2).
+Step77: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2), a green flag at coordinate (0, 2).
+Step78: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2).
+Step79: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (4, -1), (3, -1), (2, -1), (4, 0), (3, 0), (2, 0), (4, 1), (3, 1), (2, 1), (4, 2), (3, 2), (2, 2).
+Step80: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (4, -1), (3, -1), (2, -1), (1, -1), (4, 0), (3, 0), (2, 0), (1, 0), (4, 1), (3, 1), (2, 1), (1, 1), (4, 2), (3, 2), (2, 2), (1, 2).
+Step81: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (3, -1), (2, -1), (1, -1), (0, -1).
+Step82: right.  You can see a green flag at coordinate (3, -2).
+Step83: left.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (3, -1), (2, -1), (1, -1), (0, -1).
+Step84: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (3, -1), (2, -1), (1, -1), (0, -1).
+Step85: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (3, -1), (2, -1), (1, -1), (0, -1).
+Step86: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (3, -1), (2, -1), (1, -1), (0, -1).
+Step87: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (3, -1), (2, -1), (1, -1), (0, -1).
+Step88: right.  You can see a red flag at coordinate (3, 0), a green flag at coordinate (3, 2)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&& 
+
+2025-08-25 03:03:04,625 - INFO - RBPF Result: IMPERFECT
+2025-08-25 03:03:04,627 - INFO - Ground Truth: {'purple': (4, 12), 'green': (5, 4), 'grey': (5, 11), 'red': (7, 4), 'blue': (13, 11)}
+LLM's Map   : {'blue': (9, 8), 'green': (4, 2), 'grey': (2, 7), 'purple': (2, 8), 'red': (3, 1)}
+----------------------------------------
+Overall Accuracy (Jaccard): 0.00%
+Goal Accuracy (Avg. Correctness): 0.00%
+Euclidean Distance Error (for matched goals): 4.34 units
+2025-08-25 03:03:04,627 - INFO - --- Finished Test Episode #0 ---
+

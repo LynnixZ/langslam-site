@@ -1,0 +1,1506 @@
+2025-08-25 05:21:48,859 - INFO - --- Starting Test Episode #0 ---
+2025-08-25 05:21:49,468 - INFO - Sending prompt to Gemini for episode #0...
+2025-08-25 05:21:49,468 - INFO - Prompt for episode #0:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (5, 5). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+You will see walls in your view, but they are not part of the map you need to build. Neglect them. However, if you are facing a wall and go forward, you will not be able to move forward, your position will not change.
+Note that each flag is uniquely colored. 
+
+
+
+
+### WARNING: DATA CORRUPTION ###
+Your primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:
+- **Action Faults:** Two kinds may occur:
+  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.
+  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. 
+- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. 
+- **Log Blackout:** A continuous block of actions (5–10 steps) may be missing from the log. You may see, for example, Step 40 followed by Step 41, but the robot's pose will have changed sharply as if it teleported.
+
+You cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.
+        
+### OBSERVATION LOG ###
+Initial Observation: You're facing West. You can see a yellow flag at coordinate (2, -1).
+Step1: right.  You can see a blue flag at coordinate (4, 0).
+Step2: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2), a blue flag at coordinate (3, 0).
+Step3: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (3, 0), (3, 1), (4, 1), (3, 1), (4, 2), (3, 2), a blue flag at coordinate (2, -1).
+Step4: right.  You can see a red flag at coordinate (3, 1).
+Step5: forward.  You can see grey walls at coordinates: (4, -2), (3, -1), (4, 0), (4, 2), (4, 2), a red flag at coordinate (0, 1).
+Step6: forward.  You can see grey walls at coordinates: (4, -1), (3, -2), (3, -2), (3, -1), (4, 0), (3, 1), (4, 1), (3, 1), (4, 2), (2, 2), a red flag at coordinate (0, 1).
+Step7: right.  You can see a red flag at coordinate (1, -2).
+Step8: forward.  You see nothing of interest..
+Step9: forward.  You can see a grey flag at coordinate (4, 0).
+Step10: forward.  You can see a grey flag at coordinate (3, 0).
+Step11: forward.  You can see grey walls at coordinates: (4, -2), (3, -1), (4, 1), (4, 1), (3, 2), a grey flag at coordinate (2, 0).
+Step12: right.  You can see a grey flag at coordinate (0, -2).
+Step13: forward.  You can see a yellow flag at coordinate (4, 1).
+Step14: forward.  You can see a yellow flag at coordinate (3, 1).
+Step15: right.  You can see a yellow flag at coordinate (1, 1).
+Step16: forward.  You see nothing of interest..
+Step17: forward.  You can see a blue flag at coordinate (4, 1).
+Step18: forward.  You can see grey walls at coordinates: (4, 0), (4, -1), (4, 0), (4, 1), (4, 2), a blue flag at coordinate (3, 1).
+Step19: forward.  You can see grey walls at coordinates: (4, 0), (3, -1), (4, 0), (4, 1), (4, 2), a blue flag at coordinate (3, 1).
+Step20: forward.  You can see grey walls at coordinates: (4, -2), (3, -1), (4, -1), (2, -1), (4, 0), (3, -1), (4, 1), (3, 2), (4, 2), (3, 2), a blue flag at coordinate (2, 1).
+Step21: forward.  You can see grey walls at coordinates: (4, -2), (2, -2), (2, -2), (4, -1), (3, -1), (2, -1), (4, 0), (3, 0), (2, 0), (4, 1), (3, 1), (1, 1), (4, 2), (3, 2), (2, 2), a blue flag at coordinate (1, 1).
+Step22: forward.  You can see grey walls at coordinates: (4, -2), (3, 0), (2, -2), (1, -2), (4, -1), (3, -2), (2, -1), (1, -1), (4, 0), (3, 0), (2, 0), (1, 0), (4, 1), (3, 1), (2, 1), (2, 1), (4, 1), (3, 1), (2, 2), (1, 2), a blue flag at coordinate (0, 1).
+Step23: right.  You can see grey walls at coordinates: (4, -2), (3, -1), (2, -2), (1, -2), (0, -2), (4, -1), (3, -1), (2, -2), (1, -1), (0, -1), a blue flag at coordinate (1, 0).
+Step24: right.  You can see a blue flag at coordinate (0, -1)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&& 
+
+2025-08-25 05:21:51,739 - INFO - RBPF Result: IMPERFECT
+2025-08-25 05:21:51,739 - INFO - Ground Truth: {'purple': (1, 10), 'yellow': (3, 6), 'blue': (4, 1), 'red': (8, 4), 'grey': (8, 9)}
+LLM's Map   : {'blue': (6, 1), 'green': (0, 0), 'grey': (8, 9), 'red': (8, 4), 'yellow': (3, 6)}
+----------------------------------------
+Overall Accuracy (Jaccard): 42.86%
+Goal Accuracy (Avg. Correctness): 60.00%
+Euclidean Distance Error (for matched goals): 0.50 units
+2025-08-25 05:21:51,739 - INFO - --- Finished Test Episode #0 ---
+
+2025-08-25 05:23:06,056 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-25 05:23:06,067 - INFO - LLM Response for episode #0:
+Step-by-step reasoning (pose = (x,y,dir); dir ∈ {E,S,W,N}; local -> global mapping used per dir):
+
+Start: pose (5,5) facing West.
+- Local->global for West: (x = x0 - depth, y = y0 - side).
+Initial Observation: yellow at (2,-1) → global (3,6).
+
+Step1: action right → pose stays (5,5) now facing North.
+- North mapping: (x = x0 + side, y = y0 - depth).
+Seen blue at (4,0) → global (5,1).
+
+Step2: forward → move to (5,4), facing North.
+Seen blue at (3,0) → global (5,1) (consistent with Step1).
+
+Step3: forward → (5,3), North.
+Seen blue at (2,-1) → global (4,1).
+
+Step4: right → (5,3) facing East.
+- East mapping: (x = x0 + depth, y = y0 + side).
+Seen red at (3,1) → global (8,4).
+
+Step5: forward → (6,3) East.
+Seen red at (0,1) → global (6,4).
+
+Step6: forward → (7,3) East.
+Seen red at (0,1) → global (7,4).
+
+Step7: right → (7,3) facing South.
+- South mapping: (x = x0 - side, y = y0 + depth).
+Seen red at (1,-2) → global (9,4).
+
+Step8: forward → (7,4) South.
+Seen nothing.
+
+Step9: forward → (7,5) South.
+Seen grey flag at (4,0) → global (7,9).
+
+Step10: forward → (7,6) South.
+Seen grey at (3,0) → global (7,9).
+
+Step11: forward → (7,7) South.
+Seen grey at (2,0) → global (7,9).
+
+Step12: right → (7,7) facing West.
+- West mapping (as above).
+Seen grey at (0,-2) → global (7,9) (consistent).
+
+Step13: forward → (6,7) West.
+Seen yellow at (4,1) → global (2,6).
+
+Step14: forward → (5,7) West.
+Seen yellow at (3,1) → global (2,6) (consistent with Step13).
+
+Step15: right → (5,7) facing North.
+Seen yellow at (1,1) → global (6,6) (outlier compared to prior yellow sightings).
+
+Step16: forward → (5,6) North.
+Seen nothing.
+
+Step17: forward → (5,5) North.
+Seen blue at (4,1) → global (6,1).
+
+Step18: forward → (5,4) North.
+Seen blue at (3,1) → global (6,1).
+
+Step19: forward → (5,3) North.
+Seen blue at (3,1) → global (6,0).
+
+Step20: forward → (5,2) North.
+Seen blue at (2,1) → global (6,0).
+
+Step21: forward → (5,1) North.
+Seen blue at (1,1) → global (6,0).
+
+Step22: forward → (5,0) North.
+Seen blue at (0,1) → global (6,0).
+
+Step23: right → (5,0) facing East.
+Seen blue at (1,0) → global (6,0).
+
+Step24: right → (5,0) facing South.
+Seen blue at (0,-1) → global (6,0).
+
+Interpretation / handling of noise and faults:
+- Multiple very consistent clusters appear for each flag color despite noisy/occasionally inconsistent local coordinates. 
+- Blue: many observations cluster at (6,0)/(6,1)/(5,1)/(4,1) due to sensor noise and a few outliers; majority and later readings strongly support (6,0).
+- Yellow: initial reading gave (3,6) and Steps13–14 repeatedly gave (2,6); these cluster at (2,6)/(3,6) → choose (2,6) as the best consensus.
+- Red: readings cluster along y=4 with x ≈ 6–8; median/most central consistent value is (7,4).
+- Grey flag: many consistent observations map to (7,9).
+- Some single-step outliers (e.g., yellow at (6,6) Step15, red at 8 or 9) are treated as noisy measurements or occasional action/report faults; they are not taken as separate flags because each color is unique.
+
+Final map summary:
+&&&
+a yellow flag at coordinate (2,6) a blue flag at coordinate (6,0) a red flag at coordinate (7,4) a grey flag at coordinate (7,9).
+&&&
+2025-08-25 05:23:06,069 - INFO - --- Judgment for Episode #0 ---
+2025-08-25 05:23:06,069 - INFO - Result: IMPERFECT
+2025-08-25 05:23:06,069 - INFO - Ground Truth: {'purple': (1, 10), 'yellow': (3, 6), 'blue': (4, 1), 'red': (8, 4), 'grey': (8, 9)}
+LLM's Map   : {'yellow': (2, 6), 'blue': (6, 0), 'red': (7, 4), 'grey': (7, 9)}
+----------------------------------------
+Overall Accuracy (Jaccard): 0.00%
+Goal Accuracy (Avg. Correctness): 0.00%
+Euclidean Distance Error (for matched goals): 1.31 units
+2025-08-25 05:23:11,075 - INFO - --- Starting Test Episode #1 ---
+2025-08-25 05:23:11,350 - INFO - Sending prompt to Gemini for episode #1...
+2025-08-25 05:23:11,350 - INFO - Prompt for episode #1:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (1, 3). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+You will see walls in your view, but they are not part of the map you need to build. Neglect them. However, if you are facing a wall and go forward, you will not be able to move forward, your position will not change.
+Note that each flag is uniquely colored. 
+
+
+
+
+### WARNING: DATA CORRUPTION ###
+Your primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:
+- **Action Faults:** Two kinds may occur:
+  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.
+  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. 
+- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. 
+- **Log Blackout:** A continuous block of actions (5–10 steps) may be missing from the log. You may see, for example, Step 40 followed by Step 41, but the robot's pose will have changed sharply as if it teleported.
+
+You cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.
+        
+### OBSERVATION LOG ###
+Initial Observation: You're facing North. You can see a purple flag at coordinate (1, 2).
+Step1: right.  You can see a purple flag at coordinate (2, -1), a grey flag at coordinate (4, 1).
+Step2: forward.  You can see a purple flag at coordinate (1, -1), a grey flag at coordinate (3, 1).
+Step3: forward.  You can see a purple flag at coordinate (0, -2), a grey flag at coordinate (3, 1).
+Step4: forward.  You can see a grey flag at coordinate (1, 2).
+Step5: forward.  You can see a grey flag at coordinate (0, 1).
+Step6: forward.  You see nothing of interest..
+Step7: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2).
+Step8: right.  You can see a grey flag at coordinate (1, 2).
+Step9: forward.  You can see a grey flag at coordinate (0, 2).
+Step10: forward.  You can see a red flag at coordinate (4, -1).
+Step11: forward.  You can see a yellow flag at coordinate (4, -2), a red flag at coordinate (3, -1).
+Step12: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 1), (4, 1), (4, 2), a yellow flag at coordinate (3, -2), a red flag at coordinate (2, -1).
+Step13: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (4, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2), a yellow flag at coordinate (3, -2), a red flag at coordinate (1, -1).
+Step14: right.  You can see a green flag at coordinate (4, 1).
+Step15: forward.  You can see a green flag at coordinate (3, 1).
+Step16: forward.  You can see a green flag at coordinate (2, 1).
+Step17: right.  You can see a green flag at coordinate (1, -2), a grey flag at coordinate (4, 0).
+Step18: right.  You can see a red flag at coordinate (3, 2), a yellow flag at coordinate (4, 2).
+Step19: forward.  You can see a red flag at coordinate (3, 1), a yellow flag at coordinate (3, 2).
+Step20: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, -1), (4, 2), a red flag at coordinate (1, 1), a yellow flag at coordinate (2, 2).
+Step21: forward.  You can see grey walls at coordinates: (4, -1), (3, -2), (4, -1), (3, -1), (4, -1), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2), a red flag at coordinate (0, 1), a yellow flag at coordinate (2, 1).
+Step22: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (4, -1), (3, -1), (2, -1), (4, -1), (2, 0), (2, 0), (4, 1), (4, 1), (2, 1), (4, 2), (4, 2), (2, 2), a yellow flag at coordinate (0, 2).
+Step23: right.  You can see grey walls at coordinates: (4, -1), (3, -2), (2, -2), (1, -2), (0, 0), (4, -1), (3, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2), a yellow flag at coordinate (1, -1), a red flag at coordinate (1, 1).
+Step24: right.  You can see a yellow flag at coordinate (0, -2), a red flag at coordinate (1, -1).
+Step25: forward.  You can see a red flag at coordinate (0, -1).
+Step26: forward.  You can see a green flag at coordinate (4, 2).
+Step27: left.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (4, -1), (4, -2), (3, -2), (1, 1), (4, 0), (3, 0), (2, 0), (1, 0), (4, 1), (3, 1), (2, 1), (1, 1), (4, 2), (3, 2), (0, 2), (2, 1)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&& 
+
+2025-08-25 05:23:14,282 - INFO - RBPF Result: IMPERFECT
+2025-08-25 05:23:14,283 - INFO - Ground Truth: {'purple': (3, 2), 'green': (3, 7), 'grey': (5, 4), 'red': (8, 9), 'yellow': (9, 10)}
+LLM's Map   : {'green': (3, 6), 'grey': (5, 4), 'purple': (3, 2), 'red': (8, 8), 'yellow': (9, 9)}
+----------------------------------------
+Overall Accuracy (Jaccard): 25.00%
+Goal Accuracy (Avg. Correctness): 40.00%
+Euclidean Distance Error (for matched goals): 0.60 units
+2025-08-25 05:23:14,283 - INFO - --- Finished Test Episode #1 ---
+
+2025-08-25 05:24:41,390 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-25 05:24:41,404 - INFO - LLM Response for episode #1:
+I'll go through the log step by step, track pose (x,y) and facing, map each local observation (depth,side) to an absolute coordinate, and note small inconsistencies as likely observation noise. Starting pose: (1,3), facing North.
+
+Coordinate mapping used (forward, right) vectors by facing:
+- North: forward=(0,-1), right=(+1,0) => abs = (x + side, y - depth)
+- East:  forward=(+1,0), right=(0,+1) => abs = (x + depth, y + side)
+- South: forward=(0,+1), right=(-1,0) => abs = (x - side, y + depth)
+- West:  forward=(-1,0), right=(0,-1) => abs = (x - depth, y - side)
+
+Step-by-step:
+
+Initial (step0): pose (1,3), facing North. Observed purple at (1,2) => (1+2, 3-1) = (3,2). Record purple ≈ (3,2).
+
+Step1: action right -> facing East, pose (1,3). Observed purple (2,-1) => (1+2,3-1)=(3,2) (matches). Grey (4,1) => (1+4,3+1)=(5,4). Record grey ≈ (5,4).
+
+Step2: forward -> move to (2,3), facing East. Purple (1,-1) => (2+1,3-1)=(3,2) (consistent). Grey (3,1) => (2+3,3+1)=(5,4) (consistent).
+
+Step3: forward -> move to (3,3), facing East. Purple (0,-2) => (3+0,3-2)=(3,1) (1 cell off from (3,2) — treat as sensor noise). Grey (3,1) => (6,4) (one x-off; sensor noise).
+
+Step4: forward -> move to (4,3), facing East. Grey (1,2) => (5,5) (near (5,4); noise).
+
+Step5: forward -> move to (5,3), facing East. Grey (0,1) => (5,4) (matches grey).
+
+Step6: forward -> move to (6,3). Nothing observed.
+
+Step7: forward -> move to (7,3). Walls noted (ignored for map).
+
+Step8: right -> facing South, pose (7,3). Grey (1,2) => (7 - 2, 3 + 1) = (5,4) (matches grey).
+
+Step9: forward -> move to (7,4), facing South. Grey (0,2) => (7 - 2, 4 + 0) = (5,4) (matches).
+
+Step10: forward -> move to (7,5), facing South. Red (4,-1) => (7 - (-1), 5 + 4) = (8,9). Record red ≈ (8,9).
+
+Step11: forward -> move to (7,6), facing South. Yellow (4,-2) => (7 - (-2), 6 + 4) = (9,10). Red (3,-1) => (8,9) (matches).
+
+Step12: forward -> move to (7,7), facing South. Yellow (3,-2) => (9,10) (matches). Red (2,-1) => (8,9) (matches).
+
+Step13: forward -> move to (7,8), facing South. Yellow (3,-2) => (9,11) (1 cell off from (9,10); sensor noise). Red (1,-1) => (8,9) (matches).
+
+Step14: right -> facing West, pose (7,8). Green (4,1) => (7 - 4, 8 - 1) = (3,7). Record green ≈ (3,7).
+
+Step15: forward -> move to (6,8), facing West. Green (3,1) => (6 - 3, 8 - 1) = (3,7) (matches).
+
+Step16: forward -> move to (5,8), facing West. Green (2,1) => (5 - 2, 8 - 1) = (3,7) (matches).
+
+Step17: right -> facing North, pose (5,8). Green (1,-2) => (5 + (-2), 8 - 1) = (3,7) (matches). Grey (4,0) => (5 + 0, 8 - 4) = (5,4) (matches).
+
+Step18: right -> facing East, pose (5,8). Red (3,2) => (5+3,8+2) = (8,10) (one-y-off from red (8,9)). Yellow (4,2) => (9,10) (matches yellow).
+
+Step19: forward -> move to (6,8), facing East. Red (3,1) => (9,9) (one-x-off from (8,9); noise). Yellow (3,2) => (9,10) (matches).
+
+Step20: forward -> move to (7,8), facing East. Red (1,1) => (8,9) (matches). Yellow (2,2) => (9,10) (matches).
+
+Step21: forward -> move to (8,8), facing East. Red (0,1) => (8,9) (matches). Yellow (2,1) => (10,9) (one-cell offset from (9,10); still near cluster).
+
+Step22: forward -> move to (9,8), facing East. Yellow (0,2) => (9,10) (matches).
+
+Step23: right -> facing South, pose (9,8). Yellow (1,-1) => (10,9) (near (9,10)). Red (1,1) => (8,9) (matches).
+
+Step24: right -> facing West, pose (9,8). Yellow (0,-2) => (9,10) (matches). Red (1,-1) => (8,9) (matches).
+
+Step25: forward -> move to (8,8), facing West. Red (0,-1) => (8,9) (matches).
+
+Step26: forward -> move to (7,8), facing West. Green (4,2) => (7-4, 8-2) = (3,6) (one-cell off from (3,7); noise).
+
+Step27: left -> facing South, pose (7,8). Walls observed (ignored).
+
+Summary of clusters (accounting for small ±1 sensor noise seen repeatedly):
+- Purple: consistently observed at or near (3,2) → conclude purple flag at (3,2).
+- Grey (non-wall flag): consistently observed at (5,4) → conclude grey flag at (5,4).
+- Red: consistently observed at/near (8,9) → conclude red flag at (8,9).
+- Yellow: consistently observed at/near (9,10) → conclude yellow flag at (9,10).
+- Green: consistently observed at/near (3,7) → conclude green flag at (3,7).
+
+No evidence of multiple distinct flags of same color; small mismatches attributed to observational noise. No action-faults or blackout blocks were needed to explain the sequence.
+
+&&&
+a purple flag at coordinate (3,2) a grey flag at coordinate (5,4) a red flag at coordinate (8,9) a yellow flag at coordinate (9,10) a green flag at coordinate (3,7).
+&&&
+2025-08-25 05:24:41,405 - INFO - --- Judgment for Episode #1 ---
+2025-08-25 05:24:41,405 - INFO - Result: PERFECT MATCH
+2025-08-25 05:24:41,405 - INFO - Ground Truth: {'purple': (3, 2), 'green': (3, 7), 'grey': (5, 4), 'red': (8, 9), 'yellow': (9, 10)}
+LLM's Map   : {'purple': (3, 2), 'grey': (5, 4), 'red': (8, 9), 'yellow': (9, 10), 'green': (3, 7)}
+----------------------------------------
+Overall Accuracy (Jaccard): 100.00%
+Goal Accuracy (Avg. Correctness): 100.00%
+Euclidean Distance Error (for matched goals): 0.00 units
+2025-08-25 05:24:46,411 - INFO - --- Starting Test Episode #2 ---
+2025-08-25 05:24:46,982 - INFO - Sending prompt to Gemini for episode #2...
+2025-08-25 05:24:46,982 - INFO - Prompt for episode #2:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (8, 6). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+You will see walls in your view, but they are not part of the map you need to build. Neglect them. However, if you are facing a wall and go forward, you will not be able to move forward, your position will not change.
+Note that each flag is uniquely colored. 
+
+
+
+
+### WARNING: DATA CORRUPTION ###
+Your primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:
+- **Action Faults:** Two kinds may occur:
+  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.
+  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. 
+- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. 
+- **Log Blackout:** A continuous block of actions (5–10 steps) may be missing from the log. You may see, for example, Step 40 followed by Step 41, but the robot's pose will have changed sharply as if it teleported.
+
+You cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.
+        
+### OBSERVATION LOG ###
+Initial Observation: You're facing North. You can see a blue flag at coordinate (0, -2), a yellow flag at coordinate (1, 0).
+Step1: left.  You can see a blue flag at coordinate (2, 0), a yellow flag at coordinate (0, 2).
+Step2: forward.  You can see a blue flag at coordinate (1, 0).
+Step3: forward.  You see nothing of interest..
+Step4: left.  You can see a grey flag at coordinate (4, -2), a red flag at coordinate (3, 1).
+Step5: right.  You see nothing of interest..
+Step6: right.  You can see a yellow flag at coordinate (1, 2).
+Step7: forward.  You can see grey walls at coordinates: (4, -2), (4, -2), (4, 0), (4, 1), (4, 2).
+Step8: left.  You can see a blue flag at coordinate (0, -2), a green flag at coordinate (3, 2).
+Step9: forward.  You can see a green flag at coordinate (2, 2).
+Step10: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 2), (4, 2), a green flag at coordinate (1, 2).
+Step11: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (3, -1), (3, -1), (4, 0), (3, 1), (4, 1), (3, 2), (4, 2), (3, 2), a green flag at coordinate (0, 2).
+Step12: right.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2), a green flag at coordinate (2, 0).
+Step13: right.  You can see a green flag at coordinate (0, -2), a blue flag at coordinate (3, 2).
+Step14: right.  You see nothing of interest..
+Step15: forward.  You can see a red flag at coordinate (4, -2).
+Step16: forward.  You can see a red flag at coordinate (3, -2).
+Step17: forward.  You can see grey walls at coordinates: (4, -2), (2, -1), (4, 1), (4, 1), (4, 2), a red flag at coordinate (2, -2).
+Step18: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (4, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2), a red flag at coordinate (1, -2).
+Step19: right.  You can see grey walls at coordinates: (4, -2), (4, -2), (4, -1), (2, -1), (4, 0), (3, 0), (4, 1), (4, 1), (2, 2), (3, 2).
+Step20: right.  You see nothing of interest..
+Step21: right.  You can see a blue flag at coordinate (3, -2), a red flag at coordinate (1, 1).
+Step22: forward.  You can see a blue flag at coordinate (3, -2), a yellow flag at coordinate (4, 1).
+Step23: forward.  You can see a blue flag at coordinate (2, -2), a yellow flag at coordinate (3, 0).
+Step24: forward.  You can see a blue flag at coordinate (1, -2), a yellow flag at coordinate (2, 0).
+Step25: forward.  You can see a blue flag at coordinate (0, -2), a yellow flag at coordinate (1, 0).
+Step26: forward.  You see nothing of interest..
+Step27: forward.  You can see grey walls at coordinates: (4, -2), (1, -1), (4, 1), (4, 1), (4, 2).
+Step28: forward.  You can see grey walls at coordinates: (2, -2), (3, -2), (3, -2), (4, -1), (3, -2), (2, -2), (4, 0), (3, 0), (2, 0), (3, 0), (3, 1), (4, 1), (4, 2), (3, 2), (1, 2).
+Step29: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (3, -1), (4, 0), (3, -1), (4, 1), (3, 1), (4, 2), (3, 2).
+Step30: forward.  You can see grey walls at coordinates: (4, -2), (2, -2), (2, -2), (1, -2), (0, -2), (3, -1), (3, -2), (2, -1), (4, 0), (2, 0), (3, 0), (4, 2), (3, 1), (2, 1), (4, 2), (3, 2), (2, 2).
+Step31: forward.  You can see grey walls at coordinates: (4, -2), (3, -1), (2, -2), (1, -2), (0, -2), (4, -1), (3, -2), (2, 0), (1, -1), (4, 0), (3, 0), (2, 0), (1, 0), (4, 2), (3, 1), (2, 1), (1, 1), (4, 2), (3, 2), (1, 2), (1, 2).
+Step32: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (3, 1), (2, -1), (2, -1), (0, -1), a yellow flag at coordinate (3, 2).
+Step33: right.  You can see grey walls at coordinates: (4, 0), (3, 2), (2, 2), (1, 2), (0, 2)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&& 
+
+2025-08-25 05:24:50,179 - INFO - RBPF Result: IMPERFECT
+2025-08-25 05:24:50,179 - INFO - Ground Truth: {'green': (3, 2), 'red': (5, 9), 'blue': (6, 6), 'yellow': (8, 5), 'grey': (8, 10)}
+LLM's Map   : {'blue': (6, 5), 'green': (2, 9), 'grey': (0, 0), 'red': (9, 8), 'yellow': (8, 4)}
+----------------------------------------
+Overall Accuracy (Jaccard): 0.00%
+Goal Accuracy (Avg. Correctness): 0.00%
+Euclidean Distance Error (for matched goals): 5.20 units
+2025-08-25 05:24:50,179 - INFO - --- Finished Test Episode #2 ---
+
+2025-08-25 05:26:26,859 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-25 05:26:26,867 - INFO - LLM Response for episode #2:
+Step-by-step reasoning and pose/observation mapping (compact):
+
+Coordinate conventions I used:
+- World coordinates (x,y) with x increasing East, y increasing South.
+- Start pose: (x,y) = (8,6), facing North.
+- Local -> world mappings by facing:
+  - North: world = (x0 + side, y0 - depth)
+  - East:  world = (x0 + depth, y0 + side)
+  - South: world = (x0 - side, y0 + depth)
+  - West:  world = (x0 - depth, y0 - side)
+
+I processed the log, allowing for noisy observations (discrete offsets up to a few cells) and occasional silent moves. I looked for clusters of consistent world positions for each colored flag across many steps rather than trusting any single reading.
+
+Key consistent inferences (high-level):
+
+- Green:
+  - Repeatedly observed in Steps 8–13 from different orientations and positions.
+  - All of those map tightly to world coordinate (3,3).
+  - Conclusion: green flag at (3,3). (Several independent local sightings give identical world cell → high confidence.)
+
+- Red:
+  - Repeated sightings (Steps 15–18 and again Step21) when facing South/East map consistently to world (≈5,10). One reading at (4,10) is a one-cell offset (plausible noise).
+  - Conclusion: red flag at (5,10). (Good support across successive forward steps → high confidence.)
+
+- Blue:
+  - Early observations (when near the start area) mapped to positions like (6,6) or (6,7), later observations (Steps 21–25) mapped to (7,7).
+  - The pattern of noisy offsets (-1 or 0 in x and y) around a single location points to a true blue location at (7,7).
+  - Conclusion: blue flag at (7,7). (Moderate-to-high confidence; earlier -1,-1 offsets explain the earlier (6,6)/(6,7) readings.)
+
+- Yellow:
+  - Two clusters of sightings exist: early readings (Steps 0–6) around (8,5) and a larger, later cluster (Steps 22–26 and Step 32) around (8,9) / (7,9).
+  - The later cluster is more numerous and internally consistent (multiple forward steps seeing the same local pattern), and later-step mappings (including Step32) give (7,9)–(8,9) (one-cell offsets consistent with noise).
+  - The early cluster could be explained as noisier, single-step offsets or an early mis-localization (the log may contain silent moves or small-perception errors).
+  - Conclusion (best single consistent placement): yellow flag at (8,9). (This choice favors the stronger, repeated later evidence; small uncertainty remains because of the earlier conflicting readings.)
+
+Summary map (final consolidated positions):
+&&&
+a green flag at coordinate (3,3) a red flag at coordinate (5,10) a blue flag at coordinate (7,7) a yellow flag at coordinate (8,9)
+&&&
+
+Notes on uncertainty:
+- Green and red are strongly supported (multiple consistent sightings).
+- Blue is well supported though earlier observations show small systematic offsets; I place it at (7,7).
+- Yellow had two distinct clusters; I select (8,9) because of the larger, consistent later-cluster of sightings. If one required maximal caution, you could mark yellow as uncertain between (8,9) and (8,5), but the evidence favors (8,9).
+2025-08-25 05:26:26,868 - INFO - --- Judgment for Episode #2 ---
+2025-08-25 05:26:26,868 - INFO - Result: IMPERFECT
+2025-08-25 05:26:26,868 - INFO - Ground Truth: {'green': (3, 2), 'red': (5, 9), 'blue': (6, 6), 'yellow': (8, 5), 'grey': (8, 10)}
+LLM's Map   : {'green': (3, 3), 'red': (5, 10), 'blue': (7, 7), 'yellow': (8, 9)}
+----------------------------------------
+Overall Accuracy (Jaccard): 0.00%
+Goal Accuracy (Avg. Correctness): 0.00%
+Euclidean Distance Error (for matched goals): 1.85 units
+2025-08-25 05:26:31,874 - INFO - --- Starting Test Episode #3 ---
+2025-08-25 05:26:32,053 - INFO - Sending prompt to Gemini for episode #3...
+2025-08-25 05:26:32,053 - INFO - Prompt for episode #3:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (9, 5). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+You will see walls in your view, but they are not part of the map you need to build. Neglect them. However, if you are facing a wall and go forward, you will not be able to move forward, your position will not change.
+Note that each flag is uniquely colored. 
+
+
+
+
+### WARNING: DATA CORRUPTION ###
+Your primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:
+- **Action Faults:** Two kinds may occur:
+  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.
+  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. 
+- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. 
+- **Log Blackout:** A continuous block of actions (5–10 steps) may be missing from the log. You may see, for example, Step 40 followed by Step 41, but the robot's pose will have changed sharply as if it teleported.
+
+You cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.
+        
+### OBSERVATION LOG ###
+Initial Observation: You're facing South. You see nothing of interest..
+Step1: right.  You see nothing of interest..
+Step2: forward.  You see nothing of interest..
+Step3: forward.  You see nothing of interest..
+Step4: forward.  You can see a blue flag at coordinate (4, 0).
+Step5: forward.  You can see a blue flag at coordinate (3, 1).
+Step6: forward.  You can see a green flag at coordinate (4, 1), a blue flag at coordinate (2, 1).
+Step7: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 2), (4, 2), a green flag at coordinate (3, 1), a blue flag at coordinate (1, 1).
+Step8: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (3, 0), (3, -1), (4, 1), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2), a green flag at coordinate (2, 0), a blue flag at coordinate (0, 1).
+Step9: left.  You see nothing of interest..
+Step10: forward.  You see nothing of interest..
+Step11: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (3, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2), a green flag at coordinate (2, 2), a blue flag at coordinate (0, 2).
+Step12: right.  You can see a green flag at coordinate (2, -2), a blue flag at coordinate (2, -1).
+Step13: forward.  You can see a green flag at coordinate (0, -2), a blue flag at coordinate (1, 0).
+Step14: forward.  You can see grey walls at coordinates: (4, -2), (3, -1), (4, 0), (4, 1), (4, 2), a green flag at coordinate (0, -2).
+Step15: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (4, 0), (3, 1), (4, 1), (3, 2), (3, 2), (3, 2).
+Step16: right.  You can see a grey flag at coordinate (3, -2), a blue flag at coordinate (0, 1).
+Step17: forward.  You can see a grey flag at coordinate (2, -2), a yellow flag at coordinate (4, -1).
+Step18: forward.  You can see a grey flag at coordinate (1, -2), a yellow flag at coordinate (3, -1).
+Step19: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (3, -1), (2, -1), (1, -1), (0, -1), (4, 0), (3, 0), (3, 1), (3, 1), (4, 1), (4, 2).
+Step20: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (1, -2), (1, -2), (0, -2), (4, -1), (3, -2), (2, -1), (1, -1), (1, -1), (4, 0), (3, 0), (1, 2), (4, 1), (4, 1), (2, 1), (4, 2), (3, 2), (2, 2).
+Step21: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), a purple flag at coordinate (4, 1)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&& 
+
+2025-08-25 05:26:34,576 - INFO - RBPF Result: IMPERFECT
+2025-08-25 05:26:34,576 - INFO - Ground Truth: {'green': (1, 4), 'blue': (3, 4), 'grey': (6, 1), 'purple': (6, 8), 'yellow': (8, 2)}
+LLM's Map   : {'blue': (3, 4), 'green': (1, 4), 'grey': (6, 1), 'red': (0, 0), 'yellow': (9, 2)}
+----------------------------------------
+Overall Accuracy (Jaccard): 42.86%
+Goal Accuracy (Avg. Correctness): 60.00%
+Euclidean Distance Error (for matched goals): 0.25 units
+2025-08-25 05:26:34,576 - INFO - --- Finished Test Episode #3 ---
+
+2025-08-25 05:27:55,463 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-25 05:27:55,468 - INFO - LLM Response for episode #3:
+Step-by-step reasoning (poses, orientation, and how each observation maps to absolute coordinates). I treat the local (depth, side) -> absolute offset as: offset = depth*forward_vector + side*right_vector, with forward/right vectors depending on facing. East=(+1,0) forward, right=(0,+1); South=(0,+1) forward, right=(-1,0); West=(-1,0) forward, right=(0,-1); North=(0,-1) forward, right=(+1,0). Start at absolute (9,5), facing South.
+
+Initial: (9,5), facing South — see nothing.
+
+Step1 right: turn to West. Still (9,5) — see nothing.
+
+Step2 forward: move West to (8,5) — see nothing.
+
+Step3 forward: move West to (7,5) — see nothing.
+
+Step4 forward: move West to (6,5). Observed blue at local (4,0). Facing West => offset = (-4,0) -> absolute (2,5). (One observation — later observations suggest slight noise; treat as a noisy report of the same blue.)
+
+Step5 forward: move West to (5,5). Observed blue at (3,1). Facing West => offset = (-3,-1) -> absolute (2,4).
+
+Step6 forward: move West to (4,5). Observed green at (4,1) -> offset (-4,-1) -> absolute (0,4). Observed blue at (2,1) -> offset (-2,-1) -> absolute (2,4).
+
+Step7 forward: move West to (3,5). Observed green at (3,1) -> offset (-3,-1) -> absolute (0,4). Observed blue at (1,1) -> offset (-1,-1) -> absolute (2,4).
+
+Step8 forward: move West to (2,5). Observed green at (2,0) -> offset (-2,0) -> absolute (0,5) (one noisy green report). Observed blue at (0,1) -> offset (0,-1) -> absolute (2,4).
+
+Step9 left: turn to South at (2,5) — see nothing.
+
+Step10 forward: move South to (2,6) — see nothing.
+
+Step11 right: turn to West at (2,6). Observed green at (2,2) -> facing West offset (-2,-2) -> absolute (0,4). Observed blue at (0,2) -> offset (0,-2) -> absolute (2,4).
+
+Step12 right: turn to North at (2,6). Observed green at (2,-2) -> facing North offset (-2,-2) -> absolute (0,4). Observed blue at (2,-1) -> offset (-1,-2) -> absolute (1,4) (one noisy blue report slightly left of main cluster).
+
+Step13 forward: move North to (2,5). Observed green at (0,-2) -> offset (-2,0) -> absolute (0,5) (again a +1 noise in depth or side). Observed blue at (1,0) -> offset (0,-1) -> absolute (2,4).
+
+Step14 forward: move North to (2,4). Observed green at (0,-2) -> offset (-2,0) -> absolute (0,4).
+
+Step15 forward: move North to (2,3). walls only.
+
+Step16 right: turn to East at (2,3). Observed grey at (3,-2) -> facing East offset (3,-2) -> absolute (5,1). Observed blue at (0,1) -> offset (0,1) -> absolute (2,4).
+
+Step17 forward: move East to (3,3). Observed grey at (2,-2) -> offset (2,-2) -> absolute (5,1). Observed yellow at (4,-1) -> offset (4,-1) -> absolute (7,2).
+
+Step18 forward: move East to (4,3). Observed grey at (1,-2) -> offset (1,-2) -> absolute (5,1). Observed yellow at (3,-1) -> offset (3,-1) -> absolute (7,2).
+
+Step19 forward: move East to (5,3). walls only.
+
+Step20 forward: move East to (6,3). walls only.
+
+Step21 right: turn to South at (6,3). Observed purple at (4,1) -> facing South offset (-1,4) -> absolute (5,7).
+
+Synthesis / handling noise and faults:
+- Blue reports almost always map to absolute (2,4). A few reports (2,5) or (1,4) are consistent with discrete ±1 observation noise. Most likely single blue flag at (2,4).
+- Green reports cluster at (0,4) with occasional noisy reports at (0,5). Most likely single green flag at (0,4).
+- Grey reports from three consecutive observations (different poses & facings) all map to (5,1) — strong evidence for a grey flag at (5,1).
+- Yellow observed twice (different poses/facings) both map to (7,2) — yellow at (7,2).
+- Purple observed once (step21) at (5,7). No contradictory data — take purple at (5,7).
+- I found no compelling evidence of action faults or log blackouts that would change these relative placements; the observations are mutually consistent once you allow for ±1 discrete observation noise.
+
+Final map summary:
+&&&
+a blue flag at coordinate (2,4) a green flag at coordinate (0,4) a grey flag at coordinate (5,1) a yellow flag at coordinate (7,2) a purple flag at coordinate (5,7).
+&&&
+2025-08-25 05:27:55,469 - INFO - --- Judgment for Episode #3 ---
+2025-08-25 05:27:55,469 - INFO - Result: IMPERFECT
+2025-08-25 05:27:55,469 - INFO - Ground Truth: {'green': (1, 4), 'blue': (3, 4), 'grey': (6, 1), 'purple': (6, 8), 'yellow': (8, 2)}
+LLM's Map   : {'blue': (2, 4), 'green': (0, 4), 'grey': (5, 1), 'yellow': (7, 2), 'purple': (5, 7)}
+----------------------------------------
+Overall Accuracy (Jaccard): 0.00%
+Goal Accuracy (Avg. Correctness): 0.00%
+Euclidean Distance Error (for matched goals): 1.08 units
+2025-08-25 05:28:00,474 - INFO - --- Starting Test Episode #4 ---
+2025-08-25 05:28:01,092 - INFO - Sending prompt to Gemini for episode #4...
+2025-08-25 05:28:01,092 - INFO - Prompt for episode #4:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (9, 4). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+You will see walls in your view, but they are not part of the map you need to build. Neglect them. However, if you are facing a wall and go forward, you will not be able to move forward, your position will not change.
+Note that each flag is uniquely colored. 
+
+
+
+
+### WARNING: DATA CORRUPTION ###
+Your primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:
+- **Action Faults:** Two kinds may occur:
+  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.
+  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. 
+- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. 
+- **Log Blackout:** A continuous block of actions (5–10 steps) may be missing from the log. You may see, for example, Step 40 followed by Step 41, but the robot's pose will have changed sharply as if it teleported.
+
+You cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.
+        
+### OBSERVATION LOG ###
+Initial Observation: You're facing East. You see nothing of interest..
+Step1: right.  You can see grey walls at coordinates: (4, -2), (3, 0), (2, -2), (2, -2), (0, -2), a purple flag at coordinate (4, 0).
+Step2: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (0, -2), (0, -2), a purple flag at coordinate (4, -2).
+Step3: forward.  You can see grey walls at coordinates: (3, -2), (3, -2), (2, -2), (1, -2), (0, -2), a purple flag at coordinate (2, 0).
+Step4: right.  You can see a blue flag at coordinate (4, -2), a purple flag at coordinate (0, -2).
+Step5: forward.  You can see a blue flag at coordinate (3, -2).
+Step6: forward.  You can see a blue flag at coordinate (2, -2).
+Step7: forward.  You can see a blue flag at coordinate (3, -2).
+Step8: right.  You can see a yellow flag at coordinate (3, -1).
+Step9: forward.  You can see a yellow flag at coordinate (3, -1).
+Step10: forward.  You can see grey walls at coordinates: (3, -2), (4, -1), (4, 0), (4, 1), (4, 2), a yellow flag at coordinate (1, -1).
+Step11: left.  You can see a yellow flag at coordinate (2, 1).
+Step12: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 2), (4, 2), a yellow flag at coordinate (0, 1).
+Step13: left.  You can see a blue flag at coordinate (4, -1).
+Step14: right.  You can see a blue flag at coordinate (3, -1).
+Step15: forward.  You can see a blue flag at coordinate (2, 0).
+Step16: forward.  You can see grey walls at coordinates: (4, -2), (2, -1), (4, 0), (4, 1), (3, 2), a blue flag at coordinate (1, -1).
+Step17: forward.  You can see grey walls at coordinates: (2, -2), (2, -2), (4, -1), (3, -1), (4, 0), (3, 0), (4, 1), (4, 1), (4, 2), (3, 2), a blue flag at coordinate (0, 0).
+Step18: right.  You can see grey walls at coordinates: (4, -2), (4, 1), (4, 0), (4, 1), (4, 2), a green flag at coordinate (3, 0), a grey flag at coordinate (3, 1).
+Step19: forward.  You can see a yellow flag at coordinate (2, 0).
+Step20: forward.  You can see a yellow flag at coordinate (2, 0).
+Step21: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2), a yellow flag at coordinate (1, 0).
+Step22: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (4, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2).
+Step23: right.  You see nothing of interest..
+Step24: forward.  You see nothing of interest..
+Step25: forward.  You see nothing of interest..
+Step26: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (3, 2).
+Step27: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (4, 0), (3, -1), (4, 1), (3, 0), (2, 2), (3, 2).
+Step28: right.  You can see a blue flag at coordinate (4, 0).
+Step29: forward.  You can see a blue flag at coordinate (3, 0).
+Step30: forward.  You can see a blue flag at coordinate (2, 0).
+Step31: forward.  You can see a blue flag at coordinate (1, 0).
+Step32: forward.  You can see a green flag at coordinate (4, 0), a grey flag at coordinate (4, 1).
+Step33: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2), a green flag at coordinate (3, 0), a grey flag at coordinate (3, 1).
+Step34: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, 0), (3, -1), (3, 0), (3, 0), (4, 1), (3, 2), (4, 2), (2, 2), a green flag at coordinate (2, 0), a grey flag at coordinate (2, 1).
+Step35: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (4, -1), (3, -1), (2, -1), (4, 0), (3, 0), (2, 0), (4, 1), (3, 1), (2, 1), (4, 2), (3, 2), (2, 1), a green flag at coordinate (2, 0), a grey flag at coordinate (0, 1).
+Step36: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (3, -1), (3, -1), (2, -1), (1, -1), (3, 0), (3, 0), (2, 0), (1, -1), (4, 2), (3, 1), (2, 1), (1, 1), (4, 2), (3, 2), (2, 2), (1, 2), a grey flag at coordinate (2, 1).
+Step37: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (1, -1), (2, -1), (1, -1), (0, -1), a grey flag at coordinate (1, 2).
+Step38: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -2), (3, -1), (2, -1), (1, -1), (0, -1).
+Step39: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -1), (4, -1), (4, -1), (2, -1), (1, -1), (0, -1).
+Step40: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (3, -1), (3, -1), (2, -1), (1, -2), (0, -1).
+Step41: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (0, -2), (1, -2), (4, -2), (3, -1), (2, -1), (1, -1), (0, 0).
+Step42: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (1, -2), (1, -2), (0, -2), (4, -1), (3, -1), (2, -1), (1, -1), (0, -1), (4, 0), (4, 1), (4, 2).
+Step43: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -1), (1, -2), (0, -2), (4, -1), (3, -1), (2, -1), (1, -1), (0, -1), (4, 0), (3, 0), (4, 1), (3, 2), (4, 2), (3, 2).
+Step44: forward.  You can see grey walls at coordinates: (3, -1), (3, -2), (1, -2), (1, -2), (0, -2), (4, -1), (3, -1), (2, 0), (1, -1), (0, -1), (3, 1), (3, 0), (2, 0), (4, 1), (3, 0), (1, 1), (4, 2), (3, 2), (2, 1)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&& 
+
+2025-08-25 05:28:06,016 - INFO - RBPF Result: IMPERFECT
+2025-08-25 05:28:06,017 - INFO - Ground Truth: {'grey': (1, 7), 'green': (1, 8), 'yellow': (4, 3), 'blue': (5, 8), 'purple': (9, 8)}
+LLM's Map   : {'blue': (5, 8), 'grey': (1, 9), 'purple': (9, 8), 'red': (0, 5), 'yellow': (5, 3)}
+----------------------------------------
+Overall Accuracy (Jaccard): 25.00%
+Goal Accuracy (Avg. Correctness): 40.00%
+Euclidean Distance Error (for matched goals): 0.75 units
+2025-08-25 05:28:06,017 - INFO - --- Finished Test Episode #4 ---
+
+2025-08-25 05:29:41,808 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-25 05:29:41,815 - INFO - LLM Response for episode #4:
+Step-by-step reasoning (shortened, with key poses and evidence)
+
+Starting pose and conventions
+- Start at absolute (9,4) facing East. Mapping used: absolute = (x,y) + d*F + s*R where F (forward) and R (right) depend on facing:
+  - East: F=(1,0), R=(0,1)
+  - South: F=(0,1), R=(-1,0)
+  - West: F=(-1,0), R=(0,-1)
+  - North: F=(0,-1), R=(1,0)
+- I followed the logged actions to track pose (allowing that some individual observations may be noisy or actions may be faulty). For each flag observation I converted the reported local (Depth,Side) into absolute coordinates using the pose at that step.
+
+Pose summary (important poses used)
+- Step0: (9,4) facing East
+- Step1 after right: (9,4) facing South
+- Steps2–3: (9,5) → (9,6) facing South
+- Steps4–7: moved West → poses ended near (6,6) facing West
+- Steps8–12: moved/turned, observations clustered around absolute ~ (5,2..3) region
+- Steps13–17: moved West across x≈2–4 region (observations clustered around x≈2–4, y≈4–5)
+- Steps18–22: moved North to about x=2 area (observations around x≈2, y≈0..1)
+- Steps23–31: moved East then South to around x=6 area (observations centered near x=6, y≈4..8)
+- Steps32–36: successive south moves produced many repeated observations consistent with a flag around (6,8) and another around (5,8)
+- Final moves (37–44) moved West then North; those were mostly wall observations and no new stable flag locations.
+
+Clustering observations by color (handling noisy local coordinates / possible action faults)
+- Purple: observations mapped mostly to (9,8) (three independent observations); one outlier at (11,9) — treat that as noise. Conclusion: purple ≈ (9,8).
+- Green: multiple consistent observations (steps 32–34) map to (6,8). One early ambiguous reading near (2,1) is likely noisy/faulty. Conclusion: green ≈ (6,8).
+- Grey (flag): many reads across steps mapped consistently near (5,8) (several consecutive steps). A single earlier grey at (3,1) is inconsistent with the repeated later cluster and likely noisy. Conclusion: grey flag ≈ (5,8).
+- Yellow: early readings around (5,2–3) but a consecutive block of steps (19–21) strongly and consistently places the yellow near (2,0/1) (two reads at (2,0), one at (2,1)). I take the more consistent later cluster as the true location. Conclusion: yellow ≈ (2,0).
+- Blue: the blue observations are the most ambiguous (three separate clusters appear in the raw conversions). The most repeated, tightly-consistent block of blue observations (steps 28–31) puts blue at (6,4); earlier disparate readings are likely from steps where either an action was spurious or a silent extra move changed the robot's true pose. Conclusion (choosing the strongest consistent cluster): blue ≈ (6,4).
+
+Summary of assumptions and error handling
+- I assumed the robot's logged actions give the baseline trajectory, but treated single outlier absolute positions as noisy observations and clustered repeated consistent observations as reliable.
+- Where a color had several clusters, I selected the cluster with the strongest repeated, consecutive support in the log (likely the true flag location).
+- Walls were ignored for the final map as requested.
+
+Final map (most likely positions)
+&&&
+a purple flag at coordinate (9,8) a blue flag at coordinate (6,4) a green flag at coordinate (6,8) a yellow flag at coordinate (2,0) a grey flag at coordinate (5,8).
+&&&
+2025-08-25 05:29:41,816 - INFO - --- Judgment for Episode #4 ---
+2025-08-25 05:29:41,816 - INFO - Result: IMPERFECT
+2025-08-25 05:29:41,816 - INFO - Ground Truth: {'grey': (1, 7), 'green': (1, 8), 'yellow': (4, 3), 'blue': (5, 8), 'purple': (9, 8)}
+LLM's Map   : {'purple': (9, 8), 'blue': (6, 4), 'green': (6, 8), 'yellow': (2, 0), 'grey': (5, 8)}
+----------------------------------------
+Overall Accuracy (Jaccard): 11.11%
+Goal Accuracy (Avg. Correctness): 20.00%
+Euclidean Distance Error (for matched goals): 3.37 units
+2025-08-25 05:29:46,822 - INFO - --- Starting Test Episode #5 ---
+2025-08-25 05:29:47,211 - INFO - Sending prompt to Gemini for episode #5...
+2025-08-25 05:29:47,211 - INFO - Prompt for episode #5:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (9, 2). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+You will see walls in your view, but they are not part of the map you need to build. Neglect them. However, if you are facing a wall and go forward, you will not be able to move forward, your position will not change.
+Note that each flag is uniquely colored. 
+
+
+
+
+### WARNING: DATA CORRUPTION ###
+Your primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:
+- **Action Faults:** Two kinds may occur:
+  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.
+  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. 
+- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. 
+- **Log Blackout:** A continuous block of actions (5–10 steps) may be missing from the log. You may see, for example, Step 40 followed by Step 41, but the robot's pose will have changed sharply as if it teleported.
+
+You cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.
+        
+### OBSERVATION LOG ###
+Initial Observation: You're facing East. You see nothing of interest..
+Step1: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), a red flag at coordinate (4, -1).
+Step2: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (1, -2), a green flag at coordinate (4, 1), a red flag at coordinate (3, 1).
+Step3: forward.  You can see grey walls at coordinates: (3, -2), (3, -2), (2, 0), (1, -2), (0, -2), a green flag at coordinate (3, 2), a red flag at coordinate (2, 2).
+Step4: right.  You can see a blue flag at coordinate (3, -2), a red flag at coordinate (1, -2).
+Step5: forward.  You can see a blue flag at coordinate (2, -2), a red flag at coordinate (0, 1).
+Step6: forward.  You can see a blue flag at coordinate (1, -2), a yellow flag at coordinate (4, 1).
+Step7: forward.  You can see a blue flag at coordinate (0, -2), a yellow flag at coordinate (3, 2).
+Step8: left.  You can see a blue flag at coordinate (2, -1).
+Step9: forward.  You can see a blue flag at coordinate (1, -1).
+Step10: forward.  You can see a blue flag at coordinate (0, -1).
+Step11: right.  You can see a grey flag at coordinate (4, -1).
+Step12: left.  You can see a grey flag at coordinate (4, -1).
+Step13: right.  You can see a yellow flag at coordinate (4, -1), a blue flag at coordinate (0, 1).
+Step14: right.  You can see a red flag at coordinate (3, 0), a blue flag at coordinate (1, 0), a green flag at coordinate (3, 1).
+Step15: forward.  You can see a red flag at coordinate (2, 0), a green flag at coordinate (2, 1).
+Step16: right.  You can see a green flag at coordinate (1, -1), a red flag at coordinate (0, -2), a blue flag at coordinate (0, 1).
+Step17: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2), a green flag at coordinate (0, 0).
+Step18: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (4, 0), (3, 0), (4, 2), (3, 1), (4, 2), (3, 2).
+Step19: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (4, -1), (3, -1), (2, -2), (4, 0), (3, 0), (2, -2), (4, 1), (3, 1), (1, 1), (4, 2), (3, 2), (2, 2).
+Step20: left.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2), (3, 2), (2, 2), (0, 2), (0, 2), a green flag at coordinate (1, -2).
+Step21: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (4, -1), (4, -1), (3, -1), (4, 0), (3, 0), (2, 0), (3, 1), (3, 1), (2, 1), (4, 2), (3, 2), (2, 1).
+Step22: right.  You can see grey walls at coordinates: (4, -2), (3, -1), (2, -2), (1, -2), (0, -2).
+Step23: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2).
+Step24: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), a grey flag at coordinate (4, 2).
+Step25: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (3, 0), (4, 1), (4, 2), a grey flag at coordinate (3, 2).
+Step26: right.  You can see a blue flag at coordinate (3, 2).
+Step27: forward.  You can see a blue flag at coordinate (2, 2).
+Step28: forward.  You can see a blue flag at coordinate (1, 2).
+Step29: forward.  You can see a yellow flag at coordinate (4, -1), a blue flag at coordinate (0, 2).
+Step30: forward.  You can see a yellow flag at coordinate (3, -1).
+Step31: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (3, 1), (4, 2), a yellow flag at coordinate (3, -1).
+Step32: forward.  You can see grey walls at coordinates: (4, -2), (4, -2), (4, 0), (3, -1), (4, 1), (4, -2), (4, 1), (3, 1), (4, 2), (3, 2), a yellow flag at coordinate (1, -1).
+Step33: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (3, -2), (4, -1), (3, -1), (1, -1), (4, 0), (3, 0), (0, 0), (4, 1), (3, 0), (2, 1), (4, 2), (3, 2), (1, 2), a yellow flag at coordinate (0, -1).
+Step34: forward.  You can see grey walls at coordinates: (4, -2), (3, 0), (2, -2), (1, -2), (4, -1), (4, -1), (2, -1), (1, -1), (4, 0), (3, -2), (2, 0), (0, 0), (4, 1), (3, 1), (2, 1), (1, 1), (4, 2), (3, 2), (2, 2), (1, 2).
+Step35: right.  You can see grey walls at coordinates: (4, -2), (4, -2), (2, -2), (1, -2), (0, -2), (4, -1), (2, -1), (2, -1), (0, -1), (0, -1).
+Step36: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (3, -1), (1, -1), (1, -1), (0, -1).
+Step37: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (2, -2), (0, -2), (4, -2), (4, -1), (2, -1), (1, -1), (0, -1).
+Step38: forward.  You can see grey walls at coordinates: (4, -2), (4, -2), (2, -2), (0, -2), (0, -2), (4, -2), (3, -1), (2, -1), (1, -1), (0, -1), (4, 0), (4, 1), (4, 2).
+Step39: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (3, -1), (2, -1), (1, -1), (0, -1), (4, 0), (3, 1), (4, 1), (3, 1), (4, 2), (3, 2).
+Step40: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, -1), (4, 1), (3, 1), (2, -1), (1, 1), (0, 1), (4, 2), (3, -1), (2, 0), (1, 2), (0, 2), a yellow flag at coordinate (1, -1).
+Step41: forward.  You can see grey walls at coordinates: (4, -2), (4, -2), (4, -1), (3, -1), (4, 0), (3, -1), (3, 1), (3, 1), (2, 2), (0, 1), (0, 1), (4, 2), (2, 2), (2, 2), (1, 2), (0, 2), a yellow flag at coordinate (0, -2).
+Step42: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (4, -1), (3, -1), (2, -1), (4, 0), (3, 0), (1, 0), (4, 1), (3, 1), (2, 1), (1, 1), (0, 2), (4, 2), (3, 2), (2, 2), (1, 2), (1, 2).
+Step43: left.  You can see a yellow flag at coordinate (1, -1), grey walls at coordinates: (4, 2), (4, 2), (2, 2), (1, 2), (0, 2)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&& 
+
+2025-08-25 05:29:51,285 - INFO - RBPF Result: IMPERFECT
+2025-08-25 05:29:51,285 - INFO - Ground Truth: {'grey': (1, 7), 'yellow': (3, 2), 'blue': (6, 6), 'red': (8, 6), 'green': (8, 7)}
+LLM's Map   : {'blue': (6, 6), 'green': (8, 7), 'grey': (1, 7), 'red': (8, 6), 'yellow': (3, 3)}
+----------------------------------------
+Overall Accuracy (Jaccard): 66.67%
+Goal Accuracy (Avg. Correctness): 80.00%
+Euclidean Distance Error (for matched goals): 0.20 units
+2025-08-25 05:29:51,285 - INFO - --- Finished Test Episode #5 ---
+
+2025-08-25 05:31:34,331 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-25 05:31:34,338 - INFO - LLM Response for episode #5:
+Step-by-step reasoning (shortened, showing pose updates and how I fused noisy local detections):
+
+Coordinate transforms I used (local (d, s) -> absolute), depending on facing:
+- East: (x + d, y + s)
+- South: (x - s, y + d)
+- West: (x - d, y - s)
+- North: (x + s, y - d)
+
+Start: absolute (9,2), facing East.
+
+I assumed actions generally executed as logged (noting that a few early/isolated measurements looked inconsistent and were treated as noisy). I converted every flag observation from local -> absolute using the robot pose at that step. Then I clustered per color, treating reported local coordinates as discretely noisy (±1–3). Below are the main pose updates and the dominant clusters I observed:
+
+- Steps 0–3: turned right (face South) and moved south a few steps. Several red/green observations mapped roughly to the region around x≈7–8, y≈6–7. I treated the earliest outlying red observations as noisy.
+- Steps 4–10: turned to West, moved west; many blue reports mapped strongly to the same absolute cell around (6,6). These repeated detections make a blue cluster at (6,6) very likely.
+- Steps 11–16: later turns and moves put the robot near x≈6, y≈5–6 and facing East/North. Multiple red observations from steps 14–16 consistently map to (6,3). I therefore place the red flag at (6,3).
+- Green observations appear scattered between y≈3–7 but consistently fall on x=7 in many reliable frames (steps 14–17,20). The densest, most-consistent cluster is around (7,4), so I place the green flag at (7,4).
+- From steps ~26–33 the robot was far west and many yellow reports mapped repeatedly to (2,9) (consistent across several successive steps while moving west). I take (2,9) as the yellow flag.
+- Grey-flag reports were few and noisy but two successive detections (steps 24–25) map to (7,11) when the robot was in a consistent pose; earlier discrepant grey detections appear to be coordinate noise. I place the grey flag at (7,11).
+
+Final fused map (most likely positions given noisy local coordinates and the whole log):
+
+&&&
+a blue flag at coordinate (6,6) a red flag at coordinate (6,3) a green flag at coordinate (7,4) a yellow flag at coordinate (2,9) a grey flag at coordinate (7,11).
+&&&
+2025-08-25 05:31:34,338 - INFO - --- Judgment for Episode #5 ---
+2025-08-25 05:31:34,338 - INFO - Result: IMPERFECT
+2025-08-25 05:31:34,338 - INFO - Ground Truth: {'grey': (1, 7), 'yellow': (3, 2), 'blue': (6, 6), 'red': (8, 6), 'green': (8, 7)}
+LLM's Map   : {'blue': (6, 6), 'red': (6, 3), 'green': (7, 4), 'yellow': (2, 9), 'grey': (7, 11)}
+----------------------------------------
+Overall Accuracy (Jaccard): 11.11%
+Goal Accuracy (Avg. Correctness): 20.00%
+Euclidean Distance Error (for matched goals): 4.21 units
+2025-08-25 05:31:39,344 - INFO - --- Starting Test Episode #6 ---
+2025-08-25 05:31:39,615 - INFO - Sending prompt to Gemini for episode #6...
+2025-08-25 05:31:39,615 - INFO - Prompt for episode #6:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (8, 5). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+You will see walls in your view, but they are not part of the map you need to build. Neglect them. However, if you are facing a wall and go forward, you will not be able to move forward, your position will not change.
+Note that each flag is uniquely colored. 
+
+
+
+
+### WARNING: DATA CORRUPTION ###
+Your primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:
+- **Action Faults:** Two kinds may occur:
+  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.
+  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. 
+- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. 
+- **Log Blackout:** A continuous block of actions (5–10 steps) may be missing from the log. You may see, for example, Step 40 followed by Step 41, but the robot's pose will have changed sharply as if it teleported.
+
+You cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.
+        
+### OBSERVATION LOG ###
+Initial Observation: You're facing West. You see nothing of interest..
+Step1: forward.  You can see a blue flag at coordinate (4, 0).
+Step2: forward.  You can see a blue flag at coordinate (3, 0).
+Step3: forward.  You can see a blue flag at coordinate (2, 0).
+Step4: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2), a blue flag at coordinate (1, -1).
+Step5: left.  You can see a red flag at coordinate (4, 0), a blue flag at coordinate (0, 1).
+Step6: forward.  You can see a red flag at coordinate (3, 0).
+Step7: left.  You can see a red flag at coordinate (3, 0).
+Step8: left.  You see nothing of interest..
+Step9: forward.  You can see a grey flag at coordinate (4, 1).
+Step10: forward.  You can see a grey flag at coordinate (3, 1).
+Step11: forward.  You can see grey walls at coordinates: (4, 0), (4, -1), (4, 0), (4, 1), (4, 2), a grey flag at coordinate (2, 1).
+Step12: forward.  You can see grey walls at coordinates: (3, -2), (3, -2), (4, -2), (3, -1), (4, 1), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2), a grey flag at coordinate (1, 1).
+Step13: right.  You can see a purple flag at coordinate (4, -1), a grey flag at coordinate (0, 0), a green flag at coordinate (4, 1).
+Step14: right.  You see nothing of interest..
+Step15: right.  You see nothing of interest..
+Step16: forward.  You see nothing of interest..
+Step17: forward.  You can see grey walls at coordinates: (4, -1), (4, -1), (4, 0), (4, 1), (4, 2).
+Step18: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (4, -1), (3, 0), (3, 1), (4, 1), (3, 1), (4, 1), (3, 2).
+Step19: left.  You see nothing of interest..
+Step20: forward.  You can see a blue flag at coordinate (4, -2).
+Step21: forward.  You can see a blue flag at coordinate (3, -2).
+Step22: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 1).
+Step23: right.  You see nothing of interest..
+Step24: right.  You see nothing of interest..
+Step25: right.  You can see a blue flag at coordinate (3, 0).
+Step26: right.  You can see a blue flag at coordinate (2, -1), grey walls at coordinates: (3, 2), (3, 2), (2, 2), (1, 2), (0, 2).
+Step27: forward.  You can see a blue flag at coordinate (2, -1), grey walls at coordinates: (4, 2), (3, 2), (2, 2), (1, 2), (0, 2).
+Step28: forward.  You can see a red flag at coordinate (4, -2), a blue flag at coordinate (0, -1), grey walls at coordinates: (4, 2), (3, 2), (3, 2), (0, 2), (0, 2).
+Step29: left.  You can see a red flag at coordinate (4, -2), a blue flag at coordinate (0, 1), grey walls at coordinates: (4, 2), (3, 2), (2, 2), (1, 2), (0, 2).
+Step30: forward.  You can see a red flag at coordinate (3, -2), grey walls at coordinates: (4, 0), (3, 2), (2, 2), (1, 2), (0, 2).
+Step31: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, -1), (4, 1), (4, 2), (3, 1), (2, 2), (3, 2), (0, 2), a red flag at coordinate (2, -2).
+Step32: forward.  You can see grey walls at coordinates: (4, -2), (1, -2), (4, -1), (4, -1), (4, 0), (3, 0), (4, 0), (3, 1), (4, 2), (2, 2), (2, 2), (0, 2), (0, 2), a red flag at coordinate (1, -2).
+Step33: forward.  You can see grey walls at coordinates: (4, -2), (3, -1), (2, -2), (4, -1), (3, -1), (2, -1), (4, 0), (4, 0), (2, 0), (4, 1), (4, 1), (2, 1), (4, 2), (3, 2), (1, 2), (1, 2), (1, 2), a red flag at coordinate (0, -2).
+Step34: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, 0), (1, -2), (0, -2), (4, -1), (3, -1), (2, -1), (4, -2), (3, 0), (2, 0), (4, 1), (3, 1), (2, 1), (4, 2), (3, 2), (2, 2)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&& 
+
+2025-08-25 05:31:42,776 - INFO - RBPF Result: IMPERFECT
+2025-08-25 05:31:42,777 - INFO - Ground Truth: {'blue': (3, 5), 'red': (4, 9), 'green': (7, 10), 'grey': (9, 7), 'purple': (9, 10)}
+LLM's Map   : {'blue': (3, 5), 'green': (0, 9), 'grey': (9, 7), 'purple': (8, 9), 'red': (4, 9)}
+----------------------------------------
+Overall Accuracy (Jaccard): 42.86%
+Goal Accuracy (Avg. Correctness): 60.00%
+Euclidean Distance Error (for matched goals): 1.70 units
+2025-08-25 05:31:42,777 - INFO - --- Finished Test Episode #6 ---
+
+2025-08-25 05:33:09,794 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-25 05:33:09,802 - INFO - LLM Response for episode #6:
+Step-by-step reasoning (summary, accounting for noisy observations and occasional bad entries)
+
+- Coordinate / motion conventions used:
+  - Start absolute pose: (8,5), facing West. Forward when facing West subtracts from x; South is increasing y.
+  - Local -> absolute: absolute = robot_pos + depth*forward_vec + side*right_vec (right_vec is +90° clockwise of forward).
+  - I treated noisy local coordinates as discrete Gaussian-perturbed readings and clustered repeated sightings to infer a single most-likely absolute position per colored flag. I ignored wall reports (they are not part of the required map) and treated a few clearly inconsistent single outliers as corrupted/noisy readings.
+
+- Early observations (Steps 1–6) are the cleanest cluster for the blue and red flags:
+  - Steps 1–3: while moving West (positions (7,5)->(6,5)->(5,5)) the same blue flag is repeatedly seen at local coords that map to absolute (3,5). Step 4 had a nearby noisy blue reading (3,6) which is 1 unit off; Step 5 again gives a reading consistent with (3,5). I therefore take the blue flag to be at (3,5).
+  - Steps 5–6: while later facing South at position (4,5)->(4,6) the red flag is repeatedly observed at depths mapping to absolute (4,9). Those two observations are consistent, so I take the red flag to be at (4,9).
+
+- Middle observations (Steps 9–13) give a consistent cluster for a grey flag and also show purple and green flags:
+  - Steps 9–12: repeated grey-flag sightings at different depths and sides all map to absolute (5,1). This is a strong consistent cluster, so the grey flag is at (5,1).
+  - Step 13 (single-step observation after turns) reports a purple and a green; converting those readings from the recorded robot pose yields purple ≈ (8,1) and green ≈ (8,3). Although single-step, both are spatially plausible and not inconsistent with nearby grey/blue/red placements, so I accept them.
+
+- Later observations contain many noisy and partially inconsistent reports (including some likely corrupted/merged actions and clipped coordinates). Many of those later blue/red/grey reports scatter around the clusters identified above; I treat the scattered points as noisy/perturbed measurements of the same flags rather than as additional distinct flags (the log warned of substantial discrete-coordinate noise and occasional action faults). The early/mid-step consistent clusters (blue (3,5), red (4,9), grey (5,1), purple (8,1), green (8,3)) are the most supported estimates.
+
+Final inferred map (most likely single absolute locations for each uniquely colored flag):
+&&&
+a blue flag at coordinate (3,5) a red flag at coordinate (4,9) a grey flag at coordinate (5,1) a purple flag at coordinate (8,1) a green flag at coordinate (8,3).
+&&&
+2025-08-25 05:33:09,802 - INFO - --- Judgment for Episode #6 ---
+2025-08-25 05:33:09,802 - INFO - Result: IMPERFECT
+2025-08-25 05:33:09,802 - INFO - Ground Truth: {'blue': (3, 5), 'red': (4, 9), 'green': (7, 10), 'grey': (9, 7), 'purple': (9, 10)}
+LLM's Map   : {'blue': (3, 5), 'red': (4, 9), 'grey': (5, 1), 'purple': (8, 1), 'green': (8, 3)}
+----------------------------------------
+Overall Accuracy (Jaccard): 25.00%
+Goal Accuracy (Avg. Correctness): 40.00%
+Euclidean Distance Error (for matched goals): 4.67 units
+2025-08-25 05:33:14,808 - INFO - --- Starting Test Episode #7 ---
+2025-08-25 05:33:15,068 - INFO - Sending prompt to Gemini for episode #7...
+2025-08-25 05:33:15,068 - INFO - Prompt for episode #7:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (7, 8). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+You will see walls in your view, but they are not part of the map you need to build. Neglect them. However, if you are facing a wall and go forward, you will not be able to move forward, your position will not change.
+Note that each flag is uniquely colored. 
+
+
+
+
+### WARNING: DATA CORRUPTION ###
+Your primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:
+- **Action Faults:** Two kinds may occur:
+  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.
+  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. 
+- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. 
+- **Log Blackout:** A continuous block of actions (5–10 steps) may be missing from the log. You may see, for example, Step 40 followed by Step 41, but the robot's pose will have changed sharply as if it teleported.
+
+You cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.
+        
+### OBSERVATION LOG ###
+Initial Observation: You're facing West. You can see a grey flag at coordinate (3, -1).
+Step1: right.  You can see a yellow flag at coordinate (4, -2), a purple flag at coordinate (3, 2).
+Step2: right.  You can see a yellow flag at coordinate (4, -2), a purple flag at coordinate (3, 2).
+Step3: forward.  You can see a yellow flag at coordinate (3, -2), a purple flag at coordinate (3, 2).
+Step4: forward.  You can see a yellow flag at coordinate (2, -2), a purple flag at coordinate (1, 2).
+Step5: forward.  You can see a yellow flag at coordinate (2, -2), a purple flag at coordinate (0, 2).
+Step6: forward.  You can see grey walls at coordinates: (4, -2), (4, -2), (4, 0), (4, 1), (3, 2), a yellow flag at coordinate (0, -2).
+Step7: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (4, -1), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2).
+Step8: forward.  You can see a yellow flag at coordinate (2, -1), a green flag at coordinate (3, 1).
+Step9: forward.  You can see a yellow flag at coordinate (0, -1), a green flag at coordinate (2, 1).
+Step10: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (3, -1), (2, -2), (4, 0), (3, 0), (4, 1), (3, 1), (4, 1), (3, 2), a green flag at coordinate (1, -2).
+Step11: right.  You can see a yellow flag at coordinate (0, -1), a purple flag at coordinate (4, 2).
+Step12: right.  You can see a yellow flag at coordinate (0, 1), a purple flag at coordinate (4, 2).
+Step13: forward.  You can see a purple flag at coordinate (3, 2).
+Step14: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2), a purple flag at coordinate (2, 2).
+Step15: right.  You can see a purple flag at coordinate (2, -2), a yellow flag at coordinate (1, 2).
+Step16: forward.  You can see a purple flag at coordinate (1, -2), a yellow flag at coordinate (0, 2).
+Step17: right.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, -2), (4, 0), (4, 2).
+Step18: forward.  You can see a grey flag at coordinate (2, -1).
+Step19: forward.  You can see a grey flag at coordinate (0, -1).
+Step20: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2), a grey flag at coordinate (0, -1).
+Step21: forward.  You can see grey walls at coordinates: (3, -2), (3, -2), (4, -1), (3, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&& 
+
+2025-08-25 05:33:17,183 - INFO - RBPF Result: IMPERFECT
+2025-08-25 05:33:17,183 - INFO - Ground Truth: {'green': (3, 2), 'grey': (4, 9), 'yellow': (5, 4), 'purple': (9, 5), 'red': (10, 9)}
+LLM's Map   : {'green': (4, 1), 'grey': (6, 9), 'purple': (9, 5), 'red': (0, 0), 'yellow': (5, 4)}
+----------------------------------------
+Overall Accuracy (Jaccard): 25.00%
+Goal Accuracy (Avg. Correctness): 40.00%
+Euclidean Distance Error (for matched goals): 3.37 units
+2025-08-25 05:33:17,183 - INFO - --- Finished Test Episode #7 ---
+
+2025-08-25 05:35:03,368 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-25 05:35:03,435 - INFO - LLM Response for episode #7:
+Step-by-step reasoning and pose tracking (I mark robot pose as (x,y,dir) with dir in {E,S,W,N}):
+
+Initial pose: (7,8,W). Local→global transform: global = pos + d*forward + s*right.
+
+I first assume the logged rotations/moves executed as written, unless walls clearly block a forward. That yields this pose sequence:
+- Step0 (initial obs): (7,8,W)
+- Step1 right → (7,8,N)
+- Step2 right → (7,8,E)
+- Step3 forward → (8,8,E)
+- Step4 forward → (9,8,E)
+- Step5 forward → (10,8,E)
+- Step6 forward → (11,8,E)
+- Step7 forward → (12,8,E)
+- Step8 forward → (13,8,E)
+- Step9 forward → (14,8,E)
+- Step10 right → (14,8,S)
+- Step11 right → (14,8,W)
+- Step12 right → (14,8,N)
+- Step13 forward → (14,7,N)
+- Step14 forward → (14,6,N)
+- Step15 right → (14,6,E)
+- Step16 forward → (15,6,E)
+- Step17 right → (15,6,S)
+- Step18 forward → (15,7,S)
+- Step19 forward → (15,8,S)
+- Step20 forward → (15,9,S)
+- Step21 forward → (15,10,S)
+
+I mapped every flag observation (local coordinates) into global coordinates using those poses. Important computed global observations (grouped by reported color):
+
+- Green: observed consistently as
+  - Step8 → (16,9)
+  - Step9 → (16,9)
+  - Step10 → (16,9)
+  These three independent sightings give a tight, repeated cluster at (16,9).
+
+- Purple: many sightings cluster tightly at
+  - Steps12–16 → repeatedly (16,4)
+  (there are earlier, isolated purple readings that map elsewhere under the simple pose trace, but the strong repeated block from Steps12–16 supports (16,4) as the true purple location.)
+
+- Yellow: two clusters appear in the raw mappings:
+  - An early cluster around (11,6) (Steps2–6),
+  - A later cluster around (15,8) (Steps12,15,16 and Step9–11 nearby).
+  Because observations at Steps12,15,16 are exact repeats at (15,8) and occur after the robot moved to the same area, I take (15,8) as the most likely stable yellow location (the earlier cluster is likely the result of noisy local coordinates or of action/noise corruption).
+
+- Grey: one early sighting (initial observation) maps to (4,9). Later in the log there are a few grey sightings that map near (16,9)/(16,8). However the (16,9) spot is already strongly occupied by green (three consistent green sightings). Given (a) colors are intended to identify distinct flags and (b) the initial grey sighting at Step0 is unambiguous and maps to (4,9), the most consistent choice is to place the grey flag at (4,9). The late grey readings near x≈16 are likely mis-localized/noisy observations of the nearby green/other features or reflect log noise.
+
+Notes on anomalies and how I handled them:
+- The log contains noisy local coordinates (discrete offsets) and some conflicting clusters. I clustered repeated sightings by global location and favored positions that had multiple independent, consistent sightings after the robot had moved into that area.
+- There are isolated observations that conflict with the dominant cluster for a color; I treated those as noisy perturbations (coordinate noise, or action faults) rather than separate flags because the problem statement says flag colors are unique.
+- Walls were ignored for mapping flags (as requested); I only used them to note possible forward-blocks (none forced a blocked forward in the assumed execution trace).
+
+Final inferred map (most likely positions given the full sequence, clustering, and accounting for noise/faults):
+
+&&&
+a grey flag at coordinate (4,9) a yellow flag at coordinate (15,8) a purple flag at coordinate (16,4) a green flag at coordinate (16,9).
+&&&
+2025-08-25 05:35:03,436 - INFO - --- Judgment for Episode #7 ---
+2025-08-25 05:35:03,436 - INFO - Result: IMPERFECT
+2025-08-25 05:35:03,436 - INFO - Ground Truth: {'green': (3, 2), 'grey': (4, 9), 'yellow': (5, 4), 'purple': (9, 5), 'red': (10, 9)}
+LLM's Map   : {'grey': (4, 9), 'yellow': (15, 8), 'purple': (16, 4), 'green': (16, 9)}
+----------------------------------------
+Overall Accuracy (Jaccard): 12.50%
+Goal Accuracy (Avg. Correctness): 20.00%
+Euclidean Distance Error (for matched goals): 8.15 units
+2025-08-25 05:35:08,441 - INFO - --- Starting Test Episode #8 ---
+2025-08-25 05:35:08,643 - INFO - Sending prompt to Gemini for episode #8...
+2025-08-25 05:35:08,643 - INFO - Prompt for episode #8:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (4, 3). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+You will see walls in your view, but they are not part of the map you need to build. Neglect them. However, if you are facing a wall and go forward, you will not be able to move forward, your position will not change.
+Note that each flag is uniquely colored. 
+
+
+
+
+### WARNING: DATA CORRUPTION ###
+Your primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:
+- **Action Faults:** Two kinds may occur:
+  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.
+  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. 
+- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. 
+- **Log Blackout:** A continuous block of actions (5–10 steps) may be missing from the log. You may see, for example, Step 40 followed by Step 41, but the robot's pose will have changed sharply as if it teleported.
+
+You cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.
+        
+### OBSERVATION LOG ###
+Initial Observation: You're facing South. You see nothing of interest..
+Step1: left.  You can see a purple flag at coordinate (2, -2).
+Step2: forward.  You can see a purple flag at coordinate (1, -2).
+Step3: forward.  You can see a grey flag at coordinate (4, -2), a purple flag at coordinate (0, -2).
+Step4: right.  You see nothing of interest..
+Step5: forward.  You see nothing of interest..
+Step6: forward.  You see nothing of interest..
+Step7: forward.  You see nothing of interest..
+Step8: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2).
+Step9: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2).
+Step10: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (3, -2), (3, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 1).
+Step11: right.  You can see a green flag at coordinate (4, -1).
+Step12: forward.  You can see a green flag at coordinate (3, -1).
+Step13: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2), a green flag at coordinate (1, -1).
+Step14: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (4, -2), (3, 0), (4, 1), (2, 1), (3, 2), (3, 2), a green flag at coordinate (1, -2).
+Step15: forward.  You can see grey walls at coordinates: (4, -1), (3, -2), (2, -2), (3, -2), (3, -1), (2, -1), (4, 0), (3, 0), (2, 1), (3, 1), (4, 1), (2, 1), (4, 2), (3, 2), (1, 1), a green flag at coordinate (0, -1).
+Step16: right.  You can see grey walls at coordinates: (4, -2), (3, -1), (1, -2), (1, -2), (0, -2).
+Step17: forward.  You can see grey walls at coordinates: (4, -2), (4, -2), (2, -2), (1, -2), (0, -2).
+Step18: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2).
+Step19: right.  You see nothing of interest..
+Step20: right.  You can see a green flag at coordinate (4, 0), grey walls at coordinates: (4, 2), (3, 2), (2, -1), (1, 2), (0, 2).
+Step21: forward.  You can see a red flag at coordinate (3, 1).
+Step22: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2), a red flag at coordinate (2, -1).
+Step23: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2), a red flag at coordinate (1, 0)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&& 
+
+2025-08-25 05:35:10,364 - INFO - RBPF Result: IMPERFECT
+2025-08-25 05:35:10,364 - INFO - Ground Truth: {'blue': (2, 1), 'green': (2, 9), 'purple': (6, 1), 'red': (9, 8), 'grey': (10, 1)}
+LLM's Map   : {'green': (8, 7), 'grey': (9, 1), 'purple': (6, 1), 'red': (2, 9)}
+----------------------------------------
+Overall Accuracy (Jaccard): 12.50%
+Goal Accuracy (Avg. Correctness): 20.00%
+Euclidean Distance Error (for matched goals): 3.60 units
+2025-08-25 05:35:10,364 - INFO - --- Finished Test Episode #8 ---
+
+2025-08-25 05:36:14,109 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-25 05:36:14,120 - INFO - LLM Response for episode #8:
+Step-by-step reasoning (poses, facing, and how local -> absolute mapping is done)
+- Conventions I used: absolute coordinates (x,y). Starting pose (4,3), facing South. For a local sighting (depth d, side s):
+  - absolute = pose + d*(forward_vector) + s*(right_vector)
+  - forward/right vectors depend on facing:
+    - East: forward=(+1,0), right=(0,+1)
+    - South: forward=(0,+1), right=(+1,0)
+    - West: forward=(-1,0), right=(0,-1)
+    - North: forward=(0,-1), right=(-1,0)
+
+Now step through the log, updating pose when an action plausibly succeeds and mapping flagged sightings. I treat occasional small coordinate jitter (±1) as noise; I use clustering across multiple sightings to pick the best absolute locations.
+
+1) Initial: pose (4,3), facing South. Nothing seen.
+2) Step1 left -> facing East. See purple at local (2,-2).
+   - abs = (4,3) + 2*(1,0) + (-2)*(0,1) = (6,1)
+3) Step2 forward -> pose (5,3), facing East. Purple at (1,-2) -> abs = (6,1) (same).
+4) Step3 forward -> pose (6,3), facing East. Purple at (0,-2) -> abs = (6,1) (same). Also a grey flag reported at (4,-2) -> abs = (10,1) (single report).
+   - Purple has three consistent sightings mapping to (6,1) → strong evidence purple flag at (6,1).
+   - Grey flagged once at (10,1) — single report; could be a real grey flag or a misclassified wall/noise.
+5) Step4 right -> facing South. Nothing seen.
+6) Steps5–10 forward ×6 -> pose advances south; many wall sightings (ignored for the map).
+7) Step11 right -> facing West. Green seen at local (4,-1).
+   - using current pose at step11 (6,9) facing West → abs = (2,10)
+8) Step12 forward -> pose (5,9), green at (3,-1) -> abs = (2,10) (consistent).
+9) Step13 forward -> pose (4,9), green at (1,-1) -> abs = (3,10) (one-off, likely ±1 noise).
+10) Step14 forward -> pose (3,9), green at (1,-2) -> abs = (2,11) (one-off).
+11) Step15 forward -> pose (2,9), green at (0,-1) -> abs = (2,10) (exact match again).
+12) The green sightings cluster tightly around (2,10) with a couple of ±1 noisy reports; most frequent exact mapping is (2,10) → infer green flag at (2,10).
+13) Steps16–19 turn/move; pose becomes (2,7) then forward to (2,8),(2,7)-> as logged; walls ignored.
+14) Step20 right,right result -> facing South at pose (2,7). Green reported at (4,0) -> abs = (2,11) (another ±1 neighbor of the green cluster). This is consistent with small observation noise / viewpoint changes. Still center (2,10) is best fit for the green.
+15) Steps21–23 forward ×3 while facing South end with pose (2,10). Red sightings:
+   - Step21 red at local (3,1) when pose was (2,8) -> abs ≈ (3,11)
+   - Step22 red at local (2,-1) when pose (2,9) -> abs ≈ (1,11)
+   - Step23 red at local (1,0) when pose (2,10) -> abs = (2,11)
+   These three cluster around (2,11) (the final step gives exact (2,11)). So the red flag is best placed at (2,11).
+
+Summary of inferred flags (most likely absolute positions, accounting for noisy local reports):
+- Purple flag at (6,1) — strongly supported by three consistent observations.
+- Green flag at (2,10) — cluster of consistent observations (minor ±1 scatter).
+- Red flag at (2,11) — cluster of three observations, final observation exact at (2,11).
+- Grey flag at (10,1) — single observation (step3). Included but lower confidence (may be a misclassified wall/noise).
+
+Final map summary:
+&&&
+a purple flag at coordinate (6,1) a green flag at coordinate (2,10) a red flag at coordinate (2,11) a grey flag at coordinate (10,1).
+&&&
+2025-08-25 05:36:14,121 - INFO - --- Judgment for Episode #8 ---
+2025-08-25 05:36:14,121 - INFO - Result: IMPERFECT
+2025-08-25 05:36:14,121 - INFO - Ground Truth: {'blue': (2, 1), 'green': (2, 9), 'purple': (6, 1), 'red': (9, 8), 'grey': (10, 1)}
+LLM's Map   : {'purple': (6, 1), 'green': (2, 10), 'red': (2, 11), 'grey': (10, 1)}
+----------------------------------------
+Overall Accuracy (Jaccard): 28.57%
+Goal Accuracy (Avg. Correctness): 40.00%
+Euclidean Distance Error (for matched goals): 2.15 units
+2025-08-25 05:36:19,127 - INFO - --- Starting Test Episode #9 ---
+2025-08-25 05:36:19,520 - INFO - Sending prompt to Gemini for episode #9...
+2025-08-25 05:36:19,520 - INFO - Prompt for episode #9:
+
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is (9, 5). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+You will see walls in your view, but they are not part of the map you need to build. Neglect them. However, if you are facing a wall and go forward, you will not be able to move forward, your position will not change.
+Note that each flag is uniquely colored. 
+
+
+
+
+### WARNING: DATA CORRUPTION ###
+Your primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:
+- **Action Faults:** Two kinds may occur:
+  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.
+  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. 
+- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. 
+- **Log Blackout:** A continuous block of actions (5–10 steps) may be missing from the log. You may see, for example, Step 40 followed by Step 41, but the robot's pose will have changed sharply as if it teleported.
+
+You cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.
+        
+### OBSERVATION LOG ###
+Initial Observation: You're facing East. You see nothing of interest..
+Step1: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), a red flag at coordinate (4, 2), a grey flag at coordinate (2, 1).
+Step2: forward.  You can see grey walls at coordinates: (4, -2), (4, -2), (2, -1), (1, -2), (0, -2), a red flag at coordinate (3, 0), a grey flag at coordinate (1, 2).
+Step3: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (4, -1), (4, 1), (4, 1), a red flag at coordinate (2, 0), a grey flag at coordinate (0, 2).
+Step4: right.  You can see a red flag at coordinate (0, -2), a grey flag at coordinate (2, 0).
+Step5: forward.  You can see a grey flag at coordinate (1, 0), a purple flag at coordinate (4, -1).
+Step6: forward.  You can see a purple flag at coordinate (3, 1).
+Step7: forward.  You can see a purple flag at coordinate (2, 1).
+Step8: forward.  You can see a purple flag at coordinate (1, 1), a yellow flag at coordinate (4, 2).
+Step9: right.  You can see a purple flag at coordinate (1, -1), a grey flag at coordinate (0, 2).
+Step10: forward.  You can see a green flag at coordinate (4, -2), a purple flag at coordinate (0, -1).
+Step11: forward.  You can see a green flag at coordinate (3, -2).
+Step12: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (3, 1), (4, 2), a green flag at coordinate (2, -2).
+Step13: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (4, -2), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2), a green flag at coordinate (1, -2).
+Step14: left.  You can see a yellow flag at coordinate (4, -2), a green flag at coordinate (2, 1).
+Step15: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, 1), (4, 2), a yellow flag at coordinate (3, -2), a green flag at coordinate (1, 1).
+Step16: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (4, 0), (3, 0), (4, 1), (3, 1), (4, 2), (3, 2), a yellow flag at coordinate (2, -2), a green flag at coordinate (0, 0).
+Step17: right.  You can see grey walls at coordinates: (4, -2), (2, -2), (4, -1), (3, -1), (4, 0), (3, 0), (3, 1), (3, 1), (4, 2), (3, 2), a green flag at coordinate (1, 0).
+Step18: right.  You can see a green flag at coordinate (0, -1).
+Step19: forward.  You see nothing of interest..
+Step20: forward.  You see nothing of interest..
+Step21: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, 0), (4, -1), (4, 2).
+Step22: forward.  You can see grey walls at coordinates: (4, -2), (3, -1), (4, -1), (3, -1), (4, 0), (2, 0), (4, 1), (3, 2), (3, 2), (3, 2).
+Step23: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (4, -1), (3, -1), (3, -1), (4, 0), (3, 0), (3, -1), (4, 1), (4, 1), (2, 1), (4, 2), (3, 0), (2, 2).
+Step24: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (4, 1), (3, -1), (2, -1), (1, -1), (4, -1), (2, 0), (2, 0), (1, -1), (4, 1), (3, 1), (3, 1), (1, 1), (4, 2), (2, 2), (2, 1), (1, 2).
+Step25: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (3, -1), (1, -2), (1, -1), (0, 0).
+Step26: right.  You see nothing of interest..
+Step27: forward.  You see nothing of interest..
+Step28: forward.  You see nothing of interest..
+Step29: forward.  You can see a green flag at coordinate (4, 1).
+Step30: forward.  You can see grey walls at coordinates: (4, 1), (3, 1), (2, 1), (2, 1), (1, 1), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2).
+Step31: forward.  You can see grey walls at coordinates: (4, 1), (3, 1), (2, 1), (3, 1), (0, 1), (4, 2), (4, 2), (2, 2), (1, 2), (0, 2).
+Step32: forward.  You can see grey walls at coordinates: (4, -2), (4, -1), (4, -1), (3, 1), (3, 1), (2, 1), (2, 1), (0, 1), (4, 2), (3, 1), (2, 2), (1, 2), (0, 2).
+Step33: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (4, -1), (3, -1), (4, -1), (3, 0), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2).
+Step34: forward.  You can see grey walls at coordinates: (4, -2), (3, -1), (3, -2), (4, -1), (3, -1), (3, -1), (4, -1), (3, 0), (2, 0), (4, 1), (3, 1), (2, -1), (1, 1), (0, 1), (4, 0), (3, 2), (2, 2), (1, 1), (0, 2).
+Step35: left.  You can see grey walls at coordinates: (4, 2), (3, 2), (2, 2), (0, 2), (0, 2).
+Step36: forward.  You can see grey walls at coordinates: (4, 2), (3, 2), (2, 2), (1, 2), (0, 2).
+Step37: forward.  You can see a grey flag at coordinate (4, -2), grey walls at coordinates: (3, 2), (3, 2), (2, 2), (1, 2), (0, 2).
+Step38: forward.  You can see a grey flag at coordinate (2, -2), a red flag at coordinate (4, 0), grey walls at coordinates: (3, 1), (3, 2), (2, 2), (1, 2), (0, 2).
+Step39: right.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, 0), (4, -1), (3, -1), (2, -1), (4, 1), (3, 0), (2, 0), (4, 1), (3, 1), (2, 1), (4, 2), (3, 2), (2, 2).
+Step40: left.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (4, -1), (3, -1), (2, -1), (4, 0), (4, 0), (2, 0), (4, 1), (3, 1), (2, 1), (4, 2), (1, 2), (2, 2).
+Step41: forward.  You can see grey walls at coordinates: (4, -2), (3, -2), (2, -2), (3, -2), (4, -1), (3, -1), (2, -1), (1, -1), (4, 0), (3, -1), (3, 0), (1, 0), (4, 1), (3, 2), (2, 1), (1, 1), (4, 2), (3, 2), (2, 2), (1, 2).
+Step42: right.  You can see grey walls at coordinates: (2, -2), (3, -2), (2, -2), (1, -2), (0, -2), (4, -1), (3, -1), (2, -1), (1, -1), (0, 1).
+Step43: right.  You can see a purple flag at coordinate (4, -1), a grey flag at coordinate (2, 2)
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&&& 
+
+2025-08-25 05:36:23,846 - INFO - RBPF Result: PERFECT MATCH
+2025-08-25 05:36:23,846 - INFO - Ground Truth: {'yellow': (1, 5), 'green': (3, 2), 'purple': (4, 6), 'grey': (7, 7), 'red': (9, 9)}
+LLM's Map   : {'green': (3, 2), 'grey': (7, 7), 'purple': (4, 6), 'red': (9, 9), 'yellow': (1, 5)}
+----------------------------------------
+Overall Accuracy (Jaccard): 100.00%
+Goal Accuracy (Avg. Correctness): 100.00%
+Euclidean Distance Error (for matched goals): 0.00 units
+2025-08-25 05:36:23,846 - INFO - --- Finished Test Episode #9 ---
+
+2025-08-25 05:38:52,422 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-25 05:38:52,429 - INFO - LLM Response for episode #9:
+Step-by-step reasoning (poses, how local -> global mapped, and how I clustered noisy reports)
+
+Coordinate conventions I used
+- Global coordinates: (x,y). Start at (9,5). East = +x, South = +y.
+- Local observations are (Depth, Side) with Depth forward, Side right-positive.
+- Mapping by facing:
+  - East: global delta = (Depth, Side)
+  - South: global delta = (Side, Depth)
+  - West:  global delta = (-Depth, -Side)
+  - North: global delta = (-Side, -Depth)
+
+Trajectory I assumed (following the logged actions, treating them as executed unless obviously blocked):
+- Start (9,5) facing East.
+- Step1 right -> facing South, pos (9,5)
+- Step2 forward -> (9,6) S
+- Step3 forward -> (9,7) S
+- Step4 right -> facing West, pos (9,7)
+- Step5 forward -> (8,7) W
+- Step6 forward -> (7,7) W
+- Step7 forward -> (6,7) W
+- Step8 forward -> (5,7) W
+- Step9 right -> facing North, pos (5,7)
+- Step10 forward -> (5,6) N
+- Step11 forward -> (5,5) N
+- Step12 forward -> (5,4) N
+- Step13 forward -> (5,3) N
+- Step14 left -> facing West, pos (5,3)
+- Step15 forward -> (4,3) W
+- Step16 forward -> (3,3) W
+- Step17 right -> facing North, pos (3,3)
+- Step18 right -> facing East, pos (3,3)
+- Step19 forward -> (4,3) E
+- Step20 forward -> (5,3) E
+- Step21 forward -> (6,3) E
+- Step22 forward -> (7,3) E
+- Step23 forward -> (8,3) E
+- Step24 forward -> (9,3) E
+- Step25 right -> facing South, pos (9,3)
+- Step26 right -> facing West, pos (9,3)
+- Step27 forward -> (8,3) W
+- Step28 forward -> (7,3) W
+- Step29 forward -> (6,3) W
+- Step30 forward -> (5,3) W
+- Step31 forward -> (4,3) W
+- Step32 forward -> (3,3) W
+- Step33 forward -> (2,3) W
+- Step34 forward -> (1,3) W
+- Step35 left -> facing South, pos (1,3)
+- Step36 forward -> (1,4) S
+- Step37 forward -> (1,5) S
+- Step38 forward -> (1,6) S
+- Step39 right -> facing West, pos (1,6)
+- Step40 left -> facing South, pos (1,6)
+- Step41 forward -> (1,7) S
+- Step42 right -> facing West, pos (1,7)
+- Step43 right -> facing North, pos (1,7)
+
+How I reconciled noisy / conflicting flag reports
+- I converted every flagged local observation into global coordinates using the robot pose and facing above.
+- Because observations show discrete perturbations (±1..±3) and some log actions could be faulty, I clustered transformed locations by color; the most consistent cluster for each color was chosen.
+- I ignored grey "walls" (they are not map flags) as instructed.
+
+Key clustering notes (selected representative transformed observations)
+- Red: many observations transformed close to (9,9) (some noisy outliers near +1). I pick (9,9).
+- Grey (flag): several consistent transforms near (11,7) (one-off transforms to other columns looked like noisy/erroneous reports). I pick (11,7).
+- Purple: repeated transformed positions clustered around (4–6,6). Majority support a location near (5,6). I pick (5,6).
+- Yellow: repeated, consistent transforms at (1,5). I pick (1,5).
+- Green: multiple observations clustered in the (2..3,2..3) area (some earlier transforms had apparent jumps to (7,2) but those are inconsistent with the later cluster and likely came from log/pose noise). I pick (3,2).
+
+Final inferred map (most likely single location for each uniquely colored flag)
+&&&
+a red flag at coordinate (9,9) a grey flag at coordinate (11,7) a purple flag at coordinate (5,6) a yellow flag at coordinate (1,5) a green flag at coordinate (3,2).
+&&&
+2025-08-25 05:38:52,430 - INFO - --- Judgment for Episode #9 ---
+2025-08-25 05:38:52,430 - INFO - Result: IMPERFECT
+2025-08-25 05:38:52,430 - INFO - Ground Truth: {'yellow': (1, 5), 'green': (3, 2), 'purple': (4, 6), 'grey': (7, 7), 'red': (9, 9)}
+LLM's Map   : {'red': (9, 9), 'grey': (11, 7), 'purple': (5, 6), 'yellow': (1, 5), 'green': (3, 2)}
+----------------------------------------
+Overall Accuracy (Jaccard): 42.86%
+Goal Accuracy (Avg. Correctness): 60.00%
+Euclidean Distance Error (for matched goals): 1.00 units
+2025-08-25 05:38:52,431 - INFO - ==================================================
+2025-08-25 05:38:52,431 - INFO - --- EVALUATION SUMMARY ---
+2025-08-25 05:38:52,431 - INFO - Total episodes run: 10
+2025-08-25 05:38:52,431 - INFO - Average Overall Accuracy: 23.12%
+2025-08-25 05:38:52,431 - INFO - Average Goal-Only Accuracy: 30.00%
+2025-08-25 05:38:52,431 - INFO - Average Euclidean Distance Error: 2.78
+2025-08-25 05:38:52,431 - INFO - RBPF Average Overall Accuracy: 38.27%
+2025-08-25 05:38:52,431 - INFO - RBPF Average Goal-Only Accuracy: 50.00%
+2025-08-25 05:38:52,431 - INFO - RBPF Average Euclidean Distance Error: 1.62
+2025-08-25 05:38:52,431 - INFO - ==================================================
+2025-08-25 05:38:52,431 - INFO - Full log has been saved to 'my_tests/8.24/corruption/gpt-5-mini/12-5/all/evaluation_log.txt'

@@ -1,0 +1,645 @@
+2025-09-03 00:41:02,161 - INFO - --- Starting Test Episode #0 ---
+2025-09-03 00:41:02,432 - INFO - Prompt for episode #0 prepared.: 
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+
+### YOUR TASK ###
+
+    Your mission is to return the coordinates of **all EMPTY cells** in the global map.
+
+    ## What counts as EMPTY
+    A cell is EMPTY if **either**:
+    1) You **stood on it** or **moved through it** at any time (your traversed path), or
+    2) It was in your local 5×5 field of view at least once and you clearly saw **no wall** in that cell. Note there's empty spaces you haven't stand on but it was in your view. Please identify them as well.
+
+    ## Visibility and Occlusion
+    - You **cannot see through walls**. Any cell *behind* a wall along a line-of-sight ray is **unknown**.
+    - Diagonal shadowing: a cell at (d, s) is **not visible** if both its orthogonal predecessors are walls (i.e., blocked by the two adjacent cells).
+    - Take this as an example: You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (3, 1), (4, 1).In this case, since the walls in (2, -1), (2, 0), (2, 1), (3, 1), (4, 1) wrap around the grid (3, 0), (3, -1), (4, 0), (4, -1) in your view, those coordinates are considered unseen.
+Specifically, apply the Ray rule per Side s:
+- For s = -1, nearest wall depth d_wall(-1) = 0  → all cells with (d ≥ 1, s = -1) are UNKNOWN (behind the nearest wall).
+- For s =  0, nearest wall depth d_wall(0)  = 2  → (1,0) is VISIBLE EMPTY; (d ≥ 2, s=0) are UNKNOWN.
+- For s =  1, nearest wall depth d_wall(1)  = 2  → (1,1) is VISIBLE EMPTY; (d ≥ 2, s=1) are UNKNOWN.
+- For s =  2, no wall reported               → (1..FOV_max, 2) are VISIBLE EMPTY unless diagonally blocked.
+- For s = -2, no wall reported               → (1..FOV_max, -2) are VISIBLE EMPTY unless diagonally blocked.
+
+Diagonal occlusion rule (corner blocking):
+A cell (d,s) is NOT visible if both (d-1,s-1) and (d-1,s+1) are walls. Otherwise it remains visible.
+
+In particular, cells like (3,0), (4,0), (3,-1), (4,-1) lie at depths ≥ the nearest walls on their sides, so they are UNKNOWN (do not list them as empty).
+Only the cells strictly in front of the nearest wall on each side, and not corner-blocked, are EMPTY at this step.The rest of the coordinates in your view are considered empty.
+    - Cells blocked by walls inside your view are not listed in the log.
+    - Empty cells are not explicitly listed in the log.
+ 
+
+    
+All coordinates in the final summary must be absolute map coordinates (X, Y) in the room frame, not local (Depth, Side).
+If you are facing a wall and go forward, you will not be able to move forward, your position will not change.
+Your starting absolute position is (5, 8). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+
+
+
+
+### OBSERVATION LOG ###
+Initial Observation: You're facing North. You see nothing of interest..
+Step1: forward. You can see grey walls at coordinates (3, -2), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step2: forward. You can see grey walls at coordinates (2, -2), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step3: forward. You can see grey walls at coordinates (1, -2), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step4: left. You can see grey walls at coordinates (0, 1), (1, 1), (2, 1), (3, -2), (3, -1), (3, 0), (3, 1)..
+Step5: forward. You can see grey walls at coordinates (0, 1), (1, 1), (2, -2), (2, -1), (2, 0), (2, 1)..
+Step6: forward. You can see grey walls at coordinates (0, 1), (1, -2), (1, -1), (1, 0), (1, 1)..
+Step7: right. You can see grey walls at coordinates (0, -1), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step8: right. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (4, -1)..
+Step9: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (4, -1), (4, 0), (4, 1), (4, 2)..
+Step10: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step11: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step12: forward. You can see grey walls at coordinates (0, -1), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step13: left. You can see grey walls at coordinates (0, 1), (1, -2), (1, -1), (1, 0), (1, 1)..
+Step14: right. You can see grey walls at coordinates (0, -1), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step15: right. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (4, -1), (4, 0), (4, 1), (4, 2)..
+Step16: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step17: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step18: forward. You can see grey walls at coordinates (0, -1), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step19: right. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (4, -1)..
+Step20: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (4, -1), (4, 0), (4, 1), (4, 2)..
+Step21: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step22: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step23: forward. You can see grey walls at coordinates (0, -1), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step24: right. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (4, -1), (4, 0), (4, 1), (4, 2).
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+empty spaces at coordinates: (1,1), (1,2), (2,1), (2,2)
+&&& 
+
+2025-09-03 00:44:03,059 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-03 00:44:03,065 - INFO - LLM Response for episode #0:
+Reasoning (step-by-step, brief):
+
+- Start at absolute (5,8), facing North. Initial 5×5 view had no walls, so all local cells (d=0..4, s=-2..2) were visible empty. That yields the rectangle X=3..7, Y=4..8 as empty (including the start (5,8)).
+- I executed the moves and turns in the log, tracking absolute position and facing after each action. Each observation lists only walls in local (Depth, Side) coordinates. For each observation I:
+  - computed the nearest wall depth per Side s (if any),
+  - marked as visible-empty every local cell with d < d_wall (or all d=0..4 if no wall on that side),
+  - applied diagonal occlusion (a cell is NOT visible if both (d-1,s-1) and (d-1,s+1) are walls).
+- I also marked every absolute cell the robot stood on (starting cell and every successful forward move) as empty.
+- I converted every visible local cell at each step into global (X,Y) using the robot's absolute position and facing (North: X= X0+s, Y=Y0-d; East: X=X0+d, Y=Y0+s; South: X=X0-s, Y=Y0+d; West: X=X0-d, Y=Y0-s).
+- Aggregating all visible-empty cells across all observations (and all traversed cells) produces the final set below.
+
+Final map summary:
+&&&
+empty spaces at coordinates: (-1,3), (-1,10), (0,3), (0,10), (1,1), (1,2), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (1,10), (2,3), (2,10), (3,3), (3,4), (3,5), (3,6), (3,7), (3,8), (3,10), (4,3), (4,4), (4,5), (4,6), (4,7), (4,8), (4,10), (5,3), (5,4), (5,5), (5,6), (5,7), (5,8), (5,10), (6,3), (6,4), (6,5), (6,6), (6,7), (6,8), (6,10), (7,3), (7,4), (7,5), (7,6), (7,7), (7,8), (7,10), (8,3), (9,1), (9,2), (9,3), (9,4), (9,5), (9,6), (9,7), (9,8), (9,9), (9,10), (9,11), (9,12), (10,3), (11,3)
+&&&
+2025-09-03 00:44:03,065 - INFO - LLM Result: IMPERFECT
+2025-09-03 00:44:03,065 - INFO - tolerant IoU (r=1): 28.36%; raw IoU: 30.77%  (|GT|=20, |Pred|=65)
+2025-09-03 00:44:03,068 - INFO - --- Finished Test Episode #0 ---
+
+2025-09-03 00:44:08,069 - INFO - --- Starting Test Episode #1 ---
+2025-09-03 00:44:08,166 - INFO - Prompt for episode #1 prepared.: 
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+
+### YOUR TASK ###
+
+    Your mission is to return the coordinates of **all EMPTY cells** in the global map.
+
+    ## What counts as EMPTY
+    A cell is EMPTY if **either**:
+    1) You **stood on it** or **moved through it** at any time (your traversed path), or
+    2) It was in your local 5×5 field of view at least once and you clearly saw **no wall** in that cell. Note there's empty spaces you haven't stand on but it was in your view. Please identify them as well.
+
+    ## Visibility and Occlusion
+    - You **cannot see through walls**. Any cell *behind* a wall along a line-of-sight ray is **unknown**.
+    - Diagonal shadowing: a cell at (d, s) is **not visible** if both its orthogonal predecessors are walls (i.e., blocked by the two adjacent cells).
+    - Take this as an example: You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (3, 1), (4, 1).In this case, since the walls in (2, -1), (2, 0), (2, 1), (3, 1), (4, 1) wrap around the grid (3, 0), (3, -1), (4, 0), (4, -1) in your view, those coordinates are considered unseen.
+Specifically, apply the Ray rule per Side s:
+- For s = -1, nearest wall depth d_wall(-1) = 0  → all cells with (d ≥ 1, s = -1) are UNKNOWN (behind the nearest wall).
+- For s =  0, nearest wall depth d_wall(0)  = 2  → (1,0) is VISIBLE EMPTY; (d ≥ 2, s=0) are UNKNOWN.
+- For s =  1, nearest wall depth d_wall(1)  = 2  → (1,1) is VISIBLE EMPTY; (d ≥ 2, s=1) are UNKNOWN.
+- For s =  2, no wall reported               → (1..FOV_max, 2) are VISIBLE EMPTY unless diagonally blocked.
+- For s = -2, no wall reported               → (1..FOV_max, -2) are VISIBLE EMPTY unless diagonally blocked.
+
+Diagonal occlusion rule (corner blocking):
+A cell (d,s) is NOT visible if both (d-1,s-1) and (d-1,s+1) are walls. Otherwise it remains visible.
+
+In particular, cells like (3,0), (4,0), (3,-1), (4,-1) lie at depths ≥ the nearest walls on their sides, so they are UNKNOWN (do not list them as empty).
+Only the cells strictly in front of the nearest wall on each side, and not corner-blocked, are EMPTY at this step.The rest of the coordinates in your view are considered empty.
+    - Cells blocked by walls inside your view are not listed in the log.
+    - Empty cells are not explicitly listed in the log.
+ 
+
+    
+All coordinates in the final summary must be absolute map coordinates (X, Y) in the room frame, not local (Depth, Side).
+If you are facing a wall and go forward, you will not be able to move forward, your position will not change.
+Your starting absolute position is (4, 1). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+
+
+
+
+### OBSERVATION LOG ###
+Initial Observation: You're facing East. You see nothing of interest..
+Step1: right. You can see grey walls at coordinates (0, -1), (0, 1), (1, -1), (1, 1), (2, 1)..
+Step2: forward. You can see grey walls at coordinates (0, -1), (0, 1), (1, 1), (4, -2), (4, -1), (4, 0), (4, 1)..
+Step3: forward. You can see grey walls at coordinates (0, 1), (3, -2), (3, -1), (3, 0), (3, 1), (4, 1)..
+Step4: forward. You can see grey walls at coordinates (2, -2), (2, -1), (2, 0), (2, 1), (3, 1), (4, 1)..
+Step5: left. You can see grey walls at coordinates (0, 2), (1, -2), (1, 2), (2, -2), (2, 2), (3, -2), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step6: forward. You can see grey walls at coordinates (0, -2), (0, 2), (1, -2), (1, 2), (2, -2), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step7: forward. You can see grey walls at coordinates (0, -2), (0, 2), (1, -2), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step8: right. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step9: forward. You can see grey walls at coordinates (0, -1), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step10: right. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (3, 2), (4, 2)..
+Step11: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 2), (3, 2), (4, 1), (4, 2)..
+Step12: forward. You can see grey walls at coordinates (0, -1), (1, -1), (1, 2), (2, 2), (3, 1), (3, 2), (4, -2), (4, -1), (4, 0), (4, 1)..
+Step13: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, 2), (2, 1), (2, 2), (3, -2), (3, -1), (3, 0), (3, 1)..
+Step14: forward. You can see grey walls at coordinates (0, 2), (1, 1), (1, 2), (2, -2), (2, -1), (2, 0), (2, 1)..
+Step15: right. You can see grey walls at coordinates (0, -2), (1, -2), (1, -1), (2, -1), (2, 0), (2, 1), (3, 1), (4, 1)..
+Step16: right. You can see grey walls at coordinates (0, -2), (1, -2), (1, 1), (1, 2), (2, 1), (3, 1), (4, 1)..
+Step17: right. You can see grey walls at coordinates (0, 2), (1, -2), (1, -1), (1, 2), (2, -1), (2, 2), (3, -1), (3, 2), (4, -1), (4, 0), (4, 1), (4, 2)..
+Step18: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (1, 2), (2, -1), (2, 2), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step19: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (1, 2), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step20: right. You can see grey walls at coordinates (0, -2), (1, -2), (2, -2), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step21: forward. You can see grey walls at coordinates (0, -2), (1, -2), (1, -1), (1, 0), (1, 1), (1, 2).
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+empty spaces at coordinates: (1,1), (1,2), (2,1), (2,2)
+&&& 
+
+2025-09-03 00:47:44,448 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-03 00:47:44,450 - INFO - LLM Response for episode #1:
+Reasoning (step-by-step, tracking pose and what became visible)
+
+Coordinate conventions I used
+- Absolute position (X,Y). Starting pose: (4,1) facing East (East = +X, South = +Y).
+- Local → global: global = pos + d*dir + s*right, where dir is the unit vector for facing direction and right is (-dir_y, dir_x). (This makes right = +Y when facing East, right = +X when facing North, etc.)
+- For each observation I found, for each side s ∈ {-2,-1,0,1,2} the nearest wall depth d_wall(s) (if any). Visible depths on that side are d ∈ [0, d_wall(s)-1] (or d ∈ [0..4] if no wall). Then I removed any cell (d,s) that is wall-listed, and removed any (d,s) for which both (d-1,s-1) and (d-1,s+1) are walls (diagonal occlusion). The remaining visible (d,s) were converted into absolute coordinates and added to the empty set. I also added every absolute cell the agent stood on or moved through.
+
+Pose / motion trace (short)
+- Start: (4,1), facing East.
+- Step1: turn right → facing South (still at (4,1)). Observation reported walls — used to mark visible empties in that view.
+- Step2: forward → moved to (4,2) (no blocking wall in previous view).
+- Step3: forward → (4,3).
+- Step4: forward → (4,4).
+- Step5: left → facing East.
+- Step6: forward → (5,4).
+- Step7: forward → (6,4).
+- Step8: right → facing South.
+- Step9: forward → (6,5).
+- Step10: right → facing West.
+- Step11: forward → (5,5).
+- Step12: forward → (4,5).
+- Step13: forward → (3,5).
+- Step14: forward → (2,5).
+- Step15: right → facing North.
+- Step16: right → facing East.
+- Step17: right → facing South.
+- Step18: forward → (2,6).
+- Step19: forward → (2,7).
+- Step20: right → facing West.
+- Step21: forward → (1,7).
+
+Traversed/stood-on cells (always EMPTY)
+(4,1), (4,2), (4,3), (4,4), (5,4), (6,4), (6,5),
+(5,5), (4,5), (3,5), (2,5), (2,6), (2,7), (1,7)
+
+Visible empties (union of all observations)
+I applied the ray rule and diagonal occlusion per observation and converted all visible (d,s) into absolute coordinates. The union (including all traversed cells above) is:
+
+&&&
+empty spaces at coordinates: 
+( -3, 9),(-2, 9),(-1, 9),( 0, 6),( 0, 7),( 0, 8),( 0, 9),( 0,10),( 0,11),
+( 1, 5),( 1, 6),( 1, 7),( 1, 8),( 1, 9),
+( 2, 1),( 2, 2),( 2, 3),( 2, 4),( 2, 5),( 2, 6),( 2, 7),( 2, 8),
+( 3, 3),( 3, 4),( 3, 5),( 3, 6),( 3, 7),( 3, 8),
+( 4,-1),( 4, 0),( 4, 1),( 4, 2),( 4, 3),( 4, 4),( 4, 5),( 4, 6),( 4, 7),( 4, 8),( 4, 9),
+( 5,-1),( 5, 0),( 5, 1),( 5, 2),( 5, 3),( 5, 4),( 5, 5),( 5, 6),( 5, 7),
+( 6,-1),( 6, 0),( 6, 1),( 6, 2),( 6, 3),( 6, 4),( 6, 5),( 6, 6),( 6, 7),( 6, 8),
+( 7,-1),( 7, 0),( 7, 1),( 7, 2),( 7, 3),( 7, 4),( 7, 5),
+( 8,-1),( 8, 0),( 8, 1),( 8, 2),( 8, 3),( 8, 4),( 8, 5),
+( 9, 5)
+
+&&&
+
+Notes / caveats
+- I included every cell the agent stood on or moved through (explicitly listed).
+- For every observation I strictly applied the "nearest wall per side" ray rule and the diagonal occlusion rule. Cells behind the nearest wall on a side were not included; only cells with depth strictly less than the nearest wall were treated as visible.
+- The empty list above is the union of all visible empties across all observations plus the traversed cells. If you want the list sorted differently or want me to produce a visual grid (with unknowns and walls) I can render that next.
+2025-09-03 00:47:44,451 - INFO - LLM Result: IMPERFECT
+2025-09-03 00:47:44,451 - INFO - tolerant IoU (r=1): 38.66%; raw IoU: 30.14%  (|GT|=22, |Pred|=73)
+2025-09-03 00:47:44,456 - INFO - --- Finished Test Episode #1 ---
+
+2025-09-03 00:47:49,457 - INFO - --- Starting Test Episode #2 ---
+2025-09-03 00:47:49,603 - INFO - Prompt for episode #2 prepared.: 
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+
+### YOUR TASK ###
+
+    Your mission is to return the coordinates of **all EMPTY cells** in the global map.
+
+    ## What counts as EMPTY
+    A cell is EMPTY if **either**:
+    1) You **stood on it** or **moved through it** at any time (your traversed path), or
+    2) It was in your local 5×5 field of view at least once and you clearly saw **no wall** in that cell. Note there's empty spaces you haven't stand on but it was in your view. Please identify them as well.
+
+    ## Visibility and Occlusion
+    - You **cannot see through walls**. Any cell *behind* a wall along a line-of-sight ray is **unknown**.
+    - Diagonal shadowing: a cell at (d, s) is **not visible** if both its orthogonal predecessors are walls (i.e., blocked by the two adjacent cells).
+    - Take this as an example: You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (3, 1), (4, 1).In this case, since the walls in (2, -1), (2, 0), (2, 1), (3, 1), (4, 1) wrap around the grid (3, 0), (3, -1), (4, 0), (4, -1) in your view, those coordinates are considered unseen.
+Specifically, apply the Ray rule per Side s:
+- For s = -1, nearest wall depth d_wall(-1) = 0  → all cells with (d ≥ 1, s = -1) are UNKNOWN (behind the nearest wall).
+- For s =  0, nearest wall depth d_wall(0)  = 2  → (1,0) is VISIBLE EMPTY; (d ≥ 2, s=0) are UNKNOWN.
+- For s =  1, nearest wall depth d_wall(1)  = 2  → (1,1) is VISIBLE EMPTY; (d ≥ 2, s=1) are UNKNOWN.
+- For s =  2, no wall reported               → (1..FOV_max, 2) are VISIBLE EMPTY unless diagonally blocked.
+- For s = -2, no wall reported               → (1..FOV_max, -2) are VISIBLE EMPTY unless diagonally blocked.
+
+Diagonal occlusion rule (corner blocking):
+A cell (d,s) is NOT visible if both (d-1,s-1) and (d-1,s+1) are walls. Otherwise it remains visible.
+
+In particular, cells like (3,0), (4,0), (3,-1), (4,-1) lie at depths ≥ the nearest walls on their sides, so they are UNKNOWN (do not list them as empty).
+Only the cells strictly in front of the nearest wall on each side, and not corner-blocked, are EMPTY at this step.The rest of the coordinates in your view are considered empty.
+    - Cells blocked by walls inside your view are not listed in the log.
+    - Empty cells are not explicitly listed in the log.
+ 
+
+    
+All coordinates in the final summary must be absolute map coordinates (X, Y) in the room frame, not local (Depth, Side).
+If you are facing a wall and go forward, you will not be able to move forward, your position will not change.
+Your starting absolute position is (4, 2). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+
+
+
+
+### OBSERVATION LOG ###
+Initial Observation: You're facing South. You see nothing of interest..
+Step1: forward. You can see grey walls at coordinates (3, -2), (3, -1), (3, 0), (3, 1), (4, 1)..
+Step2: forward. You can see grey walls at coordinates (2, -2), (2, -1), (2, 0), (2, 1), (3, 1), (4, 1)..
+Step3: left. You can see grey walls at coordinates (0, 2), (1, 2), (2, -2), (2, 2), (3, -2), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step4: forward. You can see grey walls at coordinates (0, 2), (1, -2), (1, 2), (2, -2), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step5: forward. You can see grey walls at coordinates (0, -2), (0, 2), (1, -2), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step6: right. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step7: forward. You can see grey walls at coordinates (0, -1), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step8: right. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1)..
+Step9: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1)..
+Step10: forward. You can see grey walls at coordinates (0, -1), (1, -1), (4, -2), (4, -1), (4, 0), (4, 1), (4, 2)..
+Step11: forward. You can see grey walls at coordinates (0, -1), (3, -2), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step12: forward. You can see grey walls at coordinates (2, -2), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step13: right. You can see grey walls at coordinates (0, -2), (1, -2), (2, -2), (3, -2), (4, -2), (4, -1)..
+Step14: forward. You can see grey walls at coordinates (0, -2), (1, -2), (2, -2), (3, -2), (3, -1), (4, -1), (4, 0), (4, 1), (4, 2)..
+Step15: forward. You can see grey walls at coordinates (0, -2), (1, -2), (2, -2), (2, -1), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step16: forward. You can see grey walls at coordinates (0, -2), (1, -2), (1, -1), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step17: right. You can see grey walls at coordinates (0, -2), (1, -2), (2, -2), (3, -2), (4, -2), (4, -1), (4, 0)..
+Step18: forward. You can see grey walls at coordinates (0, -2), (1, -2), (2, -2), (3, -2), (3, -1), (3, 0), (4, 0), (4, 1), (4, 2)..
+Step19: forward. You can see grey walls at coordinates (0, -2), (1, -2), (2, -2), (2, -1), (2, 0), (3, 0), (3, 1), (3, 2)..
+Step20: forward. You can see grey walls at coordinates (0, -2), (1, -2), (1, -1), (1, 0), (2, 0), (2, 1), (2, 2)..
+Step21: right. You can see grey walls at coordinates (0, -1), (1, -2), (2, -2), (3, -2), (4, -2), (4, -1), (4, 0), (4, 1), (4, 2)..
+Step22: right. You can see grey walls at coordinates (0, 2), (1, 2), (2, 2), (3, 2), (4, 1), (4, 2)..
+Step23: forward. You can see grey walls at coordinates (0, 2), (1, 2), (2, 2), (3, 1), (3, 2), (4, -2), (4, -1), (4, 0), (4, 1)..
+Step24: forward. You can see grey walls at coordinates (0, 2), (1, 2), (2, 1), (2, 2), (3, -2), (3, -1), (3, 0), (3, 1)..
+Step25: forward. You can see grey walls at coordinates (0, 2), (1, 1), (1, 2), (2, -2), (2, -1), (2, 0), (2, 1)..
+Step26: left. You can see grey walls at coordinates (0, 2), (1, 2), (2, 2), (3, 2), (4, -2), (4, -1), (4, 2)..
+Step27: forward. You can see grey walls at coordinates (0, 2), (1, 2), (2, 2), (3, -2), (3, -1), (3, 2), (4, -1), (4, 2)..
+Step28: forward. You can see grey walls at coordinates (0, 2), (1, 2), (2, -2), (2, -1), (2, 2), (3, -1), (3, 2), (4, -1), (4, 2)..
+Step29: forward. You can see grey walls at coordinates (0, 2), (1, -2), (1, -1), (1, 2), (2, -1), (2, 2), (3, -1), (3, 2), (4, -1), (4, 0), (4, 1), (4, 2)..
+Step30: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (1, 2), (2, -1), (2, 2), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step31: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (1, 2), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step32: forward. You can see grey walls at coordinates (0, -1), (0, 2), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step33: right. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step34: right. You can see grey walls at coordinates (0, -2), (0, 1), (1, -2), (1, 1), (2, -2), (2, 1), (3, -2), (4, -2).
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+empty spaces at coordinates: (1,1), (1,2), (2,1), (2,2)
+&&& 
+
+2025-09-03 00:49:02,579 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-03 00:49:02,582 - INFO - LLM Response for episode #2:
+Reasoning (brief):
+- I tracked your starting pose (4,2) facing South and followed the 34 actions in order, updating your facing for each turn and moving forward when the action was "forward".
+- For each observation I treated the listed grey coordinates as walls in your 5×5 local (Depth,Side) frame and applied the ray blocking and diagonal occlusion rules to mark which local cells were visible empty at that time.
+- I also marked every global cell you stood on (or moved through) as empty.
+- Combining all visible-empty cells from all observations plus all traversed cells yields the final set of empty cells below.
+
+&&&
+empty spaces at coordinates: (0,0), (0,1), (0,2), (0,3), (0,4),
+(1,0), (1,1), (1,2), (1,3), (1,4),
+(2,0), (2,1), (2,2), (2,3), (2,4),
+(3,0), (3,1), (3,2), (3,3), (3,4),
+(4,0), (4,1), (4,2), (4,3), (4,4)
+&&&
+2025-09-03 00:49:02,582 - INFO - LLM Result: IMPERFECT
+2025-09-03 00:49:02,582 - INFO - tolerant IoU (r=1): 45.07%; raw IoU: 34.88%  (|GT|=33, |Pred|=25)
+2025-09-03 00:49:02,584 - INFO - --- Finished Test Episode #2 ---
+
+2025-09-03 00:49:07,589 - INFO - --- Starting Test Episode #3 ---
+2025-09-03 00:49:07,676 - INFO - Prompt for episode #3 prepared.: 
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+
+### YOUR TASK ###
+
+    Your mission is to return the coordinates of **all EMPTY cells** in the global map.
+
+    ## What counts as EMPTY
+    A cell is EMPTY if **either**:
+    1) You **stood on it** or **moved through it** at any time (your traversed path), or
+    2) It was in your local 5×5 field of view at least once and you clearly saw **no wall** in that cell. Note there's empty spaces you haven't stand on but it was in your view. Please identify them as well.
+
+    ## Visibility and Occlusion
+    - You **cannot see through walls**. Any cell *behind* a wall along a line-of-sight ray is **unknown**.
+    - Diagonal shadowing: a cell at (d, s) is **not visible** if both its orthogonal predecessors are walls (i.e., blocked by the two adjacent cells).
+    - Take this as an example: You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (3, 1), (4, 1).In this case, since the walls in (2, -1), (2, 0), (2, 1), (3, 1), (4, 1) wrap around the grid (3, 0), (3, -1), (4, 0), (4, -1) in your view, those coordinates are considered unseen.
+Specifically, apply the Ray rule per Side s:
+- For s = -1, nearest wall depth d_wall(-1) = 0  → all cells with (d ≥ 1, s = -1) are UNKNOWN (behind the nearest wall).
+- For s =  0, nearest wall depth d_wall(0)  = 2  → (1,0) is VISIBLE EMPTY; (d ≥ 2, s=0) are UNKNOWN.
+- For s =  1, nearest wall depth d_wall(1)  = 2  → (1,1) is VISIBLE EMPTY; (d ≥ 2, s=1) are UNKNOWN.
+- For s =  2, no wall reported               → (1..FOV_max, 2) are VISIBLE EMPTY unless diagonally blocked.
+- For s = -2, no wall reported               → (1..FOV_max, -2) are VISIBLE EMPTY unless diagonally blocked.
+
+Diagonal occlusion rule (corner blocking):
+A cell (d,s) is NOT visible if both (d-1,s-1) and (d-1,s+1) are walls. Otherwise it remains visible.
+
+In particular, cells like (3,0), (4,0), (3,-1), (4,-1) lie at depths ≥ the nearest walls on their sides, so they are UNKNOWN (do not list them as empty).
+Only the cells strictly in front of the nearest wall on each side, and not corner-blocked, are EMPTY at this step.The rest of the coordinates in your view are considered empty.
+    - Cells blocked by walls inside your view are not listed in the log.
+    - Empty cells are not explicitly listed in the log.
+ 
+
+    
+All coordinates in the final summary must be absolute map coordinates (X, Y) in the room frame, not local (Depth, Side).
+If you are facing a wall and go forward, you will not be able to move forward, your position will not change.
+Your starting absolute position is (8, 4). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+
+
+
+
+### OBSERVATION LOG ###
+Initial Observation: You're facing North. You see nothing of interest..
+Step1: left. You can see grey walls at coordinates (0, -1), (0, 1), (1, -1), (1, 1), (2, -2), (2, 1), (3, -2), (4, -2)..
+Step2: forward. You can see grey walls at coordinates (0, -1), (0, 1), (1, -2), (1, 1), (2, -2), (3, -2), (4, -2)..
+Step3: forward. You can see grey walls at coordinates (0, -2), (0, 1), (1, -2), (2, -2), (3, -2), (4, -2)..
+Step4: left. You can see grey walls at coordinates (1, -2), (1, -1), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step5: right. You can see grey walls at coordinates (0, -2), (0, 1), (1, -2), (2, -2), (3, -2), (4, -2)..
+Step6: forward. You can see grey walls at coordinates (0, -2), (1, -2), (2, -2), (3, -2), (4, -2), (4, -1), (4, 0), (4, 1), (4, 2)..
+Step7: forward. You can see grey walls at coordinates (0, -2), (1, -2), (2, -2), (3, -2), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step8: forward. You can see grey walls at coordinates (0, -2), (1, -2), (2, -2), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step9: forward. You can see grey walls at coordinates (0, -2), (1, -2), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step10: left. You can see grey walls at coordinates (0, 1), (1, 1), (2, -2), (2, -1), (2, 0), (2, 1)..
+Step11: right. You can see grey walls at coordinates (0, -2), (1, -2), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step12: right. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step13: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step14: forward. You can see grey walls at coordinates (0, -1), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step15: right. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (4, -1), (4, 0), (4, 1)..
+Step16: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (3, 0), (3, 1), (4, 1)..
+Step17: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (3, 1), (4, 1)..
+Step18: forward. You can see grey walls at coordinates (0, -1), (1, -1), (1, 0), (1, 1), (2, 1), (3, 1), (4, 1), (4, 2)..
+Step19: right. You can see grey walls at coordinates (0, -1), (1, -1), (3, -2), (4, -2), (4, -1), (4, 0), (4, 1), (4, 2)..
+Step20: right. You can see grey walls at coordinates (0, 1), (1, 1), (2, 1), (3, 1), (4, -2), (4, -1), (4, 0), (4, 1).
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+empty spaces at coordinates: (1,1), (1,2), (2,1), (2,2)
+&&& 
+
+2025-09-03 00:53:37,218 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-03 00:53:37,221 - INFO - LLM Response for episode #3:
+I'll step through the log, track my absolute position and facing, and record all cells I stand on (traversed) and all cells that were visible (not behind a nearer wall on the same side and not corner-blocked).
+
+Starting conditions
+- Start at (8,4), facing North. This starting cell is empty.
+
+Coordinate mapping used
+- Facing North: global (X,Y) = (X0 + s, Y0 - d)
+- Facing East:  global (X,Y) = (X0 + d, Y0 + s)
+- Facing South: global (X,Y) = (X0 - s, Y0 + d)
+- Facing West:  global (X,Y) = (X0 - d, Y0 - s)
+
+I apply the per-side "nearest wall" ray rule and the diagonal (corner) occlusion rule at every observation. If the nearest wall on side s is at depth D, only depths 1..D-1 on that side are visible (if D = 0 there are no visible forward cells on that side). Also, if for a cell (d,s) both (d-1,s-1) and (d-1,s+1) are walls in the same view, (d,s) is corner-blocked and not visible.
+
+Movement and orientation summary (brief)
+- Initial facing North at (8,4).
+- Step1: left -> face West (pos still (8,4)).
+- Step2: forward -> moved to (7,4).
+- Step3: forward -> moved to (6,4).
+- Step4: left -> face South (pos (6,4)).
+- Step5: right -> face West (pos (6,4)).
+- Step6: forward -> moved to (5,4).
+- Step7: forward -> moved to (4,4).
+- Step8: forward -> moved to (3,4).
+- Step9: forward -> moved to (2,4).
+- Step10: left -> face South (pos (2,4)).
+- Step11: right -> face West (pos (2,4)).
+- Step12: right -> face North (pos (2,4)).
+- Step13: forward -> moved to (2,3).
+- Step14: forward -> moved to (2,2).
+- Step15: right -> face East (pos (2,2)).
+- Step16: forward -> moved to (3,2).
+- Step17: forward -> moved to (4,2).
+- Step18: forward -> moved to (5,2).
+- Step19: right -> face South (pos (5,2)).
+- Step20: right -> face West (pos (5,2)).
+
+At each step I added:
+- The cell I currently occupy (traversed cells).
+- Visible empty cells in that step's 5×5 local view per the ray and corner rules.
+
+Final set of empty cells (global coordinates)
+&&&
+empty spaces at coordinates: (0,-2), (0,-1), (0,0), (0,1), (0,2), (0,3), (0,5), (0,6), (0,7), (0,8), (1,0), (2,0), (2,2), (2,3), (2,4), (2,5), (3,0), (3,2), (3,3), (3,4), (3,5), (4,0), (4,2), (4,3), (4,4), (4,5), (5,0), (5,2), (5,3), (5,4), (5,5), (6,0), (6,1), (6,2), (6,3), (6,4), (6,5), (7,0), (7,1), (7,2), (7,3), (7,4), (7,6), (8,0), (8,1), (8,2), (8,3), (8,4), (9,0), (9,1), (9,2), (9,3), (9,4), (10,0), (10,1), (10,2), (10,3), (10,4)
+&&&
+
+If you want, I can also provide a grid drawing (ASCII) of these empties and the discovered walls (where walls were seen) over the observed region.
+2025-09-03 00:53:37,221 - INFO - LLM Result: IMPERFECT
+2025-09-03 00:53:37,221 - INFO - tolerant IoU (r=1): 36.36%; raw IoU: 34.48%  (|GT|=20, |Pred|=58)
+2025-09-03 00:53:37,223 - INFO - --- Finished Test Episode #3 ---
+
+2025-09-03 00:53:42,224 - INFO - --- Starting Test Episode #4 ---
+2025-09-03 00:53:42,309 - INFO - Prompt for episode #4 prepared.: 
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+
+### YOUR TASK ###
+
+    Your mission is to return the coordinates of **all EMPTY cells** in the global map.
+
+    ## What counts as EMPTY
+    A cell is EMPTY if **either**:
+    1) You **stood on it** or **moved through it** at any time (your traversed path), or
+    2) It was in your local 5×5 field of view at least once and you clearly saw **no wall** in that cell. Note there's empty spaces you haven't stand on but it was in your view. Please identify them as well.
+
+    ## Visibility and Occlusion
+    - You **cannot see through walls**. Any cell *behind* a wall along a line-of-sight ray is **unknown**.
+    - Diagonal shadowing: a cell at (d, s) is **not visible** if both its orthogonal predecessors are walls (i.e., blocked by the two adjacent cells).
+    - Take this as an example: You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (3, 1), (4, 1).In this case, since the walls in (2, -1), (2, 0), (2, 1), (3, 1), (4, 1) wrap around the grid (3, 0), (3, -1), (4, 0), (4, -1) in your view, those coordinates are considered unseen.
+Specifically, apply the Ray rule per Side s:
+- For s = -1, nearest wall depth d_wall(-1) = 0  → all cells with (d ≥ 1, s = -1) are UNKNOWN (behind the nearest wall).
+- For s =  0, nearest wall depth d_wall(0)  = 2  → (1,0) is VISIBLE EMPTY; (d ≥ 2, s=0) are UNKNOWN.
+- For s =  1, nearest wall depth d_wall(1)  = 2  → (1,1) is VISIBLE EMPTY; (d ≥ 2, s=1) are UNKNOWN.
+- For s =  2, no wall reported               → (1..FOV_max, 2) are VISIBLE EMPTY unless diagonally blocked.
+- For s = -2, no wall reported               → (1..FOV_max, -2) are VISIBLE EMPTY unless diagonally blocked.
+
+Diagonal occlusion rule (corner blocking):
+A cell (d,s) is NOT visible if both (d-1,s-1) and (d-1,s+1) are walls. Otherwise it remains visible.
+
+In particular, cells like (3,0), (4,0), (3,-1), (4,-1) lie at depths ≥ the nearest walls on their sides, so they are UNKNOWN (do not list them as empty).
+Only the cells strictly in front of the nearest wall on each side, and not corner-blocked, are EMPTY at this step.The rest of the coordinates in your view are considered empty.
+    - Cells blocked by walls inside your view are not listed in the log.
+    - Empty cells are not explicitly listed in the log.
+ 
+
+    
+All coordinates in the final summary must be absolute map coordinates (X, Y) in the room frame, not local (Depth, Side).
+If you are facing a wall and go forward, you will not be able to move forward, your position will not change.
+Your starting absolute position is (4, 5). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+
+
+
+
+### OBSERVATION LOG ###
+Initial Observation: You're facing West. You see nothing of interest..
+Step1: right. You can see grey walls at coordinates (0, 2), (1, 2), (2, 2), (3, -2), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step2: forward. You can see grey walls at coordinates (0, 2), (1, 2), (2, -2), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step3: forward. You can see grey walls at coordinates (0, 2), (1, -2), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step4: right. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step5: right. You can see grey walls at coordinates (0, -2), (1, -2), (2, -2), (3, -2), (4, -2), (4, -1), (4, 0), (4, 1), (4, 2)..
+Step6: forward. You can see grey walls at coordinates (0, -2), (1, -2), (2, -2), (3, -2), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step7: forward. You can see grey walls at coordinates (0, -2), (1, -2), (2, -2), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step8: forward. You can see grey walls at coordinates (0, -2), (1, -2), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step9: left. You can see grey walls at coordinates (0, 1), (1, 1), (2, -2), (2, -1), (2, 0), (2, 1)..
+Step10: right. You can see grey walls at coordinates (0, -2), (1, -2), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step11: right. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (4, -1), (4, 0), (4, 1), (4, 2)..
+Step12: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step13: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step14: forward. You can see grey walls at coordinates (0, -1), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step15: right. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (4, -1), (4, 0), (4, 1), (4, 2)..
+Step16: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step17: forward. You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step18: forward. You can see grey walls at coordinates (0, -1), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step19: left. You can see grey walls at coordinates (0, 1), (1, -2), (1, -1), (1, 0), (1, 1).
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+empty spaces at coordinates: (1,1), (1,2), (2,1), (2,2)
+&&& 
+
+2025-09-03 00:57:31,402 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-03 00:57:31,404 - INFO - LLM Response for episode #4:
+Reasoning / pose-by-pose summary (brief):
+
+Starting pose: absolute (4,5), facing West. I record every cell I stand on (path) and every cell that is visible-empty in each 5×5 local view (applying side-ray occlusion and diagonal-corner blocking rules).
+
+Initial observation (facing West, at (4,5)): no walls reported → whole 5×5 local view visible. That yields the 25 cells in front of me as empty:
+X = 4..0 (d=0..4), Y = 7..3 (s=-2..2).
+
+Step1: right → now facing North, still at (4,5). Walls at local:
+(0,2),(1,2),(2,2),(3,-2),(3,-1),(3,0),(3,1),(3,2).
+Applying per-side nearest-wall ray rules gives visible-empty local cells (d=0..2, s=-2..1). Mapped to globals and added to empty set.
+
+Step2: forward → moved to (4,4) (facing North). Observation walls: (0,2),(1,2),(2,-2..2). Visible empties (d=0..1, s=-2..1) added.
+
+Step3: forward → moved to (4,3). Walls: (0,2),(1,-2..2). Visible empties only at d=0 for s=-2..1; added.
+
+Step4: right → facing East at (4,3). Walls: (0,-1),(1,-1),(2,-1),(2,0),(2,1),(2,2). Visible empties include many cells to the south/east; added.
+
+Step5: right → facing South at (4,3). Walls cluster at s=-2 depth 0 and s=-1..2 depth 4 → visible empties (s=-1..2, d=0..3) added.
+
+Step6: forward → moved to (4,4). Walls: (0,-2),(1,-2),(2,-2),(3,-2),(3,-1),(3,0),(3,1),(3,2). Visible empties (s=-1..2, d=0..2) added.
+
+Step7: forward → moved to (4,5). Walls: (0,-2),(1,-2),(2,-2),(2,-1..2). Visible empties (s=-2..2, d=0..1) added.
+
+Step8: forward → moved to (4,6). Walls: (0,-2),(1,-2),(1,-1),(1,0),(1,1),(1,2). Visible empties only at d=0 for s=-2..2; added.
+
+Step9: left → facing East at (4,6). Walls: (0,1),(1,1),(2,-2..1). Visible empties (various d for s=-2..0 and all depths for s=2) added.
+
+Step10: right → facing South at (4,6). Walls: (0,-2),(1,-2),(1,-1),(1,0),(1,1),(1,2). Visible empties (s=-1..2, d=0) added.
+
+Step11: right → facing West at (4,6). Walls: (0,-1),(1,-1),(2,-1),(3,-1),(4,-1),(4,0),(4,1),(4,2). Visible empties for s≠-1 up to d<wall depths added (including many to the west and north).
+
+Step12: forward → moved to (3,6) (facing West). Walls: (0,-1),(1,-1),(2,-1),(3,-1),(3,0),(3,1),(3,2). Visible empties added (including cells west of me, many at X = 3..-1).
+
+Step13: forward → moved to (2,6). Walls: (0,-1),(1,-1),(2,-1),(2,0),(2,1),(2,2). Visible empties added (westwards and northwards).
+
+Step14: forward → moved to (1,6). Walls: (0,-1),(1,-1),(1,0),(1,1),(1,2). Visible empties added (mostly d=0 for s=0..2, and long west line for s=-2).
+
+Step15: right → facing North at (1,6). Walls: (0,-1),(1,-1),(2,-1),(3,-1),(4,-1),(4,0),(4,1),(4,2). Visible empties (long column to the west plus several in front) added.
+
+Step16: forward → moved to (1,5). Walls: (0,-1),(1,-1),(2,-1),(3,-1),(3,0),(3,1),(3,2). Visible empties added.
+
+Step17: forward → moved to (1,4). Walls: (0,-1),(1,-1),(2,-1),(2,0),(2,1),(2,2). Visible empties added.
+
+Step18: forward → moved to (1,3). Walls: (0,-1),(1,-1),(1,0),(1,1),(1,2). Visible empties added.
+
+Step19: left → facing West at (1,3). Walls: (0,1),(1,-2),(1,-1),(1,0),(1,1). Visible empties: (d=0 for s=-2,-1,0) and all depths for s=2 (since no wall at s=2) — added the small east-west line at Y=1 and others.
+
+I collected (and deduplicated) all global coordinates that I stood on or that were seen empty (not blocked by ray or diagonal occlusion). Below is the final list.
+
+&&&
+empty spaces at coordinates: (-3,1), (-3,8), (-2,1), (-2,8), (-1,-1), (-1,0), (-1,1), (-1,2), (-1,3), (-1,4), (-1,5), (-1,6), (-1,8), (0,1), (0,3), (0,4), (0,5), (0,6), (0,7), (0,8), (1,1), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (2,3), (2,4), (2,5), (2,6), (2,7), (2,8), (3,3), (3,4), (3,5), (3,6), (3,7), (3,8), (4,1), (4,3), (4,4), (4,5), (4,6), (4,7), (4,8), (5,1), (5,3), (5,4), (5,5), (5,6), (5,8), (6,1), (6,5), (6,6), (6,8), (7,1), (7,8), (8,1), (8,8)
+&&&
+2025-09-03 00:57:31,405 - INFO - LLM Result: IMPERFECT
+2025-09-03 00:57:31,405 - INFO - tolerant IoU (r=1): 32.76%; raw IoU: 33.33%  (|GT|=20, |Pred|=60)
+2025-09-03 00:57:31,407 - INFO - --- Finished Test Episode #4 ---
+
+2025-09-03 00:57:31,411 - INFO - ==================================================
+2025-09-03 00:57:31,411 - INFO - --- EVALUATION SUMMARY (JSON written) ---
+2025-09-03 00:57:31,411 - INFO - Saved JSON to 'my_tests/9.01/only_walls+examples/evaluation_summary.json'
+2025-09-03 00:57:31,411 - INFO - ==================================================

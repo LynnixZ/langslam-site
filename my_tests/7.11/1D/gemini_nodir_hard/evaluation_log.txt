@@ -1,0 +1,2508 @@
+2025-07-11 03:19:53,691 - INFO - --- Starting Test Episode #0 ---
+2025-07-11 03:19:54,301 - INFO - Sending prompt to Gemini for episode #0...
+2025-07-11 03:19:54,301 - INFO - Prompt for episode #0:
+
+You are an expert spatial reasoning AI. Your task is to build a consistent 1D map of a corridor based on a sequence of limited, first-person observations.
+
+### RULES OF THE WORLD ###
+1.  The world is a static, continuous 1D track. Your absolute position on this track is a single integer.
+2.  Your observation consists ONLY of the 6 grid cells directly in front of you.
+3.  The number you see (e.g., "at coordinate 3") is a **relative position**, indexed 1 to 6.
+    - Position 1 is the cell immediately in front of you.
+    - Position 6 is the farthest cell you can see.
+    - An object at relative position 7 or greater is invisible to you.
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is 1. East is the direction of increasing position numbers.
+
+First, show your step-by-step reasoning by tracking your own absolute position and direction, and calculating the absolute coordinates of all objects you see.
+
+Finally, provide a summary list of all unique objects and their deduced absolute coordinates.
+
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see a red flag at coordinate 5, a grey flag at coordinate 3.
+Step1: forward. You can see a yellow flag at coordinate 6, a red flag at coordinate 4, a grey flag at coordinate 2.
+Step2: forward. You can see a yellow flag at coordinate 5, a red flag at coordinate 3, a grey flag at coordinate 1.
+Step3: forward. You can see a yellow flag at coordinate 4, a red flag at coordinate 2.
+Step4: forward. You can see a grey wall at coordinate 6, a yellow flag at coordinate 3, a red flag at coordinate 1.
+Step5: forward. You can see a grey wall at coordinate 5, a yellow flag at coordinate 2.
+Step6: forward. You can see a grey wall at coordinate 4, a yellow flag at coordinate 1.
+Step7: forward. You can see a grey wall at coordinate 3.
+Step8: forward. You can see a grey wall at coordinate 2.
+Step9: turnaround. You can see a grey flag at coordinate 5, a red flag at coordinate 3, a yellow flag at coordinate 1.
+Step10: forward. You can see a grey flag at coordinate 4, a red flag at coordinate 2.
+Step11: forward. You can see a grey flag at coordinate 3, a red flag at coordinate 1.
+Step12: turnaround. You can see a grey wall at coordinate 4, a yellow flag at coordinate 1.
+Step13: forward. You can see a grey wall at coordinate 3.
+Step14: forward. You can see a grey wall at coordinate 2.
+Step15: forward. You can see a grey wall at coordinate 1.
+Step16: turnaround. You can see a grey flag at coordinate 6, a red flag at coordinate 4, a yellow flag at coordinate 2.
+Step17: forward. You can see a grey flag at coordinate 5, a red flag at coordinate 3, a yellow flag at coordinate 1.
+Step18: forward. You can see a grey flag at coordinate 4, a red flag at coordinate 2.
+Step19: forward. You can see a grey flag at coordinate 3, a red flag at coordinate 1.
+Step20: forward. You can see a grey wall at coordinate 6, a grey flag at coordinate 2.
+Step21: forward. You can see a grey wall at coordinate 5, a grey flag at coordinate 1
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate 3, a green flag at coordinate 8, a blue wall at coordinate 5, a blue wall at coordinate 0
+&&&
+
+2025-07-11 03:20:57,176 - INFO - LLM Response for episode #0:
+### Step-by-Step Reasoning
+
+**Initial State:**
+*   **Your Position:** 1
+*   **Your Direction:** East
+*   **Observation:** a red flag at relative 5, a grey flag at relative 3.
+*   **Calculation:**
+    *   red flag: 1 (your position) + 5 = 6
+    *   grey flag: 1 (your position) + 3 = 4
+*   **Map:** A red flag is at absolute position 6. A grey flag is at absolute position 4.
+
+**Step 1: forward**
+*   **Your Position:** 2
+*   **Your Direction:** East
+*   **Observation:** a yellow flag at relative 6, a red flag at relative 4, a grey flag at relative 2.
+*   **Calculation:**
+    *   yellow flag: 2 (your position) + 6 = 8
+    *   red flag: 2 (your position) + 4 = 6 (Consistent)
+    *   grey flag: 2 (your position) + 2 = 4 (Consistent)
+*   **Map:** A yellow flag is at 8. A red flag is at 6. A grey flag is at 4.
+
+**Step 2: forward**
+*   **Your Position:** 3
+*   **Your Direction:** East
+*   **Observation:** a yellow flag at relative 5, a red flag at relative 3, a grey flag at relative 1.
+*   **Calculation:**
+    *   yellow flag: 3 + 5 = 8 (Consistent)
+    *   red flag: 3 + 3 = 6 (Consistent)
+    *   grey flag: 3 + 1 = 4 (Consistent)
+*   **Map:** A yellow flag is at 8. A red flag is at 6. A grey flag is at 4.
+
+**Step 3: forward**
+*   **Your Position:** 4
+*   **Your Direction:** East
+*   **Observation:** a yellow flag at relative 4, a red flag at relative 2.
+*   **Calculation:**
+    *   yellow flag: 4 + 4 = 8 (Consistent)
+    *   red flag: 4 + 2 = 6 (Consistent)
+*   **Map:** A yellow flag is at 8. A red flag is at 6. A grey flag is at 4.
+
+**Step 4: forward**
+*   **Your Position:** 5
+*   **Your Direction:** East
+*   **Observation:** a grey wall at relative 6, a yellow flag at relative 3, a red flag at relative 1.
+*   **Calculation:**
+    *   grey wall: 5 + 6 = 11
+    *   yellow flag: 5 + 3 = 8 (Consistent)
+    *   red flag: 5 + 1 = 6 (Consistent)
+*   **Map:** A grey wall is at 11. A yellow flag is at 8. A red flag is at 6. A grey flag is at 4.
+
+**Step 5: forward**
+*   **Your Position:** 6
+*   **Your Direction:** East
+*   **Observation:** a grey wall at relative 5, a yellow flag at relative 2.
+*   **Calculation:**
+    *   grey wall: 6 + 5 = 11 (Consistent)
+    *   yellow flag: 6 + 2 = 8 (Consistent)
+*   **Map:** A grey wall is at 11. A yellow flag is at 8. A red flag is at 6. A grey flag is at 4.
+
+**Step 6: forward**
+*   **Your Position:** 7
+*   **Your Direction:** East
+*   **Observation:** a grey wall at relative 4, a yellow flag at relative 1.
+*   **Calculation:**
+    *   grey wall: 7 + 4 = 11 (Consistent)
+    *   yellow flag: 7 + 1 = 8 (Consistent)
+*   **Map:** A grey wall is at 11. A yellow flag is at 8. A red flag is at 6. A grey flag is at 4.
+
+**Step 7: forward**
+*   **Your Position:** 8
+*   **Your Direction:** East
+*   **Observation:** a grey wall at relative 3.
+*   **Calculation:**
+    *   grey wall: 8 + 3 = 11 (Consistent)
+*   **Map:** A grey wall is at 11. A yellow flag is at 8. A red flag is at 6. A grey flag is at 4.
+
+**Step 8: forward**
+*   **Your Position:** 9
+*   **Your Direction:** East
+*   **Observation:** a grey wall at relative 2.
+*   **Calculation:**
+    *   grey wall: 9 + 2 = 11 (Consistent)
+*   **Map:** A grey wall is at 11. A yellow flag is at 8. A red flag is at 6. A grey flag is at 4.
+
+**Step 9: turnaround**
+*   **Your Position:** 9
+*   **Your Direction:** West
+*   **Observation:** a grey flag at relative 5, a red flag at relative 3, a yellow flag at relative 1.
+*   **Calculation:**
+    *   grey flag: 9 (your position) - 5 = 4 (Consistent)
+    *   red flag: 9 - 3 = 6 (Consistent)
+    *   yellow flag: 9 - 1 = 8 (Consistent)
+*   **Map:** A grey wall is at 11. A yellow flag is at 8. A red flag is at 6. A grey flag is at 4.
+
+**Step 10: forward**
+*   **Your Position:** 8
+*   **Your Direction:** West
+*   **Observation:** a grey flag at relative 4, a red flag at relative 2.
+*   **Calculation:**
+    *   grey flag: 8 - 4 = 4 (Consistent)
+    *   red flag: 8 - 2 = 6 (Consistent)
+*   **Map:** A grey wall is at 11. A yellow flag is at 8. A red flag is at 6. A grey flag is at 4.
+
+**Step 11: forward**
+*   **Your Position:** 7
+*   **Your Direction:** West
+*   **Observation:** a grey flag at relative 3, a red flag at relative 1.
+*   **Calculation:**
+    *   grey flag: 7 - 3 = 4 (Consistent)
+    *   red flag: 7 - 1 = 6 (Consistent)
+*   **Map:** A grey wall is at 11. A yellow flag is at 8. A red flag is at 6. A grey flag is at 4.
+
+**Step 12: turnaround**
+*   **Your Position:** 7
+*   **Your Direction:** East
+*   **Observation:** a grey wall at relative 4, a yellow flag at relative 1.
+*   **Calculation:**
+    *   grey wall: 7 + 4 = 11 (Consistent)
+    *   yellow flag: 7 + 1 = 8 (Consistent)
+*   **Map:** A grey wall is at 11. A yellow flag is at 8. A red flag is at 6. A grey flag is at 4.
+
+**Step 13: forward**
+*   **Your Position:** 8
+*   **Your Direction:** East
+*   **Observation:** a grey wall at relative 3.
+*   **Calculation:**
+    *   grey wall: 8 + 3 = 11 (Consistent)
+*   **Map:** A grey wall is at 11. A yellow flag is at 8. A red flag is at 6. A grey flag is at 4.
+
+**Step 14: forward**
+*   **Your Position:** 9
+*   **Your Direction:** East
+*   **Observation:** a grey wall at relative 2.
+*   **Calculation:**
+    *   grey wall: 9 + 2 = 11 (Consistent)
+*   **Map:** A grey wall is at 11. A yellow flag is at 8. A red flag is at 6. A grey flag is at 4.
+
+**Step 15: forward**
+*   **Your Position:** 10
+*   **Your Direction:** East
+*   **Observation:** a grey wall at relative 1.
+*   **Calculation:**
+    *   grey wall: 10 + 1 = 11 (Consistent)
+*   **Map:** A grey wall is at 11. A yellow flag is at 8. A red flag is at 6. A grey flag is at 4.
+
+**Step 16: turnaround**
+*   **Your Position:** 10
+*   **Your Direction:** West
+*   **Observation:** a grey flag at relative 6, a red flag at relative 4, a yellow flag at relative 2.
+*   **Calculation:**
+    *   grey flag: 10 - 6 = 4 (Consistent)
+    *   red flag: 10 - 4 = 6 (Consistent)
+    *   yellow flag: 10 - 2 = 8 (Consistent)
+*   **Map:** A grey wall is at 11. A yellow flag is at 8. A red flag is at 6. A grey flag is at 4.
+
+**Step 17: forward**
+*   **Your Position:** 9
+*   **Your Direction:** West
+*   **Observation:** a grey flag at relative 5, a red flag at relative 3, a yellow flag at relative 1.
+*   **Calculation:**
+    *   grey flag: 9 - 5 = 4 (Consistent)
+    *   red flag: 9 - 3 = 6 (Consistent)
+    *   yellow flag: 9 - 1 = 8 (Consistent)
+*   **Map:** A grey wall is at 11. A yellow flag is at 8. A red flag is at 6. A grey flag is at 4.
+
+**Step 18: forward**
+*   **Your Position:** 8
+*   **Your Direction:** West
+*   **Observation:** a grey flag at relative 4, a red flag at relative 2.
+*   **Calculation:**
+    *   grey flag: 8 - 4 = 4 (Consistent)
+    *   red flag: 8 - 2 = 6 (Consistent)
+*   **Map:** A grey wall is at 11. A yellow flag is at 8. A red flag is at 6. A grey flag is at 4.
+
+**Step 19: forward**
+*   **Your Position:** 7
+*   **Your Direction:** West
+*   **Observation:** a grey flag at relative 3, a red flag at relative 1.
+*   **Calculation:**
+    *   grey flag: 7 - 3 = 4 (Consistent)
+    *   red flag: 7 - 1 = 6 (Consistent)
+*   **Map:** A grey wall is at 11. A yellow flag is at 8. A red flag is at 6. A grey flag is at 4.
+
+**Step 20: forward**
+*   **Your Position:** 6
+*   **Your Direction:** West
+*   **Observation:** a grey wall at relative 6, a grey flag at relative 2.
+*   **Calculation:**
+    *   grey wall: 6 - 6 = 0
+    *   grey flag: 6 - 2 = 4 (Consistent)
+*   **Map:** A grey wall is at 0. A grey flag is at 4. A red flag is at 6. A yellow flag is at 8. A grey wall is at 11.
+
+**Step 21: forward**
+*   **Your Position:** 5
+*   **Your Direction:** West
+*   **Observation:** a grey wall at relative 5, a grey flag at relative 1.
+*   **Calculation:**
+    *   grey wall: 5 - 5 = 0 (Consistent)
+    *   grey flag: 5 - 1 = 4 (Consistent)
+*   **Map:** A grey wall is at 0. A grey flag is at 4. A red flag is at 6. A yellow flag is at 8. A grey wall is at 11.
+
+&&&
+a grey wall at coordinate 0, a grey flag at coordinate 4, a red flag at coordinate 6, a yellow flag at coordinate 8, a grey wall at coordinate 11
+&&&
+2025-07-11 03:20:57,179 - INFO - --- Judgment for Episode #0 ---
+2025-07-11 03:20:57,180 - INFO - Result: PERFECT MATCH
+2025-07-11 03:20:57,180 - INFO - Ground Truth: {0: ('grey', 'wall'), 4: ('grey', 'flag'), 6: ('red', 'flag'), 8: ('yellow', 'flag'), 11: ('grey', 'wall')}
+LLM's Map   : {0: ('grey', 'wall'), 4: ('grey', 'flag'), 6: ('red', 'flag'), 8: ('yellow', 'flag'), 11: ('grey', 'wall')}
+Overall Accuracy: 100.00%
+Goal Accuracy   : 100.00%
+2025-07-11 03:20:57,180 - INFO - --- Finished Test Episode #0 ---
+
+2025-07-11 03:21:02,186 - INFO - --- Starting Test Episode #1 ---
+2025-07-11 03:21:02,531 - INFO - Sending prompt to Gemini for episode #1...
+2025-07-11 03:21:02,531 - INFO - Prompt for episode #1:
+
+You are an expert spatial reasoning AI. Your task is to build a consistent 1D map of a corridor based on a sequence of limited, first-person observations.
+
+### RULES OF THE WORLD ###
+1.  The world is a static, continuous 1D track. Your absolute position on this track is a single integer.
+2.  Your observation consists ONLY of the 6 grid cells directly in front of you.
+3.  The number you see (e.g., "at coordinate 3") is a **relative position**, indexed 1 to 6.
+    - Position 1 is the cell immediately in front of you.
+    - Position 6 is the farthest cell you can see.
+    - An object at relative position 7 or greater is invisible to you.
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is 1. East is the direction of increasing position numbers.
+
+First, show your step-by-step reasoning by tracking your own absolute position and direction, and calculating the absolute coordinates of all objects you see.
+
+Finally, provide a summary list of all unique objects and their deduced absolute coordinates.
+
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see a purple flag at coordinate 5, a grey flag at coordinate 4, a red flag at coordinate 1.
+Step1: forward. You can see a purple flag at coordinate 4, a grey flag at coordinate 3.
+Step2: forward. You can see a purple flag at coordinate 3, a grey flag at coordinate 2.
+Step3: forward. You can see a purple flag at coordinate 2, a grey flag at coordinate 1.
+Step4: forward. You can see a grey wall at coordinate 6, a purple flag at coordinate 1.
+Step5: forward. You can see a grey wall at coordinate 5.
+Step6: turnaround. You can see a grey wall at coordinate 6, a red flag at coordinate 4, a grey flag at coordinate 1.
+Step7: turnaround. You can see a grey wall at coordinate 5.
+Step8: forward. You can see a grey wall at coordinate 4.
+Step9: forward. You can see a grey wall at coordinate 3.
+Step10: forward. You can see a grey wall at coordinate 2.
+Step11: forward. You can see a grey wall at coordinate 1.
+Step12: forward. You can see a grey wall at coordinate 1.
+Step13: forward. You can see a grey wall at coordinate 1.
+Step14: forward. You can see a grey wall at coordinate 1.
+Step15: forward. You can see a grey wall at coordinate 1.
+Step16: forward. You can see a grey wall at coordinate 1.
+Step17: turnaround. You can see a grey flag at coordinate 5, a purple flag at coordinate 4.
+Step18: forward. You can see a grey flag at coordinate 4, a purple flag at coordinate 3.
+Step19: forward. You can see a red flag at coordinate 6, a grey flag at coordinate 3, a purple flag at coordinate 2.
+Step20: forward. You can see a red flag at coordinate 5, a grey flag at coordinate 2, a purple flag at coordinate 1.
+Step21: forward. You can see a grey wall at coordinate 6, a red flag at coordinate 4, a grey flag at coordinate 1.
+Step22: forward. You can see a grey wall at coordinate 5, a red flag at coordinate 3
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate 3, a green flag at coordinate 8, a blue wall at coordinate 5, a blue wall at coordinate 0
+&&&
+
+2025-07-11 03:23:13,766 - INFO - LLM Response for episode #1:
+Here is my step-by-step reconstruction of the map.
+
+### Step-by-step Reasoning
+
+*   **Initial State:** My position is 1, and I am facing East (positive direction).
+*   **Initial Observation:** I see a `red flag` at relative position 1 (absolute: 1+1=2), a `grey flag` at relative position 4 (absolute: 1+4=5), and a `purple flag` at relative position 5 (absolute: 1+5=6).
+*   **Map:** {red flag: 2}, {grey flag: 5}, {purple flag: 6}
+
+*   **Step 1:** Action: `forward`. My new position is 2, facing East.
+*   **Observation:** `grey flag` at 3 (absolute: 2+3=5), `purple flag` at 4 (absolute: 2+4=6).
+*   **Reasoning:** These observations are consistent with the existing map.
+
+*   **Step 2:** Action: `forward`. My new position is 3, facing East.
+*   **Observation:** `grey flag` at 2 (absolute: 3+2=5), `purple flag` at 3 (absolute: 3+3=6).
+*   **Reasoning:** Consistent.
+
+*   **Step 3:** Action: `forward`. My new position is 4, facing East.
+*   **Observation:** `grey flag` at 1 (absolute: 4+1=5), `purple flag` at 2 (absolute: 4+2=6).
+*   **Reasoning:** Consistent.
+
+*   **Step 4:** Action: `forward`. My new position is 5, facing East.
+*   **Observation:** `purple flag` at 1 (absolute: 5+1=6), `grey wall` at 6 (absolute: 5+6=11).
+*   **Reasoning:** The purple flag is consistent. A new `grey wall` is discovered at coordinate 11.
+*   **Map:** {red flag: 2}, {grey flag: 5}, {purple flag: 6}, {grey wall: 11}
+
+*   **Step 5:** Action: `forward`. My new position is 6, facing East.
+*   **Observation:** `grey wall` at 5 (absolute: 6+5=11).
+*   **Reasoning:** Consistent.
+
+*   **Step 6:** Action: `turnaround`. My position is 6, now facing West (negative direction).
+*   **Observation:** `grey flag` at 1 (absolute: 6-1=5), `red flag` at 4 (absolute: 6-4=2), `grey wall` at 6 (absolute: 6-6=0).
+*   **Reasoning:** The red and grey flags are consistent. A new `grey wall` is discovered at coordinate 0.
+*   **Map:** {grey wall: 0}, {red flag: 2}, {grey flag: 5}, {purple flag: 6}, {grey wall: 11}
+
+*   **Step 7:** Action: `turnaround`. My position is 6, now facing East.
+*   **Observation:** `grey wall` at 5 (absolute: 6+5=11).
+*   **Reasoning:** Consistent.
+
+*   **Step 8:** Action: `forward`. My new position is 7, facing East.
+*   **Observation:** `grey wall` at 4 (absolute: 7+4=11).
+*   **Reasoning:** Consistent.
+
+*   **Step 9:** Action: `forward`. My new position is 8, facing East.
+*   **Observation:** `grey wall` at 3 (absolute: 8+3=11).
+*   **Reasoning:** Consistent.
+
+*   **Step 10:** Action: `forward`. My new position is 9, facing East.
+*   **Observation:** `grey wall` at 2 (absolute: 9+2=11).
+*   **Reasoning:** Consistent.
+
+*   **Step 11:** Action: `forward`. My new position is 10, facing East.
+*   **Observation:** `grey wall` at 1 (absolute: 10+1=11).
+*   **Reasoning:** Consistent.
+
+*   **Step 12:** Action: `forward`. My new position is 11, facing East.
+*   **Observation:** `grey wall` at 1 (absolute: 11+1=12).
+*   **Reasoning:** A new `grey wall` is discovered at coordinate 12.
+*   **Map:** {grey wall: 0}, {red flag: 2}, {grey flag: 5}, {purple flag: 6}, {grey wall: 11}, {grey wall: 12}
+
+*   **Step 13:** Action: `forward`. My new position is 12, facing East.
+*   **Observation:** `grey wall` at 1 (absolute: 12+1=13).
+*   **Reasoning:** A new `grey wall` is discovered at coordinate 13.
+*   **Map:** {..., grey wall: 13}
+
+*   **Step 14:** Action: `forward`. My new position is 13, facing East.
+*   **Observation:** `grey wall` at 1 (absolute: 13+1=14).
+*   **Reasoning:** A new `grey wall` is discovered at coordinate 14.
+*   **Map:** {..., grey wall: 14}
+
+*   **Step 15:** Action: `forward`. My new position is 14, facing East.
+*   **Observation:** `grey wall` at 1 (absolute: 14+1=15).
+*   **Reasoning:** A new `grey wall` is discovered at coordinate 15.
+*   **Map:** {..., grey wall: 15}
+
+*   **Step 16:** Action: `forward`. My new position is 15, facing East.
+*   **Observation:** `grey wall` at 1 (absolute: 15+1=16).
+*   **Reasoning:** A new `grey wall` is discovered at coordinate 16.
+*   **Map:** {..., grey wall: 16}
+
+*   **Step 17:** Action: `turnaround`. My position is 15, now facing West.
+*   **Observation:** `grey flag` at 5 (absolute: 15-5=10), `purple flag` at 4 (absolute: 15-4=11).
+*   **Reasoning:** A new `grey flag` is found at 10. The object at 11, previously identified as a `grey wall`, is now seen as a `purple flag`. This is a conflict. To maintain a consistent map, I will assume the first identification is the object's primary label. The map entry for coordinate 11 remains `grey wall`.
+*   **Map:** {..., grey flag: 10, ...}
+
+*   **Step 18:** Action: `forward`. My new position is 14, facing West.
+*   **Observation:** `grey flag` at 4 (absolute: 14-4=10), `purple flag` at 3 (absolute: 14-3=11).
+*   **Reasoning:** Consistent with the findings from the previous step.
+
+*   **Step 19:** Action: `forward`. My new position is 13, facing West.
+*   **Observation:** `red flag` at 6 (absolute: 13-6=7), `grey flag` at 3 (absolute: 13-3=10), `purple flag` at 2 (absolute: 13-2=11).
+*   **Reasoning:** A new `red flag` is discovered at coordinate 7. Other observations are consistent.
+*   **Map:** {..., red flag: 7, ...}
+
+*   **Step 20:** Action: `forward`. My new position is 12, facing West.
+*   **Observation:** `red flag` at 5 (absolute: 12-5=7), `grey flag` at 2 (absolute: 12-2=10), `purple flag` at 1 (absolute: 12-1=11).
+*   **Reasoning:** Consistent.
+
+*   **Step 21:** Action: `forward`. My new position is 11, facing West.
+*   **Observation:** `grey wall` at 6 (absolute: 11-6=5), `red flag` at 4 (absolute: 11-4=7), `grey flag` at 1 (absolute: 11-1=10).
+*   **Reasoning:** The object at 5, previously identified as a `grey flag`, is now seen as a `grey wall`. This is a conflict. I will stick with the first identification: `grey flag` at 5. The other observations are consistent.
+
+*   **Step 22:** Action: `forward`. My new position is 10, facing West.
+*   **Observation:** `grey wall` at 5 (absolute: 10-5=5), `red flag` at 3 (absolute: 10-3=7).
+*   **Reasoning:** Consistent with the previous step's observations (object at 5 appears as a wall from this distance/direction, and red flag at 7 is confirmed).
+
+### Final Map Summary
+
+&&&
+a grey wall at coordinate 0, a red flag at coordinate 2, a grey flag at coordinate 5, a purple flag at coordinate 6, a red flag at coordinate 7, a grey flag at coordinate 10, a grey wall at coordinate 11, a grey wall at coordinate 12, a grey wall at coordinate 13, a grey wall at coordinate 14, a grey wall at coordinate 15, a grey wall at coordinate 16
+&&&
+2025-07-11 03:23:13,769 - INFO - --- Judgment for Episode #1 ---
+2025-07-11 03:23:13,769 - INFO - Result: PERFECT MATCH
+2025-07-11 03:23:13,769 - INFO - Ground Truth: {0: ('grey', 'wall'), 2: ('red', 'flag'), 5: ('grey', 'flag'), 6: ('purple', 'flag'), 11: ('grey', 'wall')}
+LLM's Map   : {0: ('grey', 'wall'), 2: ('red', 'flag'), 5: ('grey', 'flag'), 6: ('purple', 'flag'), 7: ('red', 'flag'), 10: ('grey', 'flag'), 11: ('grey', 'wall'), 12: ('grey', 'wall'), 13: ('grey', 'wall'), 14: ('grey', 'wall'), 15: ('grey', 'wall'), 16: ('grey', 'wall')}
+Overall Accuracy: 100.00%
+Goal Accuracy   : 100.00%
+2025-07-11 03:23:13,769 - INFO - --- Finished Test Episode #1 ---
+
+2025-07-11 03:23:18,772 - INFO - --- Starting Test Episode #2 ---
+2025-07-11 03:23:18,901 - INFO - Sending prompt to Gemini for episode #2...
+2025-07-11 03:23:18,901 - INFO - Prompt for episode #2:
+
+You are an expert spatial reasoning AI. Your task is to build a consistent 1D map of a corridor based on a sequence of limited, first-person observations.
+
+### RULES OF THE WORLD ###
+1.  The world is a static, continuous 1D track. Your absolute position on this track is a single integer.
+2.  Your observation consists ONLY of the 6 grid cells directly in front of you.
+3.  The number you see (e.g., "at coordinate 3") is a **relative position**, indexed 1 to 6.
+    - Position 1 is the cell immediately in front of you.
+    - Position 6 is the farthest cell you can see.
+    - An object at relative position 7 or greater is invisible to you.
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is 1. East is the direction of increasing position numbers.
+
+First, show your step-by-step reasoning by tracking your own absolute position and direction, and calculating the absolute coordinates of all objects you see.
+
+Finally, provide a summary list of all unique objects and their deduced absolute coordinates.
+
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see grey flags at coordinates: 6, 2, a red flag at coordinate 5.
+Step1: forward. You can see grey flags at coordinates: 5, 1, a red flag at coordinate 4.
+Step2: forward. You can see a grey flag at coordinate 4, a red flag at coordinate 3.
+Step3: forward. You can see a grey flag at coordinate 3, a red flag at coordinate 2.
+Step4: forward. You can see a grey wall at coordinate 6, a grey flag at coordinate 2, a red flag at coordinate 1.
+Step5: forward. You can see a grey wall at coordinate 5, a grey flag at coordinate 1.
+Step6: forward. You can see a grey wall at coordinate 4.
+Step7: turnaround. You can see a grey flag at coordinate 4, a red flag at coordinate 1.
+Step8: forward. You can see a grey wall at coordinate 6, a grey flag at coordinate 3.
+Step9: forward. You can see a grey wall at coordinate 5, a grey flag at coordinate 2.
+Step10: forward. You can see a grey wall at coordinate 4, a grey flag at coordinate 1.
+Step11: forward. You can see a grey wall at coordinate 3.
+Step12: forward. You can see a grey wall at coordinate 2.
+Step13: forward. You can see a grey wall at coordinate 1.
+Step14: forward. You can see a grey wall at coordinate 1.
+Step15: turnaround. You can see grey flags at coordinates: 6, 2, a red flag at coordinate 5.
+Step16: turnaround. You can see a grey wall at coordinate 1.
+Step17: forward. You can see a grey wall at coordinate 1.
+Step18: forward. You can see a grey wall at coordinate 1.
+Step19: forward. You can see a grey wall at coordinate 1.
+Step20: forward. You can see a grey wall at coordinate 1.
+Step21: forward. You can see a grey wall at coordinate 1.
+Step22: forward. You can see a grey wall at coordinate 1.
+Step23: forward. You can see a grey wall at coordinate 1.
+Step24: forward. You can see a grey wall at coordinate 1
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate 3, a green flag at coordinate 8, a blue wall at coordinate 5, a blue wall at coordinate 0
+&&&
+
+2025-07-11 03:25:29,318 - INFO - LLM Response for episode #2:
+Here is my step-by-step reconstruction of the map based on the observation log.
+
+### Step-by-Step Reasoning
+
+My state is tracked by my absolute position `P` and my direction `D`. The absolute coordinate of an object is calculated as `P + relative_coord` when facing East, and `P - relative_coord` when facing West.
+
+**Initial State**
+*   **State:** `P = 1`, `D = East`.
+*   **Observation:** grey flags at relative 2 and 6, a red flag at relative 5.
+*   **Mapping:**
+    *   grey flag 1: `1 + 2 = 3`.
+    *   red flag: `1 + 5 = 6`.
+    *   grey flag 2: `1 + 6 = 7`.
+*   **Current Map:** `a grey flag at 3`, `a red flag at 6`, `a grey flag at 7`.
+
+**Step 1: forward**
+*   **State:** `P = 1 + 1 = 2`, `D = East`.
+*   **Observation:** grey flags at 1 and 5, a red flag at 4.
+*   **Mapping:**
+    *   grey flag at 1: `2 + 1 = 3`. (Confirmed)
+    *   red flag at 4: `2 + 4 = 6`. (Confirmed)
+    *   grey flag at 5: `2 + 5 = 7`. (Confirmed)
+
+**Step 2: forward**
+*   **State:** `P = 2 + 1 = 3`, `D = East`.
+*   **Observation:** a grey flag at 4, a red flag at 3.
+*   **Mapping:**
+    *   red flag at 3: `3 + 3 = 6`. (Confirmed)
+    *   grey flag at 4: `3 + 4 = 7`. (Confirmed)
+
+**Step 3: forward**
+*   **State:** `P = 3 + 1 = 4`, `D = East`.
+*   **Observation:** a grey flag at 3, a red flag at 2.
+*   **Mapping:**
+    *   red flag at 2: `4 + 2 = 6`. (Confirmed)
+    *   grey flag at 3: `4 + 3 = 7`. (Confirmed)
+
+**Step 4: forward**
+*   **State:** `P = 4 + 1 = 5`, `D = East`.
+*   **Observation:** a grey wall at 6, a grey flag at 2, a red flag at 1.
+*   **Mapping:**
+    *   red flag at 1: `5 + 1 = 6`. (Confirmed)
+    *   grey flag at 2: `5 + 2 = 7`. (Confirmed)
+    *   grey wall: `5 + 6 = 11`. (New object)
+*   **Current Map:** `a grey flag at 3`, `a red flag at 6`, `a grey flag at 7`, `a grey wall at 11`.
+
+**Step 5: forward**
+*   **State:** `P = 5 + 1 = 6`, `D = East`.
+*   **Observation:** a grey wall at 5, a grey flag at 1.
+*   **Mapping:**
+    *   grey flag at 1: `6 + 1 = 7`. (Confirmed)
+    *   grey wall at 5: `6 + 5 = 11`. (Confirmed)
+
+**Step 6: forward**
+*   **State:** `P = 6 + 1 = 7`, `D = East`.
+*   **Observation:** a grey wall at 4.
+*   **Mapping:**
+    *   grey wall at 4: `7 + 4 = 11`. (Confirmed)
+
+**Step 7: turnaround**
+*   **State:** `P = 7`, `D = West`.
+*   **Observation:** a grey flag at 4, a red flag at 1.
+*   **Mapping:**
+    *   red flag at 1: `7 - 1 = 6`. (Confirmed)
+    *   grey flag at 4: `7 - 4 = 3`. (Confirmed)
+
+**Step 8: forward**
+*   **State:** `P = 7 - 1 = 6`, `D = West`.
+*   **Observation:** a grey wall at 6, a grey flag at 3.
+*   **Mapping:**
+    *   grey flag at 3: `6 - 3 = 3`. (Confirmed)
+    *   grey wall at 6: `6 - 6 = 0`. (New object)
+*   **Current Map:** `a grey flag at 3`, `a red flag at 6`, `a grey flag at 7`, `a grey wall at 11`, `a grey wall at 0`.
+
+**Step 9: forward**
+*   **State:** `P = 6 - 1 = 5`, `D = West`.
+*   **Observation:** a grey wall at 5, a grey flag at 2.
+*   **Mapping:**
+    *   grey flag at 2: `5 - 2 = 3`. (Confirmed)
+    *   grey wall at 5: `5 - 5 = 0`. (Confirmed)
+
+**Step 10: forward**
+*   **State:** `P = 5 - 1 = 4`, `D = West`.
+*   **Observation:** a grey wall at 4, a grey flag at 1.
+*   **Mapping:**
+    *   grey flag at 1: `4 - 1 = 3`. (Confirmed)
+    *   grey wall at 4: `4 - 4 = 0`. (Confirmed)
+
+**Step 11: forward**
+*   **State:** `P = 4 - 1 = 3`, `D = West`.
+*   **Observation:** a grey wall at 3.
+*   **Mapping:**
+    *   grey wall at 3: `3 - 3 = 0`. (Confirmed)
+
+**Step 12: forward**
+*   **State:** `P = 3 - 1 = 2`, `D = West`.
+*   **Observation:** a grey wall at 2.
+*   **Mapping:**
+    *   grey wall at 2: `2 - 2 = 0`. (Confirmed)
+
+**Step 13: forward**
+*   **State:** `P = 2 - 1 = 1`, `D = West`.
+*   **Observation:** a grey wall at 1.
+*   **Mapping:**
+    *   grey wall at 1: `1 - 1 = 0`. (Confirmed)
+
+**Step 14: forward**
+*   **State:** `P = 1 - 1 = 0`, `D = West`.
+*   **Observation:** a grey wall at 1.
+*   **Mapping:**
+    *   grey wall at 1: `0 - 1 = -1`. (New object)
+*   **Current Map:** `a grey flag at 3`, `a red flag at 6`, `a grey flag at 7`, `a grey wall at 11`, `a grey wall at 0`, `a grey wall at -1`.
+
+**Step 15: turnaround**
+*   **State:** `P = 0`, `D = East`.
+*   **Observation:** grey flags at 6, 2, a red flag at 5.
+*   **Analysis:** This observation leads to a contradiction. For example, it implies a grey flag at absolute coordinate `0 + 6 = 6`. However, all previous consistent observations have placed a red flag at coordinate 6. Since the world is static, a single coordinate cannot contain two different objects. To build a consistent map, this observation must be treated as erroneous data and is ignored.
+
+**Step 16: turnaround**
+*   **State:** `P = 0`, `D = West`.
+*   **Observation:** a grey wall at 1.
+*   **Mapping:**
+    *   grey wall at 1: `0 - 1 = -1`. (Confirmed)
+
+**Step 17: forward**
+*   **State:** `P = 0 - 1 = -1`, `D = West`.
+*   **Observation:** a grey wall at 1.
+*   **Mapping:**
+    *   grey wall at 1: `-1 - 1 = -2`. (New object)
+
+**Step 18: forward**
+*   **State:** `P = -1 - 1 = -2`, `D = West`.
+*   **Observation:** a grey wall at 1.
+*   **Mapping:**
+    *   grey wall at 1: `-2 - 1 = -3`. (New object)
+
+**Step 19: forward**
+*   **State:** `P = -2 - 1 = -3`, `D = West`.
+*   **Observation:** a grey wall at 1.
+*   **Mapping:**
+    *   grey wall at 1: `-3 - 1 = -4`. (New object)
+
+**Step 20: forward**
+*   **State:** `P = -3 - 1 = -4`, `D = West`.
+*   **Observation:** a grey wall at 1.
+*   **Mapping:**
+    *   grey wall at 1: `-4 - 1 = -5`. (New object)
+
+**Step 21: forward**
+*   **State:** `P = -4 - 1 = -5`, `D = West`.
+*   **Observation:** a grey wall at 1.
+*   **Mapping:**
+    *   grey wall at 1: `-5 - 1 = -6`. (New object)
+
+**Step 22: forward**
+*   **State:** `P = -5 - 1 = -6`, `D = West`.
+*   **Observation:** a grey wall at 1.
+*   **Mapping:**
+    *   grey wall at 1: `-6 - 1 = -7`. (New object)
+
+**Step 23: forward**
+*   **State:** `P = -6 - 1 = -7`, `D = West`.
+*   **Observation:** a grey wall at 1.
+*   **Mapping:**
+    *   grey wall at 1: `-7 - 1 = -8`. (New object)
+
+**Step 24: forward**
+*   **State:** `P = -7 - 1 = -8`, `D = West`.
+*   **Observation:** a grey wall at 1.
+*   **Mapping:**
+    *   grey wall at 1: `-8 - 1 = -9`. (New object)
+
+### Final Map Summary
+
+&&&
+a grey flag at coordinate 3, a red flag at coordinate 6, a grey flag at coordinate 7, a grey wall at coordinate 11, a grey wall at coordinate 0, a grey wall at coordinate -1, a grey wall at coordinate -2, a grey wall at coordinate -3, a grey wall at coordinate -4, a grey wall at coordinate -5, a grey wall at coordinate -6, a grey wall at coordinate -7, a grey wall at coordinate -8, a grey wall at coordinate -9
+&&&
+2025-07-11 03:25:29,319 - INFO - --- Judgment for Episode #2 ---
+2025-07-11 03:25:29,319 - INFO - Result: PERFECT MATCH
+2025-07-11 03:25:29,319 - INFO - Ground Truth: {0: ('grey', 'wall'), 3: ('grey', 'flag'), 6: ('red', 'flag'), 7: ('grey', 'flag'), 11: ('grey', 'wall')}
+LLM's Map   : {3: ('grey', 'flag'), 6: ('red', 'flag'), 7: ('grey', 'flag'), 11: ('grey', 'wall'), 0: ('grey', 'wall'), -1: ('grey', 'wall'), -2: ('grey', 'wall'), -3: ('grey', 'wall'), -4: ('grey', 'wall'), -5: ('grey', 'wall'), -6: ('grey', 'wall'), -7: ('grey', 'wall'), -8: ('grey', 'wall'), -9: ('grey', 'wall')}
+Overall Accuracy: 100.00%
+Goal Accuracy   : 100.00%
+2025-07-11 03:25:29,319 - INFO - --- Finished Test Episode #2 ---
+
+2025-07-11 03:25:34,323 - INFO - --- Starting Test Episode #3 ---
+2025-07-11 03:25:34,403 - INFO - Sending prompt to Gemini for episode #3...
+2025-07-11 03:25:34,403 - INFO - Prompt for episode #3:
+
+You are an expert spatial reasoning AI. Your task is to build a consistent 1D map of a corridor based on a sequence of limited, first-person observations.
+
+### RULES OF THE WORLD ###
+1.  The world is a static, continuous 1D track. Your absolute position on this track is a single integer.
+2.  Your observation consists ONLY of the 6 grid cells directly in front of you.
+3.  The number you see (e.g., "at coordinate 3") is a **relative position**, indexed 1 to 6.
+    - Position 1 is the cell immediately in front of you.
+    - Position 6 is the farthest cell you can see.
+    - An object at relative position 7 or greater is invisible to you.
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is 1. East is the direction of increasing position numbers.
+
+First, show your step-by-step reasoning by tracking your own absolute position and direction, and calculating the absolute coordinates of all objects you see.
+
+Finally, provide a summary list of all unique objects and their deduced absolute coordinates.
+
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see purple flags at coordinates: 6, 2.
+Step1: forward. You can see purple flags at coordinates: 5, 1.
+Step2: forward. You can see purple flags at coordinates: 6, 4.
+Step3: forward. You can see purple flags at coordinates: 5, 3.
+Step4: forward. You can see a grey wall at coordinate 6, purple flags at coordinates: 4, 2.
+Step5: forward. You can see a grey wall at coordinate 5, purple flags at coordinates: 3, 1.
+Step6: forward. You can see a grey wall at coordinate 4, a purple flag at coordinate 2.
+Step7: forward. You can see a grey wall at coordinate 3, a purple flag at coordinate 1.
+Step8: turnaround. You can see purple flags at coordinates: 5, 1.
+Step9: forward. You can see a purple flag at coordinate 4.
+Step10: turnaround. You can see a grey wall at coordinate 4, a purple flag at coordinate 2.
+Step11: forward. You can see a grey wall at coordinate 3, a purple flag at coordinate 1.
+Step12: forward. You can see a grey wall at coordinate 2.
+Step13: forward. You can see a grey wall at coordinate 1.
+Step14: forward. You can see a grey wall at coordinate 1.
+Step15: forward. You can see a grey wall at coordinate 1.
+Step16: forward. You can see a grey wall at coordinate 1.
+Step17: forward. You can see a grey wall at coordinate 1.
+Step18: forward. You can see a grey wall at coordinate 1.
+Step19: forward. You can see a grey wall at coordinate 1.
+Step20: turnaround. You can see purple flags at coordinates: 3, 1.
+Step21: forward. You can see purple flags at coordinates: 6, 2.
+Step22: forward. You can see purple flags at coordinates: 5, 1.
+Step23: forward. You can see a purple flag at coordinate 4.
+Step24: forward. You can see a grey wall at coordinate 6, a purple flag at coordinate 3.
+Step25: forward. You can see a grey wall at coordinate 5, a purple flag at coordinate 2.
+Step26: forward. You can see a grey wall at coordinate 4, a purple flag at coordinate 1.
+Step27: forward. You can see a grey wall at coordinate 3.
+Step28: forward. You can see a grey wall at coordinate 2.
+Step29: forward. You can see a grey wall at coordinate 1
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate 3, a green flag at coordinate 8, a blue wall at coordinate 5, a blue wall at coordinate 0
+&&&
+
+2025-07-11 03:27:12,771 - INFO - LLM Response for episode #3:
+### Step-by-Step Reasoning
+
+**Initial State:**
+*   **Your Position:** 1
+*   **Your Direction:** East
+*   **Observation:** purple flags at relative coordinates 6, 2.
+*   **Calculations:**
+    *   Purple flag at relative 2: Absolute position = 1 (your pos) + 2 (relative pos) = 3.
+    *   Purple flag at relative 6: Absolute position = 1 + 6 = 7.
+*   **Map:** A purple flag at coordinate 3, a purple flag at coordinate 7.
+
+**Step 1: forward**
+*   **Your Position:** 2 (1+1)
+*   **Your Direction:** East
+*   **Observation:** purple flags at relative coordinates 5, 1.
+*   **Calculations:**
+    *   Purple flag at relative 1: Absolute position = 2 + 1 = 3. (Consistent)
+    *   Purple flag at relative 5: Absolute position = 2 + 5 = 7. (Consistent)
+*   **Map:** A purple flag at coordinate 3, a purple flag at coordinate 7.
+
+**Step 2: forward**
+*   **Your Position:** 3 (2+1)
+*   **Your Direction:** East
+*   **Observation:** purple flags at relative coordinates 6, 4.
+*   **Calculations:**
+    *   Purple flag at relative 4: Absolute position = 3 + 4 = 7. (Consistent)
+    *   Purple flag at relative 6: Absolute position = 3 + 6 = 9. (New object)
+*   **Map:** A purple flag at coordinate 3, a purple flag at coordinate 7, a purple flag at coordinate 9.
+
+**Step 3: forward**
+*   **Your Position:** 4 (3+1)
+*   **Your Direction:** East
+*   **Observation:** purple flags at relative coordinates 5, 3.
+*   **Calculations:**
+    *   Purple flag at relative 3: Absolute position = 4 + 3 = 7. (Consistent)
+    *   Purple flag at relative 5: Absolute position = 4 + 5 = 9. (Consistent)
+*   **Map:** A purple flag at coordinate 3, a purple flag at coordinate 7, a purple flag at coordinate 9.
+
+**Step 4: forward**
+*   **Your Position:** 5 (4+1)
+*   **Your Direction:** East
+*   **Observation:** a grey wall at coordinate 6, purple flags at coordinates: 4, 2.
+*   **Calculations:**
+    *   Purple flag at relative 2: Absolute position = 5 + 2 = 7. (Consistent)
+    *   Purple flag at relative 4: Absolute position = 5 + 4 = 9. (Consistent)
+    *   Grey wall at relative 6: Absolute position = 5 + 6 = 11. (New object)
+*   **Map:** A purple flag at coordinate 3, a purple flag at coordinate 7, a purple flag at coordinate 9, a grey wall at coordinate 11.
+
+**Step 5: forward**
+*   **Your Position:** 6 (5+1)
+*   **Your Direction:** East
+*   **Observation:** a grey wall at coordinate 5, purple flags at coordinates: 3, 1.
+*   **Calculations:** All observations are consistent with the existing map.
+
+**Step 6: forward**
+*   **Your Position:** 7 (6+1)
+*   **Your Direction:** East
+*   **Observation:** a grey wall at coordinate 4, a purple flag at coordinate 2.
+*   **Calculations:** All observations are consistent with the existing map.
+
+**Step 7: forward**
+*   **Your Position:** 8 (7+1)
+*   **Your Direction:** East
+*   **Observation:** a grey wall at coordinate 3, a purple flag at coordinate 1.
+*   **Calculations:** All observations are consistent with the existing map.
+
+**Step 8: turnaround**
+*   **Your Position:** 8
+*   **Your Direction:** West
+*   **Observation:** purple flags at coordinates: 5, 1.
+*   **Calculations:**
+    *   Purple flag at relative 1: Absolute position = 8 - 1 = 7. (Consistent)
+    *   Purple flag at relative 5: Absolute position = 8 - 5 = 3. (Consistent)
+
+**Step 9: forward**
+*   **Your Position:** 7 (8-1)
+*   **Your Direction:** West
+*   **Observation:** a purple flag at coordinate 4.
+*   **Calculations:** Purple flag at relative 4: Absolute position = 7 - 4 = 3. (Consistent)
+
+**Step 10: turnaround**
+*   **Your Position:** 7
+*   **Your Direction:** East
+*   **Observation:** a grey wall at coordinate 4, a purple flag at coordinate 2.
+*   **Calculations:** All observations are consistent with the existing map.
+
+**Step 11: forward**
+*   **Your Position:** 8 (7+1)
+*   **Your Direction:** East
+*   **Observation:** a grey wall at coordinate 3, a purple flag at coordinate 1.
+*   **Calculations:** All observations are consistent with the existing map.
+
+**Step 12: forward**
+*   **Your Position:** 9 (8+1)
+*   **Your Direction:** East
+*   **Observation:** a grey wall at coordinate 2.
+*   **Calculations:** Grey wall at relative 2: Absolute position = 9 + 2 = 11. (Consistent)
+
+**Step 13: forward**
+*   **Your Position:** 10 (9+1)
+*   **Your Direction:** East
+*   **Observation:** a grey wall at coordinate 1.
+*   **Calculations:** Grey wall at relative 1: Absolute position = 10 + 1 = 11. (Consistent)
+
+**Step 14 to 19: forward**
+*   **Your Position:** 10 (Movement blocked by wall at 11)
+*   **Your Direction:** East
+*   **Observation:** a grey wall at coordinate 1.
+*   **Calculations:** In each step, the `forward` command fails as the wall at 11 blocks movement. Your position remains 10. The observation is consistent from this position.
+
+**Step 20: turnaround**
+*   **Your Position:** 10
+*   **Your Direction:** West
+*   **Observation:** purple flags at coordinates: 3, 1.
+*   **Calculations:**
+    *   Purple flag at relative 1: Absolute position = 10 - 1 = 9. (Consistent)
+    *   Purple flag at relative 3: Absolute position = 10 - 3 = 7. (Consistent)
+
+**Step 21: forward**
+*   **Your Position:** 9 (10-1)
+*   **Your Direction:** West
+*   **Observation:** purple flags at coordinates: 6, 2.
+*   **Calculations:** All observations are consistent with the existing map.
+
+**Step 22: forward**
+*   **Your Position:** 8 (9-1)
+*   **Your Direction:** West
+*   **Observation:** purple flags at coordinates: 5, 1.
+*   **Calculations:** All observations are consistent with the existing map.
+
+**Step 23: forward**
+*   **Your Position:** 7 (8-1)
+*   **Your Direction:** West
+*   **Observation:** a purple flag at coordinate 4.
+*   **Calculations:** All observations are consistent with the existing map.
+
+**Step 24: forward**
+*   **Your Position:** 6 (7-1)
+*   **Your Direction:** West
+*   **Observation:** a grey wall at coordinate 6, a purple flag at coordinate 3.
+*   **Calculations:**
+    *   Purple flag at relative 3: Absolute position = 6 - 3 = 3. (Consistent)
+    *   Grey wall at relative 6: Absolute position = 6 - 6 = 0. (New object)
+*   **Map:** A purple flag at coordinate 3, a purple flag at coordinate 7, a purple flag at coordinate 9, a grey wall at coordinate 0, a grey wall at coordinate 11.
+
+**Step 25: forward**
+*   **Your Position:** 5 (6-1)
+*   **Your Direction:** West
+*   **Observation:** a grey wall at coordinate 5, a purple flag at coordinate 2.
+*   **Calculations:** All observations are consistent with the existing map.
+
+**Step 26: forward**
+*   **Your Position:** 4 (5-1)
+*   **Your Direction:** West
+*   **Observation:** a grey wall at coordinate 4, a purple flag at coordinate 1.
+*   **Calculations:** All observations are consistent with the existing map.
+
+**Step 27: forward**
+*   **Your Position:** 3 (4-1)
+*   **Your Direction:** West
+*   **Observation:** a grey wall at coordinate 3.
+*   **Calculations:** Grey wall at relative 3: Absolute position = 3 - 3 = 0. (Consistent)
+
+**Step 28: forward**
+*   **Your Position:** 2 (3-1)
+*   **Your Direction:** West
+*   **Observation:** a grey wall at coordinate 2.
+*   **Calculations:** Grey wall at relative 2: Absolute position = 2 - 2 = 0. (Consistent)
+
+**Step 29: forward**
+*   **Your Position:** 1 (2-1)
+*   **Your Direction:** West
+*   **Observation:** a grey wall at coordinate 1.
+*   **Calculations:** Grey wall at relative 1: Absolute position = 1 - 1 = 0. (Consistent)
+
+### Final Map Summary
+&&&
+a purple flag at coordinate 3, a purple flag at coordinate 7, a purple flag at coordinate 9, a grey wall at coordinate 0, a grey wall at coordinate 11
+&&&
+2025-07-11 03:27:12,774 - INFO - --- Judgment for Episode #3 ---
+2025-07-11 03:27:12,774 - INFO - Result: PERFECT MATCH
+2025-07-11 03:27:12,774 - INFO - Ground Truth: {0: ('grey', 'wall'), 3: ('purple', 'flag'), 7: ('purple', 'flag'), 9: ('purple', 'flag'), 11: ('grey', 'wall')}
+LLM's Map   : {3: ('purple', 'flag'), 7: ('purple', 'flag'), 9: ('purple', 'flag'), 0: ('grey', 'wall'), 11: ('grey', 'wall')}
+Overall Accuracy: 100.00%
+Goal Accuracy   : 100.00%
+2025-07-11 03:27:12,774 - INFO - --- Finished Test Episode #3 ---
+
+2025-07-11 03:27:17,778 - INFO - --- Starting Test Episode #4 ---
+2025-07-11 03:27:18,020 - INFO - Sending prompt to Gemini for episode #4...
+2025-07-11 03:27:18,020 - INFO - Prompt for episode #4:
+
+You are an expert spatial reasoning AI. Your task is to build a consistent 1D map of a corridor based on a sequence of limited, first-person observations.
+
+### RULES OF THE WORLD ###
+1.  The world is a static, continuous 1D track. Your absolute position on this track is a single integer.
+2.  Your observation consists ONLY of the 6 grid cells directly in front of you.
+3.  The number you see (e.g., "at coordinate 3") is a **relative position**, indexed 1 to 6.
+    - Position 1 is the cell immediately in front of you.
+    - Position 6 is the farthest cell you can see.
+    - An object at relative position 7 or greater is invisible to you.
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is 1. East is the direction of increasing position numbers.
+
+First, show your step-by-step reasoning by tracking your own absolute position and direction, and calculating the absolute coordinates of all objects you see.
+
+Finally, provide a summary list of all unique objects and their deduced absolute coordinates.
+
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see a yellow flag at coordinate 6, a blue flag at coordinate 4.
+Step1: forward. You can see a yellow flag at coordinate 5, a blue flag at coordinate 3.
+Step2: forward. You can see yellow flags at coordinates: 6, 4, a blue flag at coordinate 2.
+Step3: forward. You can see yellow flags at coordinates: 5, 3, a blue flag at coordinate 1.
+Step4: forward. You can see a grey wall at coordinate 6, yellow flags at coordinates: 4, 2.
+Step5: forward. You can see a grey wall at coordinate 5, yellow flags at coordinates: 3, 1.
+Step6: forward. You can see a grey wall at coordinate 4, a yellow flag at coordinate 2.
+Step7: turnaround. You can see a blue flag at coordinate 2.
+Step8: forward. You can see a grey wall at coordinate 6, a blue flag at coordinate 1.
+Step9: forward. You can see a grey wall at coordinate 5.
+Step10: forward. You can see a grey wall at coordinate 4.
+Step11: forward. You can see a grey wall at coordinate 3.
+Step12: forward. You can see a grey wall at coordinate 2.
+Step13: forward. You can see a grey wall at coordinate 1.
+Step14: turnaround. You can see a yellow flag at coordinate 6, a blue flag at coordinate 4.
+Step15: forward. You can see a yellow flag at coordinate 5, a blue flag at coordinate 3.
+Step16: turnaround. You can see a grey wall at coordinate 2.
+Step17: forward. You can see a grey wall at coordinate 1.
+Step18: forward. You can see a grey wall at coordinate 1.
+Step19: forward. You can see a grey wall at coordinate 1.
+Step20: forward. You can see a grey wall at coordinate 1.
+Step21: forward. You can see a grey wall at coordinate 1.
+Step22: forward. You can see a grey wall at coordinate 1.
+Step23: forward. You can see a grey wall at coordinate 1.
+Step24: forward. You can see a grey wall at coordinate 1.
+Step25: forward. You can see a grey wall at coordinate 1
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate 3, a green flag at coordinate 8, a blue wall at coordinate 5, a blue wall at coordinate 0
+&&&
+
+2025-07-11 03:28:23,323 - INFO - LLM Response for episode #4:
+### Step-by-Step Reasoning
+
+**Initial State:**
+- Your absolute position: 1
+- Your direction: East
+- **Observation:** A yellow flag at relative 6, a blue flag at relative 4.
+- **Reasoning:**
+    - Yellow flag absolute position: 1 (your pos) + 6 (relative pos) = 7.
+    - Blue flag absolute position: 1 (your pos) + 4 (relative pos) = 5.
+- **Map:** {5: blue flag, 7: yellow flag}
+
+**Step 1: forward**
+- Your new absolute position: 2
+- Your direction: East
+- **Observation:** A yellow flag at coordinate 5, a blue flag at coordinate 3.
+- **Reasoning:**
+    - Yellow flag absolute position: 2 + 5 = 7. (Confirmation)
+    - Blue flag absolute position: 2 + 3 = 5. (Confirmation)
+- **Map:** {5: blue flag, 7: yellow flag}
+
+**Step 2: forward**
+- Your new absolute position: 3
+- Your direction: East
+- **Observation:** Yellow flags at coordinates: 6, 4, a blue flag at coordinate 2.
+- **Reasoning:**
+    - Yellow flag 1 absolute position: 3 + 6 = 9. (New object)
+    - Yellow flag 2 absolute position: 3 + 4 = 7. (Confirmation)
+    - Blue flag absolute position: 3 + 2 = 5. (Confirmation)
+- **Map:** {5: blue flag, 7: yellow flag, 9: yellow flag}
+
+**Step 3: forward**
+- Your new absolute position: 4
+- Your direction: East
+- **Observation:** Yellow flags at coordinates: 5, 3, a blue flag at coordinate 1.
+- **Reasoning:**
+    - Yellow flag 1 absolute position: 4 + 5 = 9. (Confirmation)
+    - Yellow flag 2 absolute position: 4 + 3 = 7. (Confirmation)
+    - Blue flag absolute position: 4 + 1 = 5. (Confirmation)
+- **Map:** {5: blue flag, 7: yellow flag, 9: yellow flag}
+
+**Step 4: forward**
+- Your new absolute position: 5
+- Your direction: East
+- **Observation:** A grey wall at coordinate 6, yellow flags at coordinates: 4, 2.
+- **Reasoning:**
+    - Grey wall absolute position: 5 + 6 = 11. (New object)
+    - Yellow flag 1 absolute position: 5 + 4 = 9. (Confirmation)
+    - Yellow flag 2 absolute position: 5 + 2 = 7. (Confirmation)
+- **Map:** {5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 5: forward**
+- Your new absolute position: 6
+- Your direction: East
+- **Observation:** A grey wall at coordinate 5, yellow flags at coordinates: 3, 1.
+- **Reasoning:**
+    - Grey wall absolute position: 6 + 5 = 11. (Confirmation)
+    - Yellow flag 1 absolute position: 6 + 3 = 9. (Confirmation)
+    - Yellow flag 2 absolute position: 6 + 1 = 7. (Confirmation)
+- **Map:** {5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 6: forward**
+- Your new absolute position: 7
+- Your direction: East
+- **Observation:** A grey wall at coordinate 4, a yellow flag at coordinate 2.
+- **Reasoning:**
+    - Grey wall absolute position: 7 + 4 = 11. (Confirmation)
+    - Yellow flag absolute position: 7 + 2 = 9. (Confirmation)
+- **Map:** {5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 7: turnaround**
+- Your absolute position: 7
+- Your new direction: West
+- **Observation:** A blue flag at coordinate 2.
+- **Reasoning:**
+    - Blue flag absolute position: 7 (your pos) - 2 (relative pos) = 5. (Confirmation)
+- **Map:** {5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 8: forward**
+- Your new absolute position: 6
+- Your direction: West
+- **Observation:** A grey wall at coordinate 6, a blue flag at coordinate 1.
+- **Reasoning:**
+    - Grey wall absolute position: 6 - 6 = 0. (New object)
+    - Blue flag absolute position: 6 - 1 = 5. (Confirmation)
+- **Map:** {0: grey wall, 5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 9: forward**
+- Your new absolute position: 5
+- Your direction: West
+- **Observation:** A grey wall at coordinate 5.
+- **Reasoning:**
+    - Grey wall absolute position: 5 - 5 = 0. (Confirmation)
+- **Map:** {0: grey wall, 5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 10: forward**
+- Your new absolute position: 4
+- Your direction: West
+- **Observation:** A grey wall at coordinate 4.
+- **Reasoning:**
+    - Grey wall absolute position: 4 - 4 = 0. (Confirmation)
+- **Map:** {0: grey wall, 5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 11: forward**
+- Your new absolute position: 3
+- Your direction: West
+- **Observation:** A grey wall at coordinate 3.
+- **Reasoning:**
+    - Grey wall absolute position: 3 - 3 = 0. (Confirmation)
+- **Map:** {0: grey wall, 5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 12: forward**
+- Your new absolute position: 2
+- Your direction: West
+- **Observation:** A grey wall at coordinate 2.
+- **Reasoning:**
+    - Grey wall absolute position: 2 - 2 = 0. (Confirmation)
+- **Map:** {0: grey wall, 5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 13: forward**
+- Your new absolute position: 1
+- Your direction: West
+- **Observation:** A grey wall at coordinate 1.
+- **Reasoning:**
+    - Grey wall absolute position: 1 - 1 = 0. (Confirmation)
+- **Map:** {0: grey wall, 5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 14: turnaround**
+- Your absolute position: 1
+- Your new direction: East
+- **Observation:** A yellow flag at coordinate 6, a blue flag at coordinate 4.
+- **Reasoning:**
+    - Yellow flag absolute position: 1 + 6 = 7. (Confirmation)
+    - Blue flag absolute position: 1 + 4 = 5. (Confirmation)
+- **Map:** {0: grey wall, 5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 15: forward**
+- Your new absolute position: 2
+- Your direction: East
+- **Observation:** A yellow flag at coordinate 5, a blue flag at coordinate 3.
+- **Reasoning:**
+    - Yellow flag absolute position: 2 + 5 = 7. (Confirmation)
+    - Blue flag absolute position: 2 + 3 = 5. (Confirmation)
+- **Map:** {0: grey wall, 5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 16: turnaround**
+- Your absolute position: 2
+- Your new direction: West
+- **Observation:** A grey wall at coordinate 2.
+- **Reasoning:**
+    - Grey wall absolute position: 2 - 2 = 0. (Confirmation)
+- **Map:** {0: grey wall, 5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 17: forward**
+- Your new absolute position: 1
+- Your direction: West
+- **Observation:** A grey wall at coordinate 1.
+- **Reasoning:**
+    - Grey wall absolute position: 1 - 1 = 0. (Confirmation)
+- **Map:** {0: grey wall, 5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 18: forward**
+- Your new absolute position: 0
+- Your direction: West
+- **Observation:** A grey wall at coordinate 1.
+- **Reasoning:**
+    - Grey wall absolute position: 0 - 1 = -1. (New object)
+- **Map:** {-1: grey wall, 0: grey wall, 5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 19: forward**
+- Your new absolute position: -1
+- Your direction: West
+- **Observation:** A grey wall at coordinate 1.
+- **Reasoning:**
+    - Grey wall absolute position: -1 - 1 = -2. (New object)
+- **Map:** {-2: grey wall, -1: grey wall, 0: grey wall, 5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 20: forward**
+- Your new absolute position: -2
+- Your direction: West
+- **Observation:** A grey wall at coordinate 1.
+- **Reasoning:**
+    - Grey wall absolute position: -2 - 1 = -3. (New object)
+- **Map:** {-3: grey wall, -2: grey wall, -1: grey wall, 0: grey wall, 5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 21: forward**
+- Your new absolute position: -3
+- Your direction: West
+- **Observation:** A grey wall at coordinate 1.
+- **Reasoning:**
+    - Grey wall absolute position: -3 - 1 = -4. (New object)
+- **Map:** {-4: grey wall, -3: grey wall, -2: grey wall, -1: grey wall, 0: grey wall, 5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 22: forward**
+- Your new absolute position: -4
+- Your direction: West
+- **Observation:** A grey wall at coordinate 1.
+- **Reasoning:**
+    - Grey wall absolute position: -4 - 1 = -5. (New object)
+- **Map:** {-5: grey wall, -4: grey wall, -3: grey wall, -2: grey wall, -1: grey wall, 0: grey wall, 5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 23: forward**
+- Your new absolute position: -5
+- Your direction: West
+- **Observation:** A grey wall at coordinate 1.
+- **Reasoning:**
+    - Grey wall absolute position: -5 - 1 = -6. (New object)
+- **Map:** {-6: grey wall, -5: grey wall, -4: grey wall, -3: grey wall, -2: grey wall, -1: grey wall, 0: grey wall, 5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 24: forward**
+- Your new absolute position: -6
+- Your direction: West
+- **Observation:** A grey wall at coordinate 1.
+- **Reasoning:**
+    - Grey wall absolute position: -6 - 1 = -7. (New object)
+- **Map:** {-7: grey wall, -6: grey wall, -5: grey wall, -4: grey wall, -3: grey wall, -2: grey wall, -1: grey wall, 0: grey wall, 5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+**Step 25: forward**
+- Your new absolute position: -7
+- Your direction: West
+- **Observation:** A grey wall at coordinate 1.
+- **Reasoning:**
+    - Grey wall absolute position: -7 - 1 = -8. (New object)
+- **Map:** {-8: grey wall, -7: grey wall, -6: grey wall, -5: grey wall, -4: grey wall, -3: grey wall, -2: grey wall, -1: grey wall, 0: grey wall, 5: blue flag, 7: yellow flag, 9: yellow flag, 11: grey wall}
+
+&&&
+a grey wall at coordinate -8, a grey wall at coordinate -7, a grey wall at coordinate -6, a grey wall at coordinate -5, a grey wall at coordinate -4, a grey wall at coordinate -3, a grey wall at coordinate -2, a grey wall at coordinate -1, a grey wall at coordinate 0, a blue flag at coordinate 5, a yellow flag at coordinate 7, a yellow flag at coordinate 9, a grey wall at coordinate 11
+&&&
+2025-07-11 03:28:23,326 - INFO - --- Judgment for Episode #4 ---
+2025-07-11 03:28:23,326 - INFO - Result: PERFECT MATCH
+2025-07-11 03:28:23,326 - INFO - Ground Truth: {0: ('grey', 'wall'), 5: ('blue', 'flag'), 7: ('yellow', 'flag'), 9: ('yellow', 'flag'), 11: ('grey', 'wall')}
+LLM's Map   : {-8: ('grey', 'wall'), -7: ('grey', 'wall'), -6: ('grey', 'wall'), -5: ('grey', 'wall'), -4: ('grey', 'wall'), -3: ('grey', 'wall'), -2: ('grey', 'wall'), -1: ('grey', 'wall'), 0: ('grey', 'wall'), 5: ('blue', 'flag'), 7: ('yellow', 'flag'), 9: ('yellow', 'flag'), 11: ('grey', 'wall')}
+Overall Accuracy: 100.00%
+Goal Accuracy   : 100.00%
+2025-07-11 03:28:23,326 - INFO - --- Finished Test Episode #4 ---
+
+2025-07-11 03:28:28,331 - INFO - --- Starting Test Episode #5 ---
+2025-07-11 03:28:28,534 - INFO - Sending prompt to Gemini for episode #5...
+2025-07-11 03:28:28,534 - INFO - Prompt for episode #5:
+
+You are an expert spatial reasoning AI. Your task is to build a consistent 1D map of a corridor based on a sequence of limited, first-person observations.
+
+### RULES OF THE WORLD ###
+1.  The world is a static, continuous 1D track. Your absolute position on this track is a single integer.
+2.  Your observation consists ONLY of the 6 grid cells directly in front of you.
+3.  The number you see (e.g., "at coordinate 3") is a **relative position**, indexed 1 to 6.
+    - Position 1 is the cell immediately in front of you.
+    - Position 6 is the farthest cell you can see.
+    - An object at relative position 7 or greater is invisible to you.
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is 1. East is the direction of increasing position numbers.
+
+First, show your step-by-step reasoning by tracking your own absolute position and direction, and calculating the absolute coordinates of all objects you see.
+
+Finally, provide a summary list of all unique objects and their deduced absolute coordinates.
+
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see a red flag at coordinate 2, a green flag at coordinate 1.
+Step1: forward. You can see a green flag at coordinate 6, a red flag at coordinate 1.
+Step2: forward. You can see a green flag at coordinate 5.
+Step3: forward. You can see a green flag at coordinate 4.
+Step4: forward. You can see a grey wall at coordinate 6, a green flag at coordinate 3.
+Step5: forward. You can see a grey wall at coordinate 5, a green flag at coordinate 2.
+Step6: forward. You can see a grey wall at coordinate 4, a green flag at coordinate 1.
+Step7: forward. You can see a grey wall at coordinate 3.
+Step8: forward. You can see a grey wall at coordinate 2.
+Step9: turnaround. You can see a red flag at coordinate 6, a green flag at coordinate 1.
+Step10: turnaround. You can see a grey wall at coordinate 2.
+Step11: forward. You can see a grey wall at coordinate 1.
+Step12: forward. You can see a grey wall at coordinate 1.
+Step13: forward. You can see a grey wall at coordinate 1.
+Step14: turnaround. You can see a green flag at coordinate 2.
+Step15: forward. You can see a red flag at coordinate 6, a green flag at coordinate 1.
+Step16: forward. You can see a green flag at coordinate 6, a red flag at coordinate 5.
+Step17: forward. You can see a green flag at coordinate 5, a red flag at coordinate 4.
+Step18: forward. You can see a grey wall at coordinate 6, a green flag at coordinate 4, a red flag at coordinate 3.
+Step19: forward. You can see a grey wall at coordinate 5, a green flag at coordinate 3, a red flag at coordinate 2
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate 3, a green flag at coordinate 8, a blue wall at coordinate 5, a blue wall at coordinate 0
+&&&
+
+2025-07-11 03:29:45,045 - INFO - LLM Response for episode #5:
+Here is my step-by-step reasoning to build the map.
+
+**Initial State**
+*   **My Position:** 1
+*   **My Direction:** East (+1)
+*   **Observation:** a red flag at relative 2, a green flag at relative 1.
+*   **Calculations:**
+    *   Red flag: 1 + 2 = 3
+    *   Green flag: 1 + 1 = 2
+*   **Map:** {a green flag at coordinate 2, a red flag at coordinate 3}
+
+**Step 1: forward**
+*   **My Position:** 2
+*   **My Direction:** East (+1)
+*   **Observation:** a green flag at relative 6, a red flag at relative 1.
+*   **Calculations:**
+    *   Green flag: 2 + 6 = 8
+    *   Red flag: 2 + 1 = 3 (Consistent)
+*   **Map:** {a green flag at coordinate 2, a red flag at coordinate 3, a green flag at coordinate 8}
+
+**Step 2: forward**
+*   **My Position:** 3
+*   **My Direction:** East (+1)
+*   **Observation:** a green flag at relative 5.
+*   **Calculations:**
+    *   Green flag: 3 + 5 = 8 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 3: forward**
+*   **My Position:** 4
+*   **My Direction:** East (+1)
+*   **Observation:** a green flag at relative 4.
+*   **Calculations:**
+    *   Green flag: 4 + 4 = 8 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 4: forward**
+*   **My Position:** 5
+*   **My Direction:** East (+1)
+*   **Observation:** a grey wall at relative 6, a green flag at relative 3.
+*   **Calculations:**
+    *   Grey wall: 5 + 6 = 11
+    *   Green flag: 5 + 3 = 8 (Consistent)
+*   **Map:** {a green flag at coordinate 2, a red flag at coordinate 3, a green flag at coordinate 8, a grey wall at coordinate 11}
+
+**Step 5: forward**
+*   **My Position:** 6
+*   **My Direction:** East (+1)
+*   **Observation:** a grey wall at relative 5, a green flag at relative 2.
+*   **Calculations:**
+    *   Grey wall: 6 + 5 = 11 (Consistent)
+    *   Green flag: 6 + 2 = 8 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 6: forward**
+*   **My Position:** 7
+*   **My Direction:** East (+1)
+*   **Observation:** a grey wall at relative 4, a green flag at relative 1.
+*   **Calculations:**
+    *   Grey wall: 7 + 4 = 11 (Consistent)
+    *   Green flag: 7 + 1 = 8 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 7: forward**
+*   **My Position:** 8
+*   **My Direction:** East (+1)
+*   **Observation:** a grey wall at relative 3.
+*   **Calculations:**
+    *   Grey wall: 8 + 3 = 11 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 8: forward**
+*   **My Position:** 9
+*   **My Direction:** East (+1)
+*   **Observation:** a grey wall at relative 2.
+*   **Calculations:**
+    *   Grey wall: 9 + 2 = 11 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 9: turnaround**
+*   **My Position:** 9
+*   **My Direction:** West (-1)
+*   **Observation:** a red flag at relative 6, a green flag at relative 1.
+*   **Calculations:**
+    *   Red flag: 9 - 6 = 3 (Consistent)
+    *   Green flag: 9 - 1 = 8 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 10: turnaround**
+*   **My Position:** 9
+*   **My Direction:** East (+1)
+*   **Observation:** a grey wall at relative 2.
+*   **Calculations:**
+    *   Grey wall: 9 + 2 = 11 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 11: forward**
+*   **My Position:** 10
+*   **My Direction:** East (+1)
+*   **Observation:** a grey wall at relative 1.
+*   **Calculations:**
+    *   Grey wall: 10 + 1 = 11 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 12: forward**
+*   **My Position:** 11
+*   **My Direction:** East (+1)
+*   **Observation:** a grey wall at relative 1.
+*   **Calculations:**
+    *   Grey wall: 11 + 1 = 12
+*   **Map:** {..., a grey wall at coordinate 11, a grey wall at coordinate 12}
+
+**Step 13: forward**
+*   **My Position:** 12
+*   **My Direction:** East (+1)
+*   **Observation:** a grey wall at relative 1.
+*   **Calculations:**
+    *   Grey wall: 12 + 1 = 13
+*   **Map:** {..., a grey wall at coordinate 12, a grey wall at coordinate 13}
+
+**Step 14: turnaround**
+*   **My Position:** 12
+*   **My Direction:** West (-1)
+*   **Observation:** a green flag at relative 2.
+*   **Calculations:**
+    *   Green flag: 12 - 2 = 10
+*   **Map:** {..., a green flag at coordinate 10, ...}
+
+**Step 15: forward**
+*   **My Position:** 11
+*   **My Direction:** West (-1)
+*   **Observation:** a red flag at relative 6, a green flag at relative 1.
+*   **Calculations:**
+    *   Red flag: 11 - 6 = 5
+    *   Green flag: 11 - 1 = 10 (Consistent)
+*   **Map:** {..., a red flag at coordinate 5, a green flag at coordinate 10, ...}
+
+**Step 16: forward**
+*   **My Position:** 10
+*   **My Direction:** West (-1)
+*   **Observation:** a green flag at relative 6, a red flag at relative 5.
+*   **Calculations:**
+    *   Green flag: 10 - 6 = 4
+    *   Red flag: 10 - 5 = 5 (Consistent)
+*   **Map:** {..., a green flag at coordinate 4, a red flag at coordinate 5, ...}
+
+**Step 17: forward**
+*   **My Position:** 9
+*   **My Direction:** West (-1)
+*   **Observation:** a green flag at relative 5, a red flag at relative 4.
+*   **Calculations:**
+    *   Green flag: 9 - 5 = 4 (Consistent)
+    *   Red flag: 9 - 4 = 5 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 18: forward**
+*   **My Position:** 8
+*   **My Direction:** West (-1)
+*   **Observation:** a grey wall at relative 6, a green flag at relative 4, a red flag at relative 3.
+*   **Calculations:**
+    *   Grey wall: 8 - 6 = 2. **(Note: This contradicts the Initial Observation of a green flag at 2. The newer, confirmed observation of a wall will be used for the final map.)**
+    *   Green flag: 8 - 4 = 4 (Consistent)
+    *   Red flag: 8 - 3 = 5 (Consistent)
+*   **Map:** {a grey wall at coordinate 2, a red flag at coordinate 3, a green flag at coordinate 4, a red flag at coordinate 5, a green flag at coordinate 8, a green flag at coordinate 10, a grey wall at coordinate 11, a grey wall at coordinate 12, a grey wall at coordinate 13}
+
+**Step 19: forward**
+*   **My Position:** 7
+*   **My Direction:** West (-1)
+*   **Observation:** a grey wall at relative 5, a green flag at relative 3, a red flag at relative 2.
+*   **Calculations:**
+    *   Grey wall: 7 - 5 = 2 (Consistent)
+    *   Green flag: 7 - 3 = 4 (Consistent)
+    *   Red flag: 7 - 2 = 5 (Consistent)
+*   **Map:** Unchanged.
+
+&&&
+a grey wall at coordinate 2, a red flag at coordinate 3, a green flag at coordinate 4, a red flag at coordinate 5, a green flag at coordinate 8, a green flag at coordinate 10, a grey wall at coordinate 11, a grey wall at coordinate 12, a grey wall at coordinate 13
+&&&
+2025-07-11 03:29:45,047 - INFO - --- Judgment for Episode #5 ---
+2025-07-11 03:29:45,047 - INFO - Result: IMPERFECT
+2025-07-11 03:29:45,048 - INFO - Ground Truth: {0: ('grey', 'wall'), 2: ('green', 'flag'), 3: ('red', 'flag'), 8: ('green', 'flag'), 11: ('grey', 'wall')}
+LLM's Map   : {2: ('grey', 'wall'), 3: ('red', 'flag'), 4: ('green', 'flag'), 5: ('red', 'flag'), 8: ('green', 'flag'), 10: ('green', 'flag'), 11: ('grey', 'wall'), 12: ('grey', 'wall'), 13: ('grey', 'wall')}
+Overall Accuracy: 60.00%
+Goal Accuracy   : 100.00%
+2025-07-11 03:29:45,049 - INFO - --- Finished Test Episode #5 ---
+
+2025-07-11 03:29:50,057 - INFO - --- Starting Test Episode #6 ---
+2025-07-11 03:29:50,113 - INFO - Sending prompt to Gemini for episode #6...
+2025-07-11 03:29:50,113 - INFO - Prompt for episode #6:
+
+You are an expert spatial reasoning AI. Your task is to build a consistent 1D map of a corridor based on a sequence of limited, first-person observations.
+
+### RULES OF THE WORLD ###
+1.  The world is a static, continuous 1D track. Your absolute position on this track is a single integer.
+2.  Your observation consists ONLY of the 6 grid cells directly in front of you.
+3.  The number you see (e.g., "at coordinate 3") is a **relative position**, indexed 1 to 6.
+    - Position 1 is the cell immediately in front of you.
+    - Position 6 is the farthest cell you can see.
+    - An object at relative position 7 or greater is invisible to you.
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is 1. East is the direction of increasing position numbers.
+
+First, show your step-by-step reasoning by tracking your own absolute position and direction, and calculating the absolute coordinates of all objects you see.
+
+Finally, provide a summary list of all unique objects and their deduced absolute coordinates.
+
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see a green flag at coordinate 4, a purple flag at coordinate 2, a yellow flag at coordinate 1.
+Step1: forward. You can see a green flag at coordinate 3, a purple flag at coordinate 1.
+Step2: forward. You can see a green flag at coordinate 2.
+Step3: forward. You can see a green flag at coordinate 1.
+Step4: forward. You can see a grey wall at coordinate 6.
+Step5: forward. You can see a grey wall at coordinate 5.
+Step6: forward. You can see a grey wall at coordinate 4.
+Step7: turnaround. You can see a yellow flag at coordinate 5, a purple flag at coordinate 4, a green flag at coordinate 2.
+Step8: forward. You can see a grey wall at coordinate 6, a yellow flag at coordinate 4, a purple flag at coordinate 3, a green flag at coordinate 1.
+Step9: forward. You can see a grey wall at coordinate 5, a yellow flag at coordinate 3, a purple flag at coordinate 2.
+Step10: forward. You can see a grey wall at coordinate 4, a yellow flag at coordinate 2, a purple flag at coordinate 1.
+Step11: turnaround. You can see a green flag at coordinate 1.
+Step12: turnaround. You can see a grey wall at coordinate 4, a yellow flag at coordinate 2, a purple flag at coordinate 1.
+Step13: forward. You can see a grey wall at coordinate 3, a yellow flag at coordinate 1.
+Step14: forward. You can see a grey wall at coordinate 2.
+Step15: forward. You can see a grey wall at coordinate 1.
+Step16: forward. You can see a grey wall at coordinate 1.
+Step17: forward. You can see a grey wall at coordinate 1
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate 3, a green flag at coordinate 8, a blue wall at coordinate 5, a blue wall at coordinate 0
+&&&
+
+2025-07-11 03:30:57,346 - INFO - LLM Response for episode #6:
+Here is my step-by-step reconstruction of the map.
+
+My state is tracked as (Absolute Position, Direction).
+The absolute position of an object is calculated as: `Your Absolute Position + (Direction Multiplier * Relative Position)`.
+The Direction Multiplier is +1 for East and -1 for West.
+
+**Initial State**
+*   My State: (1, East)
+*   Observation: green flag at relative 4, purple flag at relative 2, yellow flag at relative 1.
+*   Deduction:
+    *   yellow flag is at 1 + (1 * 1) = 2.
+    *   purple flag is at 1 + (1 * 2) = 3.
+    *   green flag is at 1 + (1 * 4) = 5.
+*   Current Map: {yellow flag: 2, purple flag: 3, green flag: 5}
+
+**Step 1: forward**
+*   My State: (2, East)
+*   Observation: green flag at relative 3, purple flag at relative 1.
+*   Deduction:
+    *   purple flag is at 2 + (1 * 1) = 3. (Consistent)
+    *   green flag is at 2 + (1 * 3) = 5. (Consistent)
+
+**Step 2: forward**
+*   My State: (3, East)
+*   Observation: green flag at relative 2.
+*   Deduction:
+    *   green flag is at 3 + (1 * 2) = 5. (Consistent)
+
+**Step 3: forward**
+*   My State: (4, East)
+*   Observation: green flag at relative 1.
+*   Deduction:
+    *   green flag is at 4 + (1 * 1) = 5. (Consistent)
+
+**Step 4: forward**
+*   My State: (5, East)
+*   Observation: grey wall at relative 6.
+*   Deduction:
+    *   A new object, a grey wall, is at 5 + (1 * 6) = 11.
+*   Current Map: {yellow flag: 2, purple flag: 3, green flag: 5, grey wall: 11}
+
+**Step 5: forward**
+*   My State: (6, East)
+*   Observation: grey wall at relative 5.
+*   Deduction:
+    *   grey wall is at 6 + (1 * 5) = 11. (Consistent)
+
+**Step 6: forward**
+*   My State: (7, East)
+*   Observation: grey wall at relative 4.
+*   Deduction:
+    *   grey wall is at 7 + (1 * 4) = 11. (Consistent)
+
+**Step 7: turnaround**
+*   My State: (7, West)
+*   Observation: yellow flag at relative 5, purple flag at relative 4, green flag at relative 2.
+*   Deduction:
+    *   green flag is at 7 + (-1 * 2) = 5. (Consistent)
+    *   purple flag is at 7 + (-1 * 4) = 3. (Consistent)
+    *   yellow flag is at 7 + (-1 * 5) = 2. (Consistent)
+
+**Step 8: forward**
+*   My State: (6, West)
+*   Observation: grey wall at relative 6, yellow flag at relative 4, purple flag at relative 3, green flag at relative 1.
+*   Deduction:
+    *   green flag is at 6 + (-1 * 1) = 5. (Consistent)
+    *   purple flag is at 6 + (-1 * 3) = 3. (Consistent)
+    *   yellow flag is at 6 + (-1 * 4) = 2. (Consistent)
+    *   A new object, a grey wall, is at 6 + (-1 * 6) = 0.
+*   Current Map: {yellow flag: 2, purple flag: 3, green flag: 5, grey wall: 11, grey wall: 0}
+
+**Step 9: forward**
+*   My State: (5, West)
+*   Observation: grey wall at relative 5, yellow flag at relative 3, purple flag at relative 2.
+*   Deduction:
+    *   purple flag is at 5 + (-1 * 2) = 3. (Consistent)
+    *   yellow flag is at 5 + (-1 * 3) = 2. (Consistent)
+    *   The grey wall is at 5 + (-1 * 5) = 0. (Consistent)
+
+**Step 10: forward**
+*   My State: (4, West)
+*   Observation: grey wall at relative 4, yellow flag at relative 2, purple flag at relative 1.
+*   Deduction:
+    *   purple flag is at 4 + (-1 * 1) = 3. (Consistent)
+    *   yellow flag is at 4 + (-1 * 2) = 2. (Consistent)
+    *   The grey wall is at 4 + (-1 * 4) = 0. (Consistent)
+
+**Step 11: turnaround**
+*   My State: (4, East)
+*   Observation: green flag at relative 1.
+*   Deduction:
+    *   green flag is at 4 + (1 * 1) = 5. (Consistent)
+
+**Step 12: turnaround**
+*   My State: (4, West)
+*   Observation: grey wall at relative 4, yellow flag at relative 2, purple flag at relative 1.
+*   Deduction: This is a repeat of Step 10 and all deductions are consistent.
+
+**Step 13: forward**
+*   My State: (3, West)
+*   Observation: grey wall at relative 3, yellow flag at relative 1.
+*   Deduction:
+    *   yellow flag is at 3 + (-1 * 1) = 2. (Consistent)
+    *   The grey wall is at 3 + (-1 * 3) = 0. (Consistent)
+
+**Step 14: forward**
+*   My State: (2, West)
+*   Observation: grey wall at relative 2.
+*   Deduction:
+    *   The grey wall is at 2 + (-1 * 2) = 0. (Consistent)
+
+**Step 15: forward**
+*   My State: (1, West)
+*   Observation: grey wall at relative 1.
+*   Deduction:
+    *   The grey wall is at 1 + (-1 * 1) = 0. (Consistent)
+
+**Step 16: forward**
+*   My State: (0, West)
+*   Observation: grey wall at relative 1.
+*   Deduction: I am at position 0, where one wall is. The wall I see is in front of me.
+    *   A new object, a grey wall, is at 0 + (-1 * 1) = -1.
+*   Current Map: {yellow flag: 2, purple flag: 3, green flag: 5, grey wall: 11, grey wall: 0, grey wall: -1}
+
+**Step 17: forward**
+*   My State: (-1, West)
+*   Observation: grey wall at relative 1.
+*   Deduction: I am at position -1, where the second wall is. The wall I see is in front of me.
+    *   A new object, a grey wall, is at -1 + (-1 * 1) = -2.
+*   Current Map: {yellow flag: 2, purple flag: 3, green flag: 5, grey wall: 11, grey wall: 0, grey wall: -1, grey wall: -2}
+
+&&&
+a grey wall at coordinate -2, a grey wall at coordinate -1, a grey wall at coordinate 0, a yellow flag at coordinate 2, a purple flag at coordinate 3, a green flag at coordinate 5, a grey wall at coordinate 11
+&&&
+2025-07-11 03:30:57,355 - INFO - --- Judgment for Episode #6 ---
+2025-07-11 03:30:57,355 - INFO - Result: PERFECT MATCH
+2025-07-11 03:30:57,355 - INFO - Ground Truth: {0: ('grey', 'wall'), 2: ('yellow', 'flag'), 3: ('purple', 'flag'), 5: ('green', 'flag'), 11: ('grey', 'wall')}
+LLM's Map   : {-2: ('grey', 'wall'), -1: ('grey', 'wall'), 0: ('grey', 'wall'), 2: ('yellow', 'flag'), 3: ('purple', 'flag'), 5: ('green', 'flag'), 11: ('grey', 'wall')}
+Overall Accuracy: 100.00%
+Goal Accuracy   : 100.00%
+2025-07-11 03:30:57,356 - INFO - --- Finished Test Episode #6 ---
+
+2025-07-11 03:31:02,363 - INFO - --- Starting Test Episode #7 ---
+2025-07-11 03:31:02,497 - INFO - Sending prompt to Gemini for episode #7...
+2025-07-11 03:31:02,498 - INFO - Prompt for episode #7:
+
+You are an expert spatial reasoning AI. Your task is to build a consistent 1D map of a corridor based on a sequence of limited, first-person observations.
+
+### RULES OF THE WORLD ###
+1.  The world is a static, continuous 1D track. Your absolute position on this track is a single integer.
+2.  Your observation consists ONLY of the 6 grid cells directly in front of you.
+3.  The number you see (e.g., "at coordinate 3") is a **relative position**, indexed 1 to 6.
+    - Position 1 is the cell immediately in front of you.
+    - Position 6 is the farthest cell you can see.
+    - An object at relative position 7 or greater is invisible to you.
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is 1. East is the direction of increasing position numbers.
+
+First, show your step-by-step reasoning by tracking your own absolute position and direction, and calculating the absolute coordinates of all objects you see.
+
+Finally, provide a summary list of all unique objects and their deduced absolute coordinates.
+
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see green flags at coordinates: 5, 2, a grey flag at coordinate 1.
+Step1: forward. You can see green flags at coordinates: 4, 1.
+Step2: forward. You can see a green flag at coordinate 3.
+Step3: forward. You can see a green flag at coordinate 2.
+Step4: forward. You can see a grey wall at coordinate 6, a green flag at coordinate 1.
+Step5: forward. You can see a grey wall at coordinate 5.
+Step6: forward. You can see a grey wall at coordinate 4.
+Step7: turnaround. You can see a grey flag at coordinate 5, green flags at coordinates: 4, 1.
+Step8: forward. You can see a grey wall at coordinate 6, a grey flag at coordinate 4, a green flag at coordinate 3.
+Step9: forward. You can see a grey wall at coordinate 5, a grey flag at coordinate 3, a green flag at coordinate 2.
+Step10: forward. You can see a grey wall at coordinate 4, a grey flag at coordinate 2, a green flag at coordinate 1.
+Step11: turnaround. You can see a green flag at coordinate 2.
+Step12: forward. You can see a grey wall at coordinate 6, a green flag at coordinate 1.
+Step13: forward. You can see a grey wall at coordinate 5.
+Step14: forward. You can see a grey wall at coordinate 4.
+Step15: forward. You can see a grey wall at coordinate 3.
+Step16: forward. You can see a grey wall at coordinate 2.
+Step17: forward. You can see a grey wall at coordinate 1.
+Step18: forward. You can see a grey wall at coordinate 1.
+Step19: turnaround. You can see a green flag at coordinate 4.
+Step20: forward. You can see green flags at coordinates: 6, 3.
+Step21: forward. You can see a grey flag at coordinate 6, green flags at coordinates: 5, 2.
+Step22: forward. You can see a grey flag at coordinate 5, green flags at coordinates: 4, 1.
+Step23: forward. You can see a grey wall at coordinate 6, a grey flag at coordinate 4, a green flag at coordinate 3.
+Step24: forward. You can see a grey wall at coordinate 5, a grey flag at coordinate 3, a green flag at coordinate 2.
+Step25: forward. You can see a grey wall at coordinate 4, a grey flag at coordinate 2, a green flag at coordinate 1
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate 3, a green flag at coordinate 8, a blue wall at coordinate 5, a blue wall at coordinate 0
+&&&
+
+2025-07-11 03:33:27,963 - INFO - LLM Response for episode #7:
+### Step-by-Step Reasoning
+
+Here is the process of building the map by tracking the agent's state and observations. The absolute position of an object is calculated as: `Your_Absolute_Position + (Relative_Position * Direction_Modifier)`, where East is `+1` and West is `-1`.
+
+*   **Initial State:** Position: 1, Direction: East.
+*   **Initial Observation:** `green flags @ rel 5, 2`, `a grey flag @ rel 1`.
+    *   `grey flag @ (1 + 1) = 2`
+    *   `green flag @ (1 + 2) = 3`
+    *   `green flag @ (1 + 5) = 6`
+    *   **Map:** {`grey flag @ 2`, `green flag @ 3`, `green flag @ 6`}
+
+*   **Step 1: forward** -> New Position: 2, Direction: East.
+    *   Sees: `green flags @ rel 4, 1`.
+    *   Confirms: `green flag @ (2+1)=3` and `green flag @ (2+4)=6`.
+
+*   **Step 2: forward** -> New Position: 3, Direction: East.
+    *   Sees: `a green flag @ rel 3`.
+    *   Confirms: `green flag @ (3+3)=6`.
+
+*   **Step 3: forward** -> New Position: 4, Direction: East.
+    *   Sees: `a green flag @ rel 2`.
+    *   Confirms: `green flag @ (4+2)=6`.
+
+*   **Step 4: forward** -> New Position: 5, Direction: East.
+    *   Sees: `a grey wall @ rel 6`, `a green flag @ rel 1`.
+    *   Confirms: `green flag @ (5+1)=6`.
+    *   New object: `grey wall @ (5+6)=11`.
+    *   **Map:** {`grey flag @ 2`, `green flag @ 3`, `green flag @ 6`, `grey wall @ 11`}
+
+*   **Step 5: forward** -> New Position: 6, Direction: East.
+    *   Sees: `a grey wall @ rel 5`.
+    *   Confirms: `grey wall @ (6+5)=11`.
+
+*   **Step 6: forward** -> New Position: 7, Direction: East.
+    *   Sees: `a grey wall @ rel 4`.
+    *   Confirms: `grey wall @ (7+4)=11`.
+
+*   **Step 7: turnaround** -> Position: 7, Direction: West.
+    *   Sees: `a grey flag @ rel 5`, `green flags @ rel 4, 1`.
+    *   Confirms: `green flag @ (7-1)=6`, `green flag @ (7-4)=3`, `grey flag @ (7-5)=2`.
+
+*   **Step 8: forward** -> New Position: 6, Direction: West.
+    *   Sees: `a grey wall @ rel 6`, `a grey flag @ rel 4`, `a green flag @ rel 3`.
+    *   Confirms: `green flag @ (6-3)=3`, `grey flag @ (6-4)=2`.
+    *   New object: `grey wall @ (6-6)=0`.
+    *   **Map:** {`grey wall @ 0`, `grey flag @ 2`, `green flag @ 3`, `green flag @ 6`, `grey wall @ 11`}
+
+*   **Step 9: forward** -> New Position: 5, Direction: West.
+    *   Sees: `a grey wall @ rel 5`, `a grey flag @ rel 3`, `a green flag @ rel 2`.
+    *   Confirms: `green flag @ (5-2)=3`, `grey flag @ (5-3)=2`, `grey wall @ (5-5)=0`.
+
+*   **Step 10: forward** -> New Position: 4, Direction: West.
+    *   Sees: `a grey wall @ rel 4`, `a grey flag @ rel 2`, `a green flag @ rel 1`.
+    *   Confirms: `green flag @ (4-1)=3`, `grey flag @ (4-2)=2`, `grey wall @ (4-4)=0`.
+
+*   **Step 11: turnaround** -> Position: 4, Direction: East.
+    *   Sees: `a green flag @ rel 2`.
+    *   Confirms: `green flag @ (4+2)=6`.
+
+*   **Step 12: forward** -> New Position: 5, Direction: East.
+    *   Sees: `a grey wall @ rel 6`, `a green flag @ rel 1`.
+    *   Confirms: `green flag @ (5+1)=6`, `grey wall @ (5+6)=11`.
+
+*   **Step 13: forward** -> New Position: 6, Direction: East.
+    *   Sees: `a grey wall @ rel 5`.
+    *   Confirms: `grey wall @ (6+5)=11`.
+
+*   **Step 14: forward** -> New Position: 7, Direction: East.
+    *   Sees: `a grey wall @ rel 4`.
+    *   Confirms: `grey wall @ (7+4)=11`.
+
+*   **Step 15: forward** -> New Position: 8, Direction: East.
+    *   Sees: `a grey wall @ rel 3`.
+    *   Confirms: `grey wall @ (8+3)=11`.
+
+*   **Step 16: forward** -> New Position: 9, Direction: East.
+    *   Sees: `a grey wall @ rel 2`.
+    *   Confirms: `grey wall @ (9+2)=11`.
+
+*   **Step 17: forward** -> New Position: 10, Direction: East.
+    *   Sees: `a grey wall @ rel 1`.
+    *   Confirms: `grey wall @ (10+1)=11`.
+
+*   **Step 18: forward** -> New Position: 11, Direction: East.
+    *   Sees: `a grey wall @ rel 1`.
+    *   New object: `grey wall @ (11+1)=12`.
+    *   **Map:** {`grey wall @ 0`, `grey flag @ 2`, `green flag @ 3`, `green flag @ 6`, `grey wall @ 11`, `grey wall @ 12`}
+
+*   **Step 19: turnaround** -> Position: 11, Direction: West.
+    *   Sees: `a green flag @ rel 4`.
+    *   New object: `green flag @ (11-4)=7`.
+    *   **Map:** {`grey wall @ 0`, `grey flag @ 2`, `green flag @ 3`, `green flag @ 6`, `green flag @ 7`, `grey wall @ 11`, `grey wall @ 12`}
+
+*   **Step 20: forward** -> New Position: 10, Direction: West.
+    *   Sees: `green flags @ rel 6, 3`.
+    *   Confirms: `green flag @ (10-3)=7`.
+    *   New object: `green flag @ (10-6)=4`.
+    *   **Map:** {`grey wall @ 0`, `grey flag @ 2`, `green flag @ 3`, `green flag @ 4`, `green flag @ 6`, `green flag @ 7`, `grey wall @ 11`, `grey wall @ 12`}
+
+*   **Step 21: forward** -> New Position: 9, Direction: West.
+    *   Sees: `a grey flag @ rel 6`, `green flags @ rel 5, 2`.
+    *   Confirms: `green flag @ (9-5)=4`, `green flag @ (9-2)=7`.
+    *   **Conflict:** This observation implies a `grey flag @ (9-6)=3`. This contradicts the `green flag @ 3` seen consistently in earlier steps. As the world is static, a single unified map cannot have two different objects at the same coordinate. To resolve this, the most recent observation will supersede the previous one. The object at coordinate 3 is now considered a grey flag.
+    *   **Updated Map:** {`grey wall @ 0`, `grey flag @ 2`, `grey flag @ 3`, `green flag @ 4`, `green flag @ 6`, `green flag @ 7`, `grey wall @ 11`, `grey wall @ 12`}
+
+*   **Step 22: forward** -> New Position: 8, Direction: West.
+    *   Sees: `a grey flag @ rel 5`, `green flags @ rel 4, 1`.
+    *   Confirms: `grey flag @ (8-5)=3`, `green flag @ (8-4)=4`, `green flag @ (8-1)=7`. (Consistent with updated map).
+
+*   **Step 23: forward** -> New Position: 7, Direction: West.
+    *   Sees: `a grey wall @ rel 6`, `a grey flag @ rel 4`, `a green flag @ rel 3`.
+    *   Confirms: `grey flag @ (7-4)=3`, `green flag @ (7-3)=4`.
+    *   New object: `grey wall @ (7-6)=1`.
+    *   **Final Map:** {`grey wall @ 0`, `grey wall @ 1`, `grey flag @ 2`, `grey flag @ 3`, `green flag @ 4`, `green flag @ 6`, `green flag @ 7`, `grey wall @ 11`, `grey wall @ 12`}
+
+*   **Step 24: forward** -> New Position: 6, Direction: West.
+    *   Sees: `a grey wall @ rel 5`, `a grey flag @ rel 3`, `a green flag @ rel 2`.
+    *   Confirms: `grey wall @ (6-5)=1`, `grey flag @ (6-3)=3`, `green flag @ (6-2)=4`.
+
+*   **Step 25: forward** -> New Position: 5, Direction: West.
+    *   Sees: `a grey wall @ rel 4`, `a grey flag @ rel 2`, `a green flag @ rel 1`.
+    *   Confirms: `grey wall @ (5-4)=1`, `grey flag @ (5-2)=3`, `green flag @ (5-1)=4`.
+
+### Final Map Summary
+
+&&&
+a grey wall at coordinate 0, a grey wall at coordinate 1, a grey flag at coordinate 2, a grey flag at coordinate 3, a green flag at coordinate 4, a green flag at coordinate 6, a green flag at coordinate 7, a grey wall at coordinate 11, a grey wall at coordinate 12
+&&&
+2025-07-11 03:33:27,966 - INFO - --- Judgment for Episode #7 ---
+2025-07-11 03:33:27,966 - INFO - Result: IMPERFECT
+2025-07-11 03:33:27,966 - INFO - Ground Truth: {0: ('grey', 'wall'), 2: ('grey', 'flag'), 3: ('green', 'flag'), 6: ('green', 'flag'), 11: ('grey', 'wall')}
+LLM's Map   : {0: ('grey', 'wall'), 1: ('grey', 'wall'), 2: ('grey', 'flag'), 3: ('grey', 'flag'), 4: ('green', 'flag'), 6: ('green', 'flag'), 7: ('green', 'flag'), 11: ('grey', 'wall'), 12: ('grey', 'wall')}
+Overall Accuracy: 80.00%
+Goal Accuracy   : 100.00%
+2025-07-11 03:33:27,966 - INFO - --- Finished Test Episode #7 ---
+
+2025-07-11 03:33:32,972 - INFO - --- Starting Test Episode #8 ---
+2025-07-11 03:33:33,097 - INFO - Sending prompt to Gemini for episode #8...
+2025-07-11 03:33:33,097 - INFO - Prompt for episode #8:
+
+You are an expert spatial reasoning AI. Your task is to build a consistent 1D map of a corridor based on a sequence of limited, first-person observations.
+
+### RULES OF THE WORLD ###
+1.  The world is a static, continuous 1D track. Your absolute position on this track is a single integer.
+2.  Your observation consists ONLY of the 6 grid cells directly in front of you.
+3.  The number you see (e.g., "at coordinate 3") is a **relative position**, indexed 1 to 6.
+    - Position 1 is the cell immediately in front of you.
+    - Position 6 is the farthest cell you can see.
+    - An object at relative position 7 or greater is invisible to you.
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is 1. East is the direction of increasing position numbers.
+
+First, show your step-by-step reasoning by tracking your own absolute position and direction, and calculating the absolute coordinates of all objects you see.
+
+Finally, provide a summary list of all unique objects and their deduced absolute coordinates.
+
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see a blue flag at coordinate 6, a grey flag at coordinate 2.
+Step1: forward. You can see a red flag at coordinate 6, a blue flag at coordinate 5, a grey flag at coordinate 1.
+Step2: forward. You can see a red flag at coordinate 5, a blue flag at coordinate 4.
+Step3: forward. You can see a red flag at coordinate 4, a blue flag at coordinate 3.
+Step4: forward. You can see a grey wall at coordinate 6, a red flag at coordinate 3, a blue flag at coordinate 2.
+Step5: forward. You can see a grey wall at coordinate 5, a red flag at coordinate 2, a blue flag at coordinate 1.
+Step6: forward. You can see a grey wall at coordinate 4, a red flag at coordinate 1.
+Step7: forward. You can see a grey wall at coordinate 3.
+Step8: forward. You can see a grey wall at coordinate 2.
+Step9: turnaround. You can see a grey flag at coordinate 6, a blue flag at coordinate 2, a red flag at coordinate 1.
+Step10: forward. You can see a grey flag at coordinate 5, a blue flag at coordinate 1.
+Step11: turnaround. You can see a grey wall at coordinate 3.
+Step12: forward. You can see a grey wall at coordinate 2.
+Step13: forward. You can see a grey wall at coordinate 1.
+Step14: forward. You can see a grey wall at coordinate 1.
+Step15: forward. You can see a grey wall at coordinate 1.
+Step16: forward. You can see a grey wall at coordinate 1.
+Step17: turnaround. You can see a blue flag at coordinate 3, a red flag at coordinate 2.
+Step18: forward. You can see a grey flag at coordinate 6, a blue flag at coordinate 2, a red flag at coordinate 1.
+Step19: forward. You can see a grey flag at coordinate 5, a blue flag at coordinate 1.
+Step20: forward. You can see a grey flag at coordinate 4.
+Step21: forward. You can see a grey wall at coordinate 6, a grey flag at coordinate 3.
+Step22: forward. You can see a grey wall at coordinate 5, a grey flag at coordinate 2.
+Step23: forward. You can see a grey wall at coordinate 4, a grey flag at coordinate 1.
+Step24: forward. You can see a grey wall at coordinate 3.
+Step25: forward. You can see a grey wall at coordinate 2.
+Step26: forward. You can see a grey wall at coordinate 1
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate 3, a green flag at coordinate 8, a blue wall at coordinate 5, a blue wall at coordinate 0
+&&&
+
+2025-07-11 03:35:01,186 - INFO - LLM Response for episode #8:
+### Step-by-Step Reasoning
+
+**Initial State**
+*   **Your Position:** 1
+*   **Your Direction:** East (+1)
+*   **Observation:** a blue flag at relative 6, a grey flag at relative 2.
+*   **Calculations:**
+    *   blue flag: 1 + (1 * 6) = 7
+    *   grey flag: 1 + (1 * 2) = 3
+*   **Map:** {blue flag: 7, grey flag: 3}
+
+**Step 1: forward**
+*   **Your Position:** 2
+*   **Your Direction:** East (+1)
+*   **Observation:** a red flag at relative 6, a blue flag at relative 5, a grey flag at relative 1.
+*   **Calculations:**
+    *   red flag: 2 + (1 * 6) = 8
+    *   blue flag: 2 + (1 * 5) = 7 (Consistent)
+    *   grey flag: 2 + (1 * 1) = 3 (Consistent)
+*   **Map:** {blue flag: 7, grey flag: 3, red flag: 8}
+
+**Step 2: forward**
+*   **Your Position:** 3
+*   **Your Direction:** East (+1)
+*   **Observation:** a red flag at relative 5, a blue flag at relative 4.
+*   **Calculations:**
+    *   red flag: 3 + (1 * 5) = 8 (Consistent)
+    *   blue flag: 3 + (1 * 4) = 7 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 3: forward**
+*   **Your Position:** 4
+*   **Your Direction:** East (+1)
+*   **Observation:** a red flag at relative 4, a blue flag at relative 3.
+*   **Calculations:**
+    *   red flag: 4 + (1 * 4) = 8 (Consistent)
+    *   blue flag: 4 + (1 * 3) = 7 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 4: forward**
+*   **Your Position:** 5
+*   **Your Direction:** East (+1)
+*   **Observation:** a grey wall at relative 6, a red flag at relative 3, a blue flag at relative 2.
+*   **Calculations:**
+    *   grey wall: 5 + (1 * 6) = 11
+    *   red flag: 5 + (1 * 3) = 8 (Consistent)
+    *   blue flag: 5 + (1 * 2) = 7 (Consistent)
+*   **Map:** {blue flag: 7, grey flag: 3, red flag: 8, grey wall: 11}
+
+**Step 5: forward**
+*   **Your Position:** 6
+*   **Your Direction:** East (+1)
+*   **Observation:** a grey wall at relative 5, a red flag at relative 2, a blue flag at relative 1.
+*   **Calculations:**
+    *   grey wall: 6 + (1 * 5) = 11 (Consistent)
+    *   red flag: 6 + (1 * 2) = 8 (Consistent)
+    *   blue flag: 6 + (1 * 1) = 7 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 6: forward**
+*   **Your Position:** 7
+*   **Your Direction:** East (+1)
+*   **Observation:** a grey wall at relative 4, a red flag at relative 1.
+*   **Calculations:**
+    *   grey wall: 7 + (1 * 4) = 11 (Consistent)
+    *   red flag: 7 + (1 * 1) = 8 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 7: forward**
+*   **Your Position:** 8
+*   **Your Direction:** East (+1)
+*   **Observation:** a grey wall at relative 3.
+*   **Calculations:**
+    *   grey wall: 8 + (1 * 3) = 11 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 8: forward**
+*   **Your Position:** 9
+*   **Your Direction:** East (+1)
+*   **Observation:** a grey wall at relative 2.
+*   **Calculations:**
+    *   grey wall: 9 + (1 * 2) = 11 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 9: turnaround**
+*   **Your Position:** 9
+*   **Your Direction:** West (-1)
+*   **Observation:** a grey flag at relative 6, a blue flag at relative 2, a red flag at relative 1.
+*   **Calculations:**
+    *   grey flag: 9 + (-1 * 6) = 3 (Consistent)
+    *   blue flag: 9 + (-1 * 2) = 7 (Consistent)
+    *   red flag: 9 + (-1 * 1) = 8 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 10: forward**
+*   **Your Position:** 8
+*   **Your Direction:** West (-1)
+*   **Observation:** a grey flag at relative 5, a blue flag at relative 1.
+*   **Calculations:**
+    *   grey flag: 8 + (-1 * 5) = 3 (Consistent)
+    *   blue flag: 8 + (-1 * 1) = 7 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 11: turnaround**
+*   **Your Position:** 8
+*   **Your Direction:** East (+1)
+*   **Observation:** a grey wall at relative 3.
+*   **Calculations:**
+    *   grey wall: 8 + (1 * 3) = 11 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 12: forward**
+*   **Your Position:** 9
+*   **Your Direction:** East (+1)
+*   **Observation:** a grey wall at relative 2.
+*   **Calculations:**
+    *   grey wall: 9 + (1 * 2) = 11 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 13: forward**
+*   **Your Position:** 10
+*   **Your Direction:** East (+1)
+*   **Observation:** a grey wall at relative 1.
+*   **Calculations:**
+    *   grey wall: 10 + (1 * 1) = 11 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 14: forward**
+*   **Your Position:** 11
+*   **Your Direction:** East (+1)
+*   **Observation:** a grey wall at relative 1.
+*   **Calculations:**
+    *   grey wall: 11 + (1 * 1) = 12
+*   **Map:** {..., grey wall: 11, grey wall: 12}
+
+**Step 15: forward**
+*   **Your Position:** 12
+*   **Your Direction:** East (+1)
+*   **Observation:** a grey wall at relative 1.
+*   **Calculations:**
+    *   grey wall: 12 + (1 * 1) = 13
+*   **Map:** {..., grey wall: 12, grey wall: 13}
+
+**Step 16: forward**
+*   **Your Position:** 13
+*   **Your Direction:** East (+1)
+*   **Observation:** a grey wall at relative 1.
+*   **Calculations:**
+    *   grey wall: 13 + (1 * 1) = 14
+*   **Map:** {..., grey wall: 13, grey wall: 14}
+
+**Step 17: turnaround**
+*   **Your Position:** 13
+*   **Your Direction:** West (-1)
+*   **Observation:** a blue flag at relative 3, a red flag at relative 2.
+*   **Calculations:**
+    *   blue flag: 13 + (-1 * 3) = 10
+    *   red flag: 13 + (-1 * 2) = 11
+*   **Map:** {..., blue flag: 10, red flag: 11} *Note: A new red flag is discovered at coordinate 11, which already contains a grey wall. This is a valid state.*
+
+**Step 18: forward**
+*   **Your Position:** 12
+*   **Your Direction:** West (-1)
+*   **Observation:** a grey flag at relative 6, a blue flag at relative 2, a red flag at relative 1.
+*   **Calculations:**
+    *   grey flag: 12 + (-1 * 6) = 6
+    *   blue flag: 12 + (-1 * 2) = 10 (Consistent)
+    *   red flag: 12 + (-1 * 1) = 11 (Consistent)
+*   **Map:** {..., grey flag: 6}
+
+**Step 19: forward**
+*   **Your Position:** 11
+*   **Your Direction:** West (-1)
+*   **Observation:** a grey flag at relative 5, a blue flag at relative 1.
+*   **Calculations:**
+    *   grey flag: 11 + (-1 * 5) = 6 (Consistent)
+    *   blue flag: 11 + (-1 * 1) = 10 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 20: forward**
+*   **Your Position:** 10
+*   **Your Direction:** West (-1)
+*   **Observation:** a grey flag at relative 4.
+*   **Calculations:**
+    *   grey flag: 10 + (-1 * 4) = 6 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 21: forward**
+*   **Your Position:** 9
+*   **Your Direction:** West (-1)
+*   **Observation:** a grey wall at relative 6, a grey flag at relative 3.
+*   **Calculations:**
+    *   grey wall: 9 + (-1 * 6) = 3
+    *   grey flag: 9 + (-1 * 3) = 6 (Consistent)
+*   **Map:** {..., grey wall: 3} *Note: A grey wall is discovered at coordinate 3, which already contains a grey flag. This is a valid state.*
+
+**Step 22: forward**
+*   **Your Position:** 8
+*   **Your Direction:** West (-1)
+*   **Observation:** a grey wall at relative 5, a grey flag at relative 2.
+*   **Calculations:**
+    *   grey wall: 8 + (-1 * 5) = 3 (Consistent)
+    *   grey flag: 8 + (-1 * 2) = 6 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 23: forward**
+*   **Your Position:** 7
+*   **Your Direction:** West (-1)
+*   **Observation:** a grey wall at relative 4, a grey flag at relative 1.
+*   **Calculations:**
+    *   grey wall: 7 + (-1 * 4) = 3 (Consistent)
+    *   grey flag: 7 + (-1 * 1) = 6 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 24: forward**
+*   **Your Position:** 6
+*   **Your Direction:** West (-1)
+*   **Observation:** a grey wall at relative 3.
+*   **Calculations:**
+    *   grey wall: 6 + (-1 * 3) = 3 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 25: forward**
+*   **Your Position:** 5
+*   **Your Direction:** West (-1)
+*   **Observation:** a grey wall at relative 2.
+*   **Calculations:**
+    *   grey wall: 5 + (-1 * 2) = 3 (Consistent)
+*   **Map:** Unchanged.
+
+**Step 26: forward**
+*   **Your Position:** 4
+*   **Your Direction:** West (-1)
+*   **Observation:** a grey wall at relative 1.
+*   **Calculations:**
+    *   grey wall: 4 + (-1 * 1) = 3 (Consistent)
+*   **Map:** Unchanged.
+
+&&&
+a grey flag at coordinate 3, a grey wall at coordinate 3, a grey flag at coordinate 6, a blue flag at coordinate 7, a red flag at coordinate 8, a blue flag at coordinate 10, a red flag at coordinate 11, a grey wall at coordinate 11, a grey wall at coordinate 12, a grey wall at coordinate 13, a grey wall at coordinate 14
+&&&
+2025-07-11 03:35:01,188 - INFO - --- Judgment for Episode #8 ---
+2025-07-11 03:35:01,189 - INFO - Result: IMPERFECT
+2025-07-11 03:35:01,189 - INFO - Ground Truth: {0: ('grey', 'wall'), 3: ('grey', 'flag'), 7: ('blue', 'flag'), 8: ('red', 'flag'), 11: ('grey', 'wall')}
+LLM's Map   : {3: ('grey', 'wall'), 6: ('grey', 'flag'), 7: ('blue', 'flag'), 8: ('red', 'flag'), 10: ('blue', 'flag'), 11: ('grey', 'wall'), 12: ('grey', 'wall'), 13: ('grey', 'wall'), 14: ('grey', 'wall')}
+Overall Accuracy: 60.00%
+Goal Accuracy   : 100.00%
+2025-07-11 03:35:01,189 - INFO - --- Finished Test Episode #8 ---
+
+2025-07-11 03:35:06,195 - INFO - --- Starting Test Episode #9 ---
+2025-07-11 03:35:06,347 - INFO - Sending prompt to Gemini for episode #9...
+2025-07-11 03:35:06,347 - INFO - Prompt for episode #9:
+
+You are an expert spatial reasoning AI. Your task is to build a consistent 1D map of a corridor based on a sequence of limited, first-person observations.
+
+### RULES OF THE WORLD ###
+1.  The world is a static, continuous 1D track. Your absolute position on this track is a single integer.
+2.  Your observation consists ONLY of the 6 grid cells directly in front of you.
+3.  The number you see (e.g., "at coordinate 3") is a **relative position**, indexed 1 to 6.
+    - Position 1 is the cell immediately in front of you.
+    - Position 6 is the farthest cell you can see.
+    - An object at relative position 7 or greater is invisible to you.
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 if facing East (positive direction), or -1 if facing West (negative direction).
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+
+### YOUR TASK ###
+Your mission is to process the following log step-by-step and create a single, unified map of the world.
+Your starting absolute position is 1. East is the direction of increasing position numbers.
+
+First, show your step-by-step reasoning by tracking your own absolute position and direction, and calculating the absolute coordinates of all objects you see.
+
+Finally, provide a summary list of all unique objects and their deduced absolute coordinates.
+
+### OBSERVATION LOG ###
+Initial Observation: You're facing East.You can see a green flag at coordinate 2, a yellow flag at coordinate 1.
+Step1: forward. You can see a green flag at coordinate 1.
+Step2: forward. You can see a purple flag at coordinate 6.
+Step3: forward. You can see a purple flag at coordinate 5.
+Step4: forward. You can see a grey wall at coordinate 6, a purple flag at coordinate 4.
+Step5: forward. You can see a grey wall at coordinate 5, a purple flag at coordinate 3.
+Step6: forward. You can see a grey wall at coordinate 4, a purple flag at coordinate 2.
+Step7: forward. You can see a grey wall at coordinate 3, a purple flag at coordinate 1.
+Step8: forward. You can see a grey wall at coordinate 2.
+Step9: forward. You can see a grey wall at coordinate 1.
+Step10: turnaround. You can see a purple flag at coordinate 1.
+Step11: forward. You can see a green flag at coordinate 6.
+Step12: forward. You can see a yellow flag at coordinate 6, a green flag at coordinate 5.
+Step13: forward. You can see a yellow flag at coordinate 5, a green flag at coordinate 4.
+Step14: forward. You can see a grey wall at coordinate 6, a yellow flag at coordinate 4, a green flag at coordinate 3.
+Step15: forward. You can see a grey wall at coordinate 5, a yellow flag at coordinate 3, a green flag at coordinate 2.
+Step16: forward. You can see a grey wall at coordinate 4, a yellow flag at coordinate 2, a green flag at coordinate 1.
+Step17: forward. You can see a grey wall at coordinate 3, a yellow flag at coordinate 1.
+Step18: forward. You can see a grey wall at coordinate 2.
+Step19: turnaround. You can see a green flag at coordinate 1.
+Step20: forward. You can see a purple flag at coordinate 6.
+Step21: forward. You can see a purple flag at coordinate 5.
+Step22: forward. You can see a grey wall at coordinate 6, a purple flag at coordinate 4.
+Step23: forward. You can see a grey wall at coordinate 5, a purple flag at coordinate 3.
+Step24: forward. You can see a grey wall at coordinate 4, a purple flag at coordinate 2.
+Step25: forward. You can see a grey wall at coordinate 3, a purple flag at coordinate 1.
+Step26: forward. You can see a grey wall at coordinate 2.
+Step27: forward. You can see a grey wall at coordinate 1.
+Step28: forward. You can see a grey wall at coordinate 1.
+Step29: turnaround. You can see a purple flag at coordinate 1.
+Step30: forward. You can see a green flag at coordinate 6.
+Step31: forward. You can see a yellow flag at coordinate 6, a green flag at coordinate 5.
+Step32: forward. You can see a yellow flag at coordinate 5, a green flag at coordinate 4.
+Step33: forward. You can see a grey wall at coordinate 6, a yellow flag at coordinate 4, a green flag at coordinate 3.
+Step34: forward. You can see a grey wall at coordinate 5, a yellow flag at coordinate 3, a green flag at coordinate 2.
+Step35: forward. You can see a grey wall at coordinate 4, a yellow flag at coordinate 2, a green flag at coordinate 1.
+Step36: forward. You can see a grey wall at coordinate 3, a yellow flag at coordinate 1.
+Step37: forward. You can see a grey wall at coordinate 2.
+Step38: forward. You can see a grey wall at coordinate 1
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+a red flag at coordinate 3, a green flag at coordinate 8, a blue wall at coordinate 5, a blue wall at coordinate 0
+&&&
+
+2025-07-11 03:37:35,876 - INFO - LLM Response for episode #9:
+Here is my step-by-step reasoning and the final reconstructed map.
+
+### Step-by-Step Reasoning
+
+**Initial State**
+*   **Position:** 1, **Direction:** East (+1)
+*   **Observation:** a green flag at coordinate 2, a yellow flag at coordinate 1.
+*   **Calculation:**
+    *   yellow flag: 1 + (1 * 1) = 2
+    *   green flag: 1 + (2 * 1) = 3
+*   **Map:** {yellow flag: 2, green flag: 3}
+
+**Step 1: forward**
+*   **Position:** 2, **Direction:** East (+1)
+*   **Observation:** a green flag at coordinate 1.
+*   **Calculation:** green flag: 2 + (1 * 1) = 3. (Consistent)
+*   **Map:** {yellow flag: 2, green flag: 3}
+
+**Step 2: forward**
+*   **Position:** 3, **Direction:** East (+1)
+*   **Observation:** a purple flag at coordinate 6.
+*   **Calculation:** purple flag: 3 + (6 * 1) = 9.
+*   **Map:** {yellow flag: 2, green flag: 3, purple flag: 9}
+
+**Step 3: forward**
+*   **Position:** 4, **Direction:** East (+1)
+*   **Observation:** a purple flag at coordinate 5.
+*   **Calculation:** purple flag: 4 + (5 * 1) = 9. (Consistent)
+*   **Map:** {yellow flag: 2, green flag: 3, purple flag: 9}
+
+**Step 4: forward**
+*   **Position:** 5, **Direction:** East (+1)
+*   **Observation:** a grey wall at coordinate 6, a purple flag at coordinate 4.
+*   **Calculation:**
+    *   purple flag: 5 + (4 * 1) = 9. (Consistent)
+    *   grey wall: 5 + (6 * 1) = 11.
+*   **Map:** {yellow flag: 2, green flag: 3, purple flag: 9, grey wall: 11}
+
+**Step 5: forward**
+*   **Position:** 6, **Direction:** East (+1)
+*   **Observation:** a grey wall at coordinate 5, a purple flag at coordinate 3.
+*   **Calculation:**
+    *   purple flag: 6 + (3 * 1) = 9. (Consistent)
+    *   grey wall: 6 + (5 * 1) = 11. (Consistent)
+*   **Map:** {yellow flag: 2, green flag: 3, purple flag: 9, grey wall: 11}
+
+**Step 6: forward**
+*   **Position:** 7, **Direction:** East (+1)
+*   **Observation:** a grey wall at coordinate 4, a purple flag at coordinate 2.
+*   **Calculation:**
+    *   purple flag: 7 + (2 * 1) = 9. (Consistent)
+    *   grey wall: 7 + (4 * 1) = 11. (Consistent)
+*   **Map:** {yellow flag: 2, green flag: 3, purple flag: 9, grey wall: 11}
+
+**Step 7: forward**
+*   **Position:** 8, **Direction:** East (+1)
+*   **Observation:** a grey wall at coordinate 3, a purple flag at coordinate 1.
+*   **Calculation:**
+    *   purple flag: 8 + (1 * 1) = 9. (Consistent)
+    *   grey wall: 8 + (3 * 1) = 11. (Consistent)
+*   **Map:** {yellow flag: 2, green flag: 3, purple flag: 9, grey wall: 11}
+
+**Step 8: forward**
+*   **Position:** 9, **Direction:** East (+1)
+*   **Observation:** a grey wall at coordinate 2.
+*   **Calculation:** grey wall: 9 + (2 * 1) = 11. (Consistent)
+*   **Map:** {yellow flag: 2, green flag: 3, purple flag: 9, grey wall: 11}
+
+**Step 9: forward**
+*   **Position:** 10, **Direction:** East (+1)
+*   **Observation:** a grey wall at coordinate 1.
+*   **Calculation:** grey wall: 10 + (1 * 1) = 11. (Consistent)
+*   **Map:** {yellow flag: 2, green flag: 3, purple flag: 9, grey wall: 11}
+
+**Step 10: turnaround**
+*   **Position:** 10, **Direction:** West (-1)
+*   **Observation:** a purple flag at coordinate 1.
+*   **Calculation:** purple flag: 10 + (1 * -1) = 9. (Consistent)
+*   **Map:** {yellow flag: 2, green flag: 3, purple flag: 9, grey wall: 11}
+
+**Step 11: forward**
+*   **Position:** 9, **Direction:** West (-1)
+*   **Observation:** a green flag at coordinate 6.
+*   **Calculation:** green flag: 9 + (6 * -1) = 3. (Consistent)
+*   **Map:** {yellow flag: 2, green flag: 3, purple flag: 9, grey wall: 11}
+
+**Step 12: forward**
+*   **Position:** 8, **Direction:** West (-1)
+*   **Observation:** a yellow flag at coordinate 6, a green flag at coordinate 5.
+*   **Calculation:**
+    *   green flag: 8 + (5 * -1) = 3. (Consistent)
+    *   yellow flag: 8 + (6 * -1) = 2. (Consistent)
+*   **Map:** {yellow flag: 2, green flag: 3, purple flag: 9, grey wall: 11}
+
+**Step 13: forward**
+*   **Position:** 7, **Direction:** West (-1)
+*   **Observation:** a yellow flag at coordinate 5, a green flag at coordinate 4.
+*   **Calculation:**
+    *   green flag: 7 + (4 * -1) = 3. (Consistent)
+    *   yellow flag: 7 + (5 * -1) = 2. (Consistent)
+*   **Map:** {yellow flag: 2, green flag: 3, purple flag: 9, grey wall: 11}
+
+**Step 14: forward**
+*   **Position:** 6, **Direction:** West (-1)
+*   **Observation:** a grey wall at coordinate 6, a yellow flag at coordinate 4, a green flag at coordinate 3.
+*   **Calculation:**
+    *   green flag: 6 + (3 * -1) = 3. (Consistent)
+    *   yellow flag: 6 + (4 * -1) = 2. (Consistent)
+    *   grey wall: 6 + (6 * -1) = 0. A new grey wall is discovered.
+*   **Map:** {yellow flag: 2, green flag: 3, purple flag: 9, grey wall at 11, grey wall at 0}
+
+**Step 15: forward**
+*   **Position:** 5, **Direction:** West (-1)
+*   **Observation:** a grey wall at coordinate 5, a yellow flag at coordinate 3, a green flag at coordinate 2.
+*   **Calculation:**
+    *   green flag: 5 + (2 * -1) = 3. (Consistent)
+    *   yellow flag: 5 + (3 * -1) = 2. (Consistent)
+    *   grey wall: 5 + (5 * -1) = 0. (Consistent)
+*   **Map:** {yellow flag: 2, green flag: 3, purple flag: 9, grey wall at 11, grey wall at 0}
+
+**Step 16: forward**
+*   **Position:** 4, **Direction:** West (-1)
+*   **Observation:** a grey wall at coordinate 4, a yellow flag at coordinate 2, a green flag at coordinate 1.
+*   **Calculation:**
+    *   green flag: 4 + (1 * -1) = 3. (Consistent)
+    *   yellow flag: 4 + (2 * -1) = 2. (Consistent)
+    *   grey wall: 4 + (4 * -1) = 0. (Consistent)
+*   **Map:** {yellow flag: 2, green flag: 3, purple flag: 9, grey wall at 11, grey wall at 0}
+
+**Step 17: forward**
+*   **Position:** 3, **Direction:** West (-1)
+*   **Observation:** a grey wall at coordinate 3, a yellow flag at coordinate 1.
+*   **Calculation:**
+    *   yellow flag: 3 + (1 * -1) = 2. (Consistent)
+    *   grey wall: 3 + (3 * -1) = 0. (Consistent)
+*   **Map:** {yellow flag: 2, green flag: 3, purple flag: 9, grey wall at 11, grey wall at 0}
+
+**Step 18: forward**
+*   **Position:** 2, **Direction:** West (-1)
+*   **Observation:** a grey wall at coordinate 2.
+*   **Calculation:** grey wall: 2 + (2 * -1) = 0. (Consistent)
+*   **Map:** {yellow flag: 2, green flag: 3, purple flag: 9, grey wall at 11, grey wall at 0}
+
+**Step 19: turnaround**
+*   **Position:** 2, **Direction:** East (+1)
+*   **Observation:** a green flag at coordinate 1.
+*   **Calculation:** green flag: 2 + (1 * 1) = 3. (Consistent)
+*   **Map:** {yellow flag: 2, green flag: 3, purple flag: 9, grey wall at 11, grey wall at 0}
+
+**Step 20 - 27:** These steps are a repeat of the movement from position 3 to 10 and confirm the locations of the purple flag at 9 and the grey wall at 11. All calculations are consistent with the existing map.
+*   **Position after Step 27:** 10, **Direction:** East (+1)
+
+**Step 28: forward**
+*   **Position:** 11, **Direction:** East (+1)
+*   **Observation:** a grey wall at coordinate 1.
+*   **Calculation:** grey wall: 11 + (1 * 1) = 12. A new grey wall is discovered.
+*   **Map:** {..., grey wall at 11, grey wall at 0, grey wall at 12}
+
+**Step 29: turnaround**
+*   **Position:** 11, **Direction:** West (-1)
+*   **Observation:** a purple flag at coordinate 1.
+*   **Calculation:** purple flag: 11 + (1 * -1) = 10. A new purple flag is discovered.
+*   **Map:** {..., purple flag at 9, purple flag at 10, ...}
+
+**Step 30: forward**
+*   **Position:** 10, **Direction:** West (-1)
+*   **Observation:** a green flag at coordinate 6.
+*   **Calculation:** green flag: 10 + (6 * -1) = 4. A new green flag is discovered.
+*   **Map:** {..., green flag at 3, green flag at 4, ...}
+
+**Step 31: forward**
+*   **Position:** 9, **Direction:** West (-1)
+*   **Observation:** a yellow flag at coordinate 6, a green flag at coordinate 5.
+*   **Calculation:**
+    *   green flag: 9 + (5 * -1) = 4. (Consistent with new green flag)
+    *   yellow flag: 9 + (6 * -1) = 3. A new yellow flag is discovered.
+*   **Map:** {..., yellow flag at 2, yellow flag at 3, ...}
+
+**Step 32: forward**
+*   **Position:** 8, **Direction:** West (-1)
+*   **Observation:** a yellow flag at coordinate 5, a green flag at coordinate 4.
+*   **Calculation:**
+    *   green flag: 8 + (4 * -1) = 4. (Consistent)
+    *   yellow flag: 8 + (5 * -1) = 3. (Consistent)
+*   **Map:** (No change)
+
+**Step 33: forward**
+*   **Position:** 7, **Direction:** West (-1)
+*   **Observation:** a grey wall at coordinate 6, a yellow flag at coordinate 4, a green flag at coordinate 3.
+*   **Calculation:**
+    *   green flag: 7 + (3 * -1) = 4. (Consistent)
+    *   yellow flag: 7 + (4 * -1) = 3. (Consistent)
+    *   grey wall: 7 + (6 * -1) = 1. A new grey wall is discovered.
+*   **Map:** {..., grey wall at 0, grey wall at 1, ...}
+
+**Step 34: forward**
+*   **Position:** 6, **Direction:** West (-1)
+*   **Observation:** a grey wall at coordinate 5, a yellow flag at coordinate 3, a green flag at coordinate 2.
+*   **Calculation:**
+    *   green flag: 6 + (2 * -1) = 4. (Consistent)
+    *   yellow flag: 6 + (3 * -1) = 3. (Consistent)
+    *   grey wall: 6 + (5 * -1) = 1. (Consistent)
+*   **Map:** (No change)
+
+**Step 35: forward**
+*   **Position:** 5, **Direction:** West (-1)
+*   **Observation:** a grey wall at coordinate 4, a yellow flag at coordinate 2, a green flag at coordinate 1.
+*   **Calculation:**
+    *   green flag: 5 + (1 * -1) = 4. (Consistent)
+    *   yellow flag: 5 + (2 * -1) = 3. (Consistent)
+    *   grey wall: 5 + (4 * -1) = 1. (Consistent)
+*   **Map:** (No change)
+
+**Step 36: forward**
+*   **Position:** 4, **Direction:** West (-1)
+*   **Observation:** a grey wall at coordinate 3, a yellow flag at coordinate 1.
+*   **Calculation:**
+    *   yellow flag: 4 + (1 * -1) = 3. (Consistent)
+    *   grey wall: 4 + (3 * -1) = 1. (Consistent)
+*   **Map:** (No change)
+
+**Step 37: forward**
+*   **Position:** 3, **Direction:** West (-1)
+*   **Observation:** a grey wall at coordinate 2.
+*   **Calculation:** grey wall: 3 + (2 * -1) = 1. (Consistent)
+*   **Map:** (No change)
+
+**Step 38: forward**
+*   **Position:** 2, **Direction:** West (-1)
+*   **Observation:** a grey wall at coordinate 1.
+*   **Calculation:** grey wall: 2 + (1 * -1) = 1. (Consistent)
+*   **Map:** (No change)
+
+### Final Map Summary
+&&&
+a grey wall at coordinate 0, a grey wall at coordinate 1, a yellow flag at coordinate 2, a green flag at coordinate 3, a yellow flag at coordinate 3, a green flag at coordinate 4, a purple flag at coordinate 9, a purple flag at coordinate 10, a grey wall at coordinate 11, a grey wall at coordinate 12
+&&&
+2025-07-11 03:37:35,882 - INFO - --- Judgment for Episode #9 ---
+2025-07-11 03:37:35,882 - INFO - Result: IMPERFECT
+2025-07-11 03:37:35,882 - INFO - Ground Truth: {0: ('grey', 'wall'), 2: ('yellow', 'flag'), 3: ('green', 'flag'), 9: ('purple', 'flag'), 11: ('grey', 'wall')}
+LLM's Map   : {0: ('grey', 'wall'), 1: ('grey', 'wall'), 2: ('yellow', 'flag'), 3: ('yellow', 'flag'), 4: ('green', 'flag'), 9: ('purple', 'flag'), 10: ('purple', 'flag'), 11: ('grey', 'wall'), 12: ('grey', 'wall')}
+Overall Accuracy: 80.00%
+Goal Accuracy   : 100.00%
+2025-07-11 03:37:35,882 - INFO - --- Finished Test Episode #9 ---
+
+2025-07-11 03:37:35,883 - INFO - ==================================================
+2025-07-11 03:37:35,883 - INFO - --- EVALUATION SUMMARY ---
+2025-07-11 03:37:35,883 - INFO - Total episodes run: 10
+2025-07-11 03:37:35,883 - INFO - Average Overall Accuracy: 88.00%
+2025-07-11 03:37:35,883 - INFO - Average Goal-Only Accuracy: 100.00%
+2025-07-11 03:37:35,883 - INFO - ==================================================
+2025-07-11 03:37:35,883 - INFO - Full log has been saved to 'my_tests/1D/gemini_nodir_hard/evaluation_log.txt'

@@ -1,0 +1,83 @@
+2025-09-02 22:38:59,329 - INFO - --- Starting Test Episode #0 ---
+2025-09-02 22:38:59,583 - INFO - Prompt for episode #0 prepared.: 
+You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).
+4.  Your movement is governed by your absolute position and direction:
+    - 'forward': Changes your absolute position by +1 or -1 in one coordinate depending on your direction.
+    - 'turnaround': Reverses your direction (East becomes West, West becomes East).
+    - 'left': Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - 'right':  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+
+### YOUR TASK ###
+
+    Your mission is to return the coordinates of **all EMPTY cells** in the global map.
+
+    ## What counts as EMPTY
+    A cell is EMPTY if **either**:
+    1) You **stood on it** or **moved through it** at any time (your traversed path), or
+    2) It was in your local 5×5 field of view at least once and you clearly saw **no wall** in that cell.
+
+    ## Visibility and Occlusion
+    - You **cannot see through walls**. Any cell *behind* a wall along a line-of-sight ray is **unknown**.
+    - Diagonal shadowing: a cell at (d, s) is **not visible** if both its orthogonal predecessors are walls (i.e., blocked by the two adjacent cells).
+    - Unknown cells **inside your local view** that are blocked by walls are listed in the log as `You cannot see coordinates (d,s), ...`.
+    - Empty cells are not explicitly listed in the log.
+
+    ## Reporting rules
+    - **Do not** list walls.
+    - **Do not** list unknown cells (never assume unknown = wall).
+    - **Only** output EMPTY cells you can justify from the log.
+
+    
+All coordinates in the final summary must be absolute map coordinates (X, Y) in the room frame, not local (Depth, Side).
+If you are facing a wall and go forward, you will not be able to move forward, your position will not change.
+Your starting absolute position is (3, 3). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+
+
+
+
+### WARNING: DATA CORRUPTION ###
+Your primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:
+- **Action Faults:** Two kinds may occur:
+  - *Spurious action in the log*: an action is recorded (e.g., 'left', 'forward') but the robot does not move; its pose stays the same.
+  - *Multi-step merge*: after executing the current command, the robot silently move one or two steps without any log entry. 
+- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds. 
+
+You cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.
+        
+### OBSERVATION LOG ###
+Initial Observation: You're facing South. You see nothing of interest..
+Step1: left. You cannot see coordinates (0, -2), (1, -2), (2, -2), (3, -2), (4, -2), (4, -1), (4, 0), (4, 1), (4, 2). You can see grey walls at coordinates (0, -1), (1, 0), (2, -2), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step2: forward. You cannot see coordinates (0, -2), (1, -2), (2, -2), (3, -2), (3, -1), (3, 0), (3, 2), (3, 2), (4, -2), (4, -1), (4, 0), (4, 1), (3, 2). You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (1, 0), (2, 1), (2, 2)..
+Step3: right. You can see grey walls at coordinates (0, -2), (1, -2), (2, -2), (3, -1), (4, -2)..
+Step4: forward. You can see grey walls at coordinates (0, -2), (1, -2), (2, -1), (3, -2), (4, -2), (4, -1), (3, 0), (4, 1), (4, 2)..
+Step5: forward. You cannot see coordinates (4, -2), (4, -1), (2, 0), (4, 1), (4, 2). You can see grey walls at coordinates (0, -2), (1, -2), (2, -2), (3, -2), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step6: forward. You cannot see coordinates (3, -2), (3, -1), (3, 0), (3, 1), (3, 2), (4, -2), (4, -1), (4, 0), (4, 1), (4, 2). You can see grey walls at coordinates (0, -2), (1, -2), (2, -2), (2, -1), (2, 0), (2, 1), (0, 2)..
+Step7: forward. You cannot see coordinates (2, -2), (2, -1), (2, 0), (2, 1), (2, 2), (3, -2), (3, -1), (3, 0), (3, 1), (3, 2), (4, -2), (4, -1), (4, 0), (3, 1), (4, 2). You can see grey walls at coordinates (0, -2), (1, -2), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step8: left. You cannot see coordinates (0, 2), (1, 2), (3, 2), (3, -2), (3, -1), (3, 0), (3, 1), (3, 2), (4, -2), (4, -1), (4, 0), (4, 1), (4, 2). You can see grey walls at coordinates (0, 1), (1, 1), (2, -2), (2, -1), (2, 0), (2, 1)..
+Step9: right. You cannot see coordinates (2, -2), (1, -1), (2, 0), (2, 1), (2, 2), (3, -2), (3, -1), (3, 0), (3, 1), (3, 2), (4, -2), (4, -1), (4, 0), (4, 1), (4, 2). You can see grey walls at coordinates (0, -2), (1, -2), (1, 0), (1, 0), (1, 1), (1, 2)..
+Step10: right. You cannot see coordinates (0, -2), (1, -1), (2, -2), (4, -2), (4, -2). You can see grey walls at coordinates (0, -1), (0, -1), (2, -1), (3, 0), (4, -1), (4, 0), (4, 1), (4, 2)..
+Step11: forward. You cannot see coordinates (0, -2), (1, -2), (2, 0), (3, -2), (4, -2), (4, -1), (4, 2), (3, 1), (4, 2). You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step12: forward. You cannot see coordinates (0, -2), (1, -2), (1, -2), (3, -2), (3, -1), (3, 0), (3, 1), (3, 2), (4, -2), (4, 0), (4, 1), (4, 1), (4, 2). You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step13: forward. You cannot see coordinates (0, -2), (0, -2), (2, -2), (1, -1), (2, 0), (2, 1), (2, 2), (2, -2), (3, -1), (3, 0), (3, 1), (3, 2), (4, -2), (4, -1), (4, 0), (4, 1), (4, 2). You can see grey walls at coordinates (0, -1), (1, -1), (1, 0), (1, 1), (1, 2)..
+Step14: right. You cannot see coordinates (0, -2), (1, -2), (2, -2), (3, -2), (3, -2). You can see grey walls at coordinates (0, -1), (2, -1), (2, -1), (3, -1), (4, -1)..
+Step15: right. You cannot see coordinates (0, -2), (1, -2), (4, -2), (4, -2), (4, -2). You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (4, -2)..
+Step16: forward. You cannot see coordinates (1, -2), (1, -1), (2, -2), (3, -2), (4, -2). You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (4, 1), (4, 0), (4, 1), (4, 2)..
+Step17: left. You cannot see coordinates (0, -2), (1, -2), (2, -2), (3, -1), (4, -2). You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (4, -1), (4, 0), (4, 2), (4, 2)..
+Step18: forward. You cannot see coordinates (0, -2), (1, -2), (2, -2), (3, -2), (4, -2), (4, -1), (4, 0), (4, 1), (4, 2). You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (3, -1), (3, 0), (3, 1), (3, 2)..
+Step19: forward. You cannot see coordinates (0, -2), (0, -2), (2, -2), (1, -2), (4, -1), (3, 0), (3, 1), (3, 1), (4, -2), (4, -1), (4, 0), (4, 0), (4, 2). You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, 0), (2, 1), (2, 2)..
+Step20: forward. You cannot see coordinates (0, -2), (1, -2), (2, -2), (2, -1), (2, 0), (2, 1), (2, 2), (3, -2), (3, -1), (3, 0), (3, 1), (3, 2), (4, -2), (4, -1), (4, 0), (4, 2), (4, 2). You can see grey walls at coordinates (0, 0), (1, -1), (1, 2), (1, 2), (1, 2)..
+Step21: right. You cannot see coordinates (0, -2), (1, -2), (0, -1), (3, -2), (2, -2). You can see grey walls at coordinates (0, -1), (1, -1), (2, -1), (2, -1), (4, -1).
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in "&&&" delimiters. For example:
+&&&
+empty spaces at coordinates: (1,1), (1,2), (2,1), (2,2)
+&&& 
+

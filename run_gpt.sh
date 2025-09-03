@@ -1,0 +1,4 @@
+#python -m scripts.run_ebpf_carved --num_episodes 10 --num_objects 3 --length 10 --log_dir my_tests/9.01/corruption/rbpf/stale+failure# --env_name MiniGrid-CustomEmpty-5x5-v0 --agent_view_size 5  --stale_obs_prob 0.1  --failure_prob 0.1
+#python -m scripts.run_ebpf_carved --num_episodes 10 --num_objects 3 --length 10 --log_dir my_tests/9.01/corruption/rbpf/stale --env_name MiniGrid-CustomEmpty-5x5-v0 --agent_view_size 5  --stale_obs_prob 0.1 --failure_prob 0.0
+#python -m scripts.run_ebpf_carved --num_episodes 10 --num_objects 3 --length 10 --log_dir my_tests/9.01/corruption/rbpf/failure --env_name MiniGrid-CustomEmpty-5x5-v0 --agent_view_size 5   --stale_obs_prob 0.0 --failure_prob 0.1
+python -m scripts.run_ebpf_carved --num_episodes 10 --num_objects 3 --length 10 --log_dir my_tests/9.01/corruption/rbpf/normal --env_name MiniGrid-CustomEmpty-5x5-v0 --agent_view_size 5 --stale_obs_prob 0.0 --failure_prob 0.0
