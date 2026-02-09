@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LangSLAM: A Text-only Benchmark for Belief Update & Mapping</title>
+    <meta
+      name="description"
+      content="LangSLAM is a text-driven SLAM benchmark for evaluating belief update and mapping under partial observability."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <nav class="nav">
+        <a class="nav-logo" href="index.html">LangSLAM</a>
+        <div class="nav-links">
+          <a class="active" href="index.html">Overview</a>
+          <a href="examples.html">Example Maps</a>
+          <a href="create.html">Create Your Map</a>
+          <a href="results.html">LLM Results</a>
+        </div>
+      </nav>
+      <header class="hero">
+        <p class="eyebrow">Benchmark</p>
+        <h1>LangSLAM: A Text-only Benchmark for Belief Update &amp; Mapping</h1>
+        <p class="lead">
+          LangSLAM is a text-driven SLAM (Simultaneous Localization and Mapping)
+          benchmark designed to evaluate the spatial reasoning and belief update
+          capabilities of Large Language Models (LLMs) under partial observability.
+        </p>
+      </header>
+
+      <section class="section">
+        <details class="panel" open>
+          <summary>Benchmark Overview</summary>
+          <div class="panel-body">
+            <p>
+              Unlike traditional embodied benchmarks that focus on instruction
+              following or visual navigation, LangSLAM isolates the specific
+              cognitive skill of building and maintaining a globally consistent
+              internal map. By reading a sequence of egocentric action-observation
+              text logs from a symbolic MiniGrid world, the model must, like a
+              classical Bayesian filter, integrate fragmented local evidence to
+              infer the global structure of the environment.
+            </p>
+            <p>
+              This task evaluates not just geometric reasoning, but the model's
+              ability to maintain a robust Internal Belief State in the presence
+              of noise, uncertainty, and data loss.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <section class="section">
+        <details class="panel" open>
+          <summary>Core Elements</summary>
+          <div class="panel-body">
+            <p>
+              In the LangSLAM grid world, the agent interacts with two primary
+              types of objects, representing the challenges of static mapping
+              and dynamic state tracking.
+            </p>
+            <div class="grid two">
+              <details class="card" open>
+                <summary>Flags (Static Landmarks)</summary>
+                <div class="card-body">
+                  <p>
+                    Flags serve as fixed landmarks within the environment. They
+                    are the core reference points for the localization task. The
+                    model must deduce the precise global (X, Y) coordinates of
+                    each flag by integrating the robot's movement history with
+                    local, relative observations (e.g., "Flag observed 2 steps
+                    forward, 1 step left"). This tests the model's capacity for
+                    geometric transformation and global consistency.
+                  </p>
+                  <img
+                    class="media"
+                    src="assets/gifs/empty_3x3_two_flags_3steps.gif"
+                    alt="3x3 map with two flags and three steps"
+                  />
+                </div>
+              </details>
+              <details class="card" open>
+                <summary>Boxes (Movable Objects)</summary>
+                <div class="card-body">
+                  <p>
+                    Boxes introduce dynamic complexity to the environment. Unlike
+                    fixed flags, boxes can be pushed, picked up, or relocated by
+                    the robot during its trajectory. This requires the model to
+                    perform temporal reasoning, updating its memory of object
+                    locations in real time to determine where a box effectively
+                    ended up, rather than relying solely on initial observations.
+                  </p>
+                  <img
+                    class="media"
+                    src="assets/gifs/empty_3x3_box_pickup_drop.gif"
+                    alt="3x3 map with a movable box picked up and dropped"
+                  />
+                </div>
+              </details>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <section class="section">
+        <details class="panel" open>
+          <summary>Simulating Reality: Noise &amp; Robustness</summary>
+          <div class="panel-body">
+            <p>
+              To rigorously test LLM performance under realistic non-ideal
+              conditions, LangSLAM introduces three noise processes that model
+              physical uncertainty and sensor failure.
+            </p>
+
+            <div class="grid three">
+              <details class="card" open>
+                <summary>Null Execution</summary>
+                <div class="card-body">
+                  <p>
+                    A command is logged by the system, but the actuators fail to
+                    engage, resulting in zero physical displacement. In the
+                    example, the agent moves one step, pauses for one frame, then
+                    continues.
+                  </p>
+                  <img
+                    class="media"
+                    src="assets/gifs/fault_null_execution.gif"
+                    alt="Null execution example"
+                  />
+                </div>
+              </details>
+              <details class="card" open>
+                <summary>Slippage and Drift</summary>
+                <div class="card-body">
+                  <p>
+                    Due to surface slippage, the robot performs additional
+                    unlogged steps, causing the true pose to drift from the
+                    estimated path after an action. In the example, a single
+                    logged step advances two cells within one frame.
+                  </p>
+                  <img
+                    class="media"
+                    src="assets/gifs/fault_slippage_drift.gif"
+                    alt="Slippage and drift example"
+                  />
+                </div>
+              </details>
+              <details class="card" open>
+                <summary>Trajectory Discontinuity</summary>
+                <div class="card-body">
+                  <p>
+                    To simulate the kidnapped robot scenario where the agent is
+                    physically displaced by external forces, we delete contiguous
+                    subsequences of 5 to 10 time steps. This results in sudden
+                    pose jumps and gaps in the observation stream. In the
+                    example, the agent moves one step, teleports, then walks two
+                    steps.
+                  </p>
+                  <img
+                    class="media"
+                    src="assets/gifs/fault_trajectory_discontinuity.gif"
+                    alt="Trajectory discontinuity example"
+                  />
+                </div>
+              </details>
+            </div>
+
+            <details class="card" open>
+              <summary>Sensor Noise</summary>
+              <div class="card-body">
+                <p>
+                  This simulates imperfections in perception (e.g., quantization
+                  errors or visual blur). We inject stochastic perturbations into
+                  the reported coordinates of objects within the 5x5 local view.
+                  The model must infer the most probable location from noisy data
+                  rather than trusting a single snapshot implicitly.
+                </p>
+              </div>
+            </details>
+          </div>
+        </details>
+      </section>
+
+      <footer class="footer">
+        <p>LangSLAM benchmark examples and noise simulations.</p>
+      </footer>
+    </main>
+  </body>
+</html>

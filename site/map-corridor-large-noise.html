@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Carved Corridor (Large, Noisy) · LangSLAM</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <nav class="nav"><a class="nav-logo" href="index.html">LangSLAM</a><div class="nav-links"><a class="" href="index.html">Overview</a><a class="active" href="examples.html">Example Maps</a><a class="" href="create.html">Create Your Map</a><a class="" href="results.html">LLM Results</a></div></nav>
+      <header class="page-hero">
+        <p class="eyebrow">Example Map</p>
+        <h1>Carved Corridor (Large, Noisy)</h1>
+        <p class="lead">Larger carved corridor with action/observation noise enabled.</p>
+      </header>
+
+      <section class="section">
+        <div class="detail-layout">
+          <div class="detail-media">
+            <img src="assets/gifs/example-corridor-large-noise.gif" alt="Carved Corridor (Large, Noisy)" />
+          </div>
+          <div class="detail-meta">
+            <h3>Key Properties</h3>
+            <dl>
+              <dt>Environment</dt><dd>MiniGrid-CarvedPathRoom-v0</dd>
+              <dt>Map Size</dt><dd>16 × 16</dd>
+              <dt>View Size</dt><dd>5 × 5</dd>
+              <dt>Flags</dt><dd>8</dd>
+              <dt>Movable Objects</dt><dd>1</dd>
+              <dt>p_jump</dt><dd>0.1</dd>
+              <dt>p_fail</dt><dd>0.2</dd>
+              <dt>mu_d</dt><dd>0.02</dd>
+              <dt>mu_s</dt><dd>0.02</dd>
+              <dt>blackout</dt><dd>True</dd>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="detail-block">
+          <h3>Prompt</h3>
+          <div class="prompt-box"><pre>You are a robot agent inside a grid world. Your task is to build a consistent 2D map of a room based on a 5x5 local view.
+
+### YOUR COORDINATE SYSTEM ###
+Your view is described using a special (Depth, Side) coordinate system:
+1.  **Depth (0-4)**: Represents the front-back direction. Depth 0 is your location. Larger numbers are farther away from you.
+2.  **Side (-2-2)**: Represents the left-right direction. Side 0 is your center line. Negative Numbers are to your left; positive numbers are to your right.
+3.  **Your Position**: You are ALWAYS at coordinate (0, 0) in this system. The space directly in front of you is (1, 0).
+4.  Your movement is governed by your absolute position and direction:
+    - &#x27;forward&#x27;: Changes your absolute position by +1 or -1 in one coordinate depending on your direction.
+    - &#x27;left&#x27;: Turn left by 90 degrees on the spot. For example, if you are facing East, turning left you will now face North.
+    - &#x27;right&#x27;:  Turn right by 90 degrees on the spot. For example, if you are facing East, turning right you will now face South.
+5.  Boxes are movable objects. If a box is directly in front of you, you can &#x27;pickup&#x27; it. &#x27;drop&#x27; places the carried box on your current cell.
+
+
+
+### WARNING: DATA CORRUPTION ###
+Your primary challenge is that the data acquisition process is unreliable. You must account for the following potential anomalies:
+- **Action Faults:** Two kinds may occur:
+  - *Spurious action in the log*: an action is recorded (e.g., &#x27;left&#x27;, &#x27;forward&#x27;) but the robot does not move; its pose stays the same.
+  - *Silent move*: the robot silently move one step without any log entry.
+- **Noisy Observations:** Any reported coordinate pair in the local view (flags or walls) may be perturbed by discrete Gaussian noise. For each coordinate, offsets of ±1 are common, ±2 less common, and ±3 rare. Coordinates are clipped to the 5×5 bounds.
+- **Log Blackout:** A continuous block of actions (5–10 steps) may be missing from the log. You may see, for example, Step 40 followed by Step 41, but the robot&#x27;s pose will have changed sharply as if it teleported.
+
+You cannot blindly trust every entry in the log. You must use the full sequence of observations to infer the most likely map and trajectory.
+
+### YOUR TASK ###
+
+    You will also see flags in your view. Your have to return those flags as well, but your main tasks is still find the empty spaces. Each flag is uniquely colored. Note that you can use flags to help you with localization.
+
+
+All coordinates in the final summary must be absolute map coordinates (X, Y) in the room frame, not local (Depth, Side).
+If you are facing a wall and go forward, you will not be able to move forward, your position will not change.
+Your starting absolute position is (2, 13). East is the direction of increasing position numbers for first dimension, and South is the direction of increasing position numbers for second dimension.
+
+### OBSERVATION LOG ###
+Initial Observation: You&#x27;re facing West. You can see a red box at coordinate (0, 1).
+Step1: right. You can see blue walls at coordinates (0, -1), (1, -2), (1, 1), (1, 2), (2, -1), (3, -2), (4, -1), (4, 1). You can see a red box at coordinate (1, -1).
+Step2: pickup. You can see blue walls at coordinates (0, -1), (1, -1), (1, 1), (1, 2), (2, -1), (3, -1), (4, -1), (4, 0). You can see a red box at coordinate (0, 0).
+Step3: forward. You can see blue walls at coordinates (0, -1), (0, 1), (1, -1), (2, -1), (3, -1), (3, 1), (4, -1). You can see a red box at coordinate (0, 0). You can see a grey flag at coordinate (4, 2).
+Step4: forward. You can see blue walls at coordinates (0, -1), (1, -1), (2, -1), (2, 1), (3, -1), (4, -1), (4, 1). You can see a red box at coordinate (0, 0). You can see a grey flag at coordinate (3, 2).
+Step5: right. You can see a blue flag at coordinate (4, -2). You can see blue walls at coordinates (1, -2), (1, 1), (2, 1), (4, -1), (4, 0), (4, 1), (4, 2). You can see a yellow flag at coordinate (3, -1). You can see a red box at coordinate (0, 0).
+Step6: forward. You can see a blue flag at coordinate (3, -2). You can see blue walls at coordinates (0, -2), (0, 1), (1, 1), (3, -1), (3, 0), (3, 1), (3, 2), (4, 0). You can see a yellow flag at coordinate (2, -1). You can see a red box at coordinate (0, 0).
+Step7: forward. You can see a blue flag at coordinate (2, -2). You can see blue walls at coordinates (0, 1), (2, -1), (2, 0), (2, 1), (2, 2), (3, 0), (3, -1), (4, 0). You can see a yellow flag at coordinate (1, -1). You can see a red box at coordinate (0, 0).
+Step8: left. You can see blue walls at coordinates (0, 2), (1, 2), (2, -1), (4, -1). You can see a grey flag at coordinate (3, 0). You can see a red box at coordinate (0, 0). You can see a yellow flag at coordinate (1, 1). You can see a blue flag at coordinate (2, 2).
+Step9: forward. You can see blue walls at coordinates (0, 2), (1, -1), (3, -1), (4, -1), (4, 0). You can see a grey flag at coordinate (2, 0). You can see a red box at coordinate (0, 0). You can see a yellow flag at coordinate (0, 1). You can see a blue flag at coordinate (1, 2).
+Step10: forward. You can see blue walls at coordinates (0, -1), (2, -1), (3, -1), (3, 0), (4, -2), (4, -1), (4, 0). You can see a grey flag at coordinate (1, 0). You can see a red box at coordinate (0, 0). You can see a blue flag at coordinate (0, 2).
+Step11: forward. You can see blue walls at coordinates (1, -1), (2, -1), (2, 0), (3, -1), (3, -1), (3, 0), (4, -1). You can see a red box at coordinate (0, 0).
+Step12: forward. You can see blue walls at coordinates (0, 0), (1, -1), (2, 0), (1, 0), (3, -1), (4, -2). You can see a red box at coordinate (0, 0).
+Step13: drop. You can see blue walls at coordinates (0, -1), (1, -1), (1, 0), (2, 0), (3, -1), (4, -2). You can see a red box at coordinate (0, 0).
+Step14: right. You can see blue walls at coordinates (0, -1), (2, -1), (3, -1), (3, 0), (3, 1), . You can see a red box at coordinate (0, 0). You can see a grey flag at coordinate (0, 1). You can see a blue flag at coordinate (2, 2).
+Step15: right. You can see blue walls at coordinates (0, 1), (2, 1),  (4, -2). You can see a blue flag at coordinate (2, -2). You can see a yellow flag at coordinate (3, -1). You can see a grey flag at coordinate (1, 0). You can see a red box at coordinate (0, 0).
+Step16: forward. You can see blue walls at coordinates (1, 1), (2, -2), (3, -2), (4, -2), (4, 0), (4, 1). You can see a blue flag at coordinate (1, -2). You can see a yellow flag at coordinate (2, -1). You can see a red box at coordinate (0, 0).
+Step17: forward. You can see blue walls at coordinates (0, 1), (1, -2), (2, -2),  (3, 0), (3, 1), (4, -2). You can see a blue flag at coordinate (0, -2). You can see a yellow flag at coordinate (1, -1). You can see a red box at coordinate (0, 0).
+Step18: left. You can see blue walls at coordinates (3, 1), (2, 2), (3, -2), (3, -1), (2, 2), (4, -1), (4, 1), (4, 2). You can see a grey flag at coordinate (0, -1). You can see a blue flag at coordinate (2, 0). You can see a red box at coordinate (0, 0). You can see a yellow flag at coordinate (1, 1).
+Step19: right. You can see blue walls at coordinates (1, 1), (1, 2), (2, -2), (2, -1), (3, 2), (3, -1), (3, 1), (3, 2), (4, -1), (4, 0), (4, 1). You can see a blue flag at coordinate (1, 0). You can see a red box at coordinate (0, 0). You can see a yellow flag at coordinate (0, 1).
+Step20: forward. You can see blue walls at coordinates (0, 1), (1, -2), (1, -1), (1, 1), (2, -1), (2, 1), (2, 2), (3, -1), (3, 0), (3, 1). You can see a red box at coordinate (0, 0).
+Step21: forward. You can see blue walls at coordinates (0, -1), (0, 2), (1, -1), (1, 1), (1, 2), (2, -1), (2, 0), (2, 1). You can see a red box at coordinate (0, 0).
+Step22: forward. You can see blue walls at coordinates (0, -1), (0, 1), (1, -1), (1, 0), (1, 1). You can see a red box at coordinate (0, 0).
+Step23: right. You can see blue walls at coordinates (0, -1), (0, 1), (1, -1), (0, 0), (1, 1). You can see a red box at coordinate (0, 0).
+Step24: right. You can see blue walls at coordinates (0, -1), (2, -1), (1, 0), (1, 2), (2, 0), (2, 1), (2, 2). You can see a red box at coordinate (0, 0). You can see a blue flag at coordinate (0, 2).
+Step25: drop. You can see blue walls at coordinates (0, -1), (1, -1), (1, 0), (1, 2), (2, 0), (2, 1), (2, 2). You can see a red box at coordinate (0, 0). You can see a blue flag at coordinate (0, 2).
+Step26: right. You can see blue walls at coordinates (0, -1), (0, 1), (1, -2), (1, 1), (2, -2), (2, -1). You can see a yellow flag at coordinate (3, -1). You can see a blue flag at coordinate (2, 0). You can see a red box at coordinate (0, 0). You can see a grey flag at coordinate .
+Step27: forward. You can see blue walls at coordinates (0, -2), (0, 1), (1, -2), (1, -1), (4, 0), (4, 2). You can see a yellow flag at coordinate (2, -1). You can see a blue flag at coordinate (1, 0). You can see a red box at coordinate (0, 0). You can see a grey flag at coordinate (3, 1).
+Step28: right. You can see a yellow flag at coordinate (1, -1). You can see blue walls at coordinates (0, -1), (3, 0), (3, 2). You can see a red box at coordinate (0, 0). You can see a grey flag at coordinate (2, 1).
+Step29: right. You can see blue walls at coordinates (1, 2), (1, 2), (2, 1), (3, -2), (3, 1), (4, -2), (4, 1). You can see a grey flag at coordinate (1, -2). You can see a red box at coordinate (0, 0).
+Step30: forward. You can see blue walls at coordinates (0, 1), (2, 1), (2, -2), (2, 1), (3, -2), (3, 1). You can see a grey flag at coordinate (0, -2). You can see a red box at coordinate (0, 0).
+Step31: forward. You can see blue walls at coordinates (0, 1), (1, -2), (1, 1), (2, -2), (2, 1). You can see a red box at coordinate (0, 0).
+Step32: forward. You can see blue walls at coordinates (0, -2), (0, 1), (1, -2), (1, 1), (4, -2), (4, -1), (4, 0), (4, 1), (4, 2). You can see a red box at coordinate (0, 0).
+Step33: forward. You can see blue walls at coordinates (0, -2), (0, 1), (3, -2), (2, -1), (3, 0), (3, 1), (3, 2). You can see a red box at coordinate (0, 0).
+Step34: left. You can see blue walls at coordinates , (0, 1), (3, -2), (3, -1), (3, 0), (3, 1), (3, 2). You can see a red box at coordinate .
+Step35: forward. You can see blue walls at coordinates (2, -2), (2, -1), (2, 0), (1, 1), (2, 2). You can see a red box at coordinate (0, 0).
+Step36: forward. You can see blue walls at coordinates (1, -2), (1, -1), (1, 0), (1, 1), (1, 2). You can see a red box at coordinate (0, 0).
+Step37: drop. You can see blue walls at coordinates (1, -2), (1, -1), (1, 0), (1, 1), (1, 2). You can see a red box at coordinate (0, 0).
+Step38: right. You can see blue walls at coordinates (0, -1), (1, -1), (1, 2), (2, -1), (2, 2), (3, -1), (3, 2), (4, -1), (4, 2). You can see a red flag at coordinate (3, 0). You can see a red box at coordinate (0, 0). You can see a orange flag at coordinate (3, 0).
+Step39: right. You can see blue walls at coordinates (0, -1), (0, 2), (1, -1), (1, 2), (3, -1), (2, 1), (3, -1), (3, 2), (4, -1). You can see a red flag at coordinate (2, 0). You can see a red box at coordinate (0, 0). You can see a orange flag at coordinate (3, 1). You can see a purple flag at coordinate (4, 2).
+Step40: left. You can see blue walls at coordinates (0, -1), (0, 2), (1, -1), (1, 2), (2, -1), (2, 2), (3, -1), (4, -1). You can see a red flag at coordinate (1, 0). You can see a red box at coordinate (0, 0). You can see a orange flag at coordinate (1, 1). You can see a purple flag at coordinate (3, 2).
+Step41: forward. You can see blue walls at coordinates (0, -1), (0, 2), (1, -1), (1, 2), (2, -1), (3, -1), (4, -1), (4, 0). You can see a red box at coordinate (0, -1). You can see a green flag at coordinate (4, 0). You can see a orange flag at coordinate (0, 1). You can see a purple flag at coordinate (2, 2).
+Step42: forward. You can see blue walls at coordinates (1, 0), (0, 2), (1, -1), (2, -1), (3, -1), (3, 0), (4, 0), (4, 1), . You can see a red box at coordinate (0, 0). You can see a green flag at coordinate (3, 1). You can see a purple flag at coordinate (1, 2).
+Step43: right. You can see blue walls at coordinates (2, 0), (2, 1), (2, 2), (3, -1), (3, 0), . You can see a purple flag at coordinate (2, -1). You can see a red box at coordinate (0, 0). You can see a orange flag at coordinate (1, 1). You can see a red flag at coordinate (0, 1).
+Step44: forward. You can see blue walls at coordinates (1, 0), (1, 1), (1, 2), (2, -1), (2, 0), (3, -1), (4, -1). You can see a purple flag at coordinate (1, -1). You can see a red box at coordinate (0, 1). You can see a orange flag at coordinate (0, 1).
+Step45: left. You can see blue walls at coordinates (0, -2), (0, 1), (1, -2), (1, 2), (2, -2), (4, -2), (3, -1), (4, -1), (4, 0),  (4, 2). You can see a green flag at coordinate (3, 0). You can see a red box at coordinate (0, 0). You can see a purple flag at coordinate (1, 1).
+Step46: forward. You can see blue walls at coordinates (0, -2), (0, 2), (1, -2), (2, -2), (2, -1), (3, -2), (3, 0), (3, 1), (3, 2). You can see a green flag at coordinate (2, 0). You can see a red box at coordinate (0, 0). You can see a purple flag at coordinate (0, 1).
+Step47: forward. You can see blue walls at coordinates (0, -2), (1, -2), (1, -1), (2, -1), (2, 0), (1, 1), (2, 2). You can see a green flag at coordinate (1, 0). You can see a red box at coordinate (0, 0).
+Step48: drop. You can see blue walls at coordinates (0, -2), (1, -2), (1, -1), (2, -1), (2, 0), (2, 1), (2, 2). You can see a green flag at coordinate (1, 0). You can see a red box at coordinate (0, 0).
+Step49: right. You can see blue walls at coordinates (0, -2), (1, -2), (1, 2), (2, -2), (2, 1), (2, 2), (3, -2), (3, 1), (4, -2), (4, 1). You can see a green flag at coordinate (0, -1). You can see a red box at coordinate (0, 0). You can see a purple flag at coordinate (1, 1).
+Step50: forward. You can see blue walls at coordinates (0, -2), (0, 2), (1, -2), (1, 1), (1, 2), (2, -2), (2, 1), (3, -2), (3, 1), (4, -2), (4, 1). You can see a brown flag at coordinate (4, 0). You can see a red box at coordinate (0, 0). You can see a purple flag at coordinate (0, 1).
+Step51: right. You can see blue walls at coordinates (0, -2), (0, 2), (1, -2), (1, 1), (1, 2), (2, -2), (2, 2), (3, -2), (3, 1),  (4, 1). You can see a brown flag at coordinate (4, 0). You can see a red box at coordinate (0, 0). You can see a purple flag at coordinate (0, 1).
+Step52: forward. You can see blue walls at coordinates (0, -2), (0, 1), (1, -2), (1, 1), (2, -2), (2, 1), (2, -2), (3, 1), (4, -2), (4, -1), (4, 1). You can see a brown flag at coordinate (3, 0). You can see a red box at coordinate (0, 0).
+Step53: forward. You can see blue walls at coordinates (0, -2), (0, 1), (1, -2), (1, 1),  (2, 1), (3, -2), (3, -1), (3, 1), (4, -1), (4, 0), (4, 1). You can see a brown flag at coordinate (2, 0). You can see a red box at coordinate (0, 0).
+Step54: forward. You can see blue walls at coordinates (0, -1), (0, 1), (1, -1), (1, 0), (1, 1). You can see a red box at coordinate (0, 0).
+Step55: right. You can see blue walls at coordinates (0, -2), (1, -1), (1, 0), (1, 1), (1, 2). You can see a red box at coordinate (0, 0). You can see a brown flag at coordinate (0, 1).
+Step56: right. You can see blue walls at coordinates (0, -1), (0, 1), (1, -1), (1, 2), (2, -1), (2, 2), (3, -1), (3, 2), (4, -1), (4, 2). You can see a brown flag at coordinate (1, 0). You can see a red box at coordinate (0, 0).
+Step57: forward. You can see blue walls at coordinates (0, -1), (0, 2), (1, -1), (1, 2), (2, -1), (2, 2), (3, -1), (3, 2), (4, -2), (4, 2). You can see a purple flag at coordinate (4, -1). You can see a red box at coordinate (0, 0).
+Step58: drop. You can see blue walls at coordinates (0, -1), (0, 2), (1, -1), (1, 2), (2, -1),  (3, -1), (3, 2), (4, -2), (4, 2). You can see a purple flag at coordinate (4, -1). You can see a red box at coordinate (1, 0).
+Step59: forward. You can see blue walls at coordinates (0, 0), (0, 2), (1, -1), (1, 2), (2, -1), (2, 2), (3, -2), (3, 2), (4, 2). You can see a purple flag at coordinate (3, -1). You can see a green flag at coordinate (4, 1).
+Step60: forward. You can see blue walls at coordinates (0, -1), (0, 2), (1, -1),  (2, -1), (2, 2), (3, -2), (3, 2), (4, 2). You can see a purple flag at coordinate (3, -1). You can see a green flag at coordinate (4, 1).
+Step61: forward. You can see blue walls at coordinates (0, -1), (0, 2), (1, -1), (1, 2), (2, -2), (2, 2),  (4, 1), (4, 2). You can see a purple flag at coordinate (2, -1). You can see a green flag at coordinate (3, 1).
+Step62: forward. You can see blue walls at coordinates (0, -1), (0, 2), (1, -2), (1, 2), (2, 2), (3, 1), (3, 2), (4, -2), (4, -1), (4, 0), (4, 1). You can see a purple flag at coordinate (1, -1). You can see a green flag at coordinate (2, 1).
+Step63: forward. You can see blue walls at coordinates (0, -2), (0, 2), (1, 2), (2, 1), (2, 2), (3, -2), (3, -1), (3, 0), (3, 1). You can see a purple flag at coordinate (0, -1). You can see a green flag at coordinate (1, 1).
+Step64: forward. You can see blue walls at coordinates (0, 2), (1, 1), (1, 2), (2, -2), (2, -1), (2, 1), (2, 1). You can see a green flag at coordinate (0, 1).
+Step65: left. You can see blue walls at coordinates (0, 1), (1, 1), (2, -2), (2, 1), (3, -2), (3, 1), (4, -2), (4, 1). You can see a purple flag at coordinate (1, -2). You can see a orange flag at coordinate (3, -1). You can see a red flag at coordinate (3, 0).
+Step66: forward. You can see blue walls at coordinates (0, 1), (1, -2), (1, 1), (2, -2), (2, 1), (3, -2), (3, 1), (4, -2), (4, 1). You can see a purple flag at coordinate (0, -2). You can see a orange flag at coordinate (2, -1). You can see a red flag at coordinate (2, 0).
+Step67: left. You can see blue walls at coordinates (0, -2), (0, 1), (1, -2), (1, 1), (2, -2), (2, 1), (3, -2), (3, 1), (4, 1). You can see a orange flag at coordinate (1, -1). You can see a red flag at coordinate (1, 0).
+Step68: forward. You can see blue walls at coordinates (0, -2), (0, 1), (1, -2), (1, 1), (2, -2), (2, 1), (3, 1), (4, 1). You can see a orange flag at coordinate (0, -1).
+Step69: left. You can see blue walls at coordinates (0, -2), (0, 1), (1, -2), (1, 1), (2, 1), (3, 1), (4, -2), (4, 1).
+Step70: forward. You can see blue walls at coordinates (0, -2), (0, 1), (1, 1), (2, 1), (3, -2), (4, 1), (4, -2), (4, -1), (4, 1).
+Step71: forward. You can see blue walls at coordinates (0, 1), (1, 1), (2, -2), (2, 1), (3, -2), (3, -1), (3, 1), (4, -1), (4, 0), .
+Step72: forward. You can see blue walls at coordinates (0, 1), (1, -2), (1, 1), (2, -2), (2, -1), (2, 1), (4, -1), (3, 0), (3, 1).
+Step73: forward. You can see blue walls at coordinates (0, -2), (0, 1), (1, -1), (1, 0), (1, 0), (2, -1), (2, 0), (2, 1).
+Step74: forward. You can see blue walls at coordinates (0, -1), (0, 1), (1, -1), (1, -1), (1, 2).
+Step75: right. You can see blue walls at coordinates (0, -1), (1, -1), (1, 0), (1, 1), (1, 2).
+Step76: right. You can see blue walls at coordinates (0, -1), (0, 0), (1, -1), (2, 2), (2, -1), (3, -1), (4, -2), (4, 2).
+Step77: forward. You can see blue walls at coordinates (0, -1), (1, -1), (2, -1), (2, 2), (3, -1), (4, 2), (4, -1), (4, 2). You can see a red flag at coordinate (4, 0). You can see a orange flag at coordinate (4, 1).
+Step78: right. You can see blue walls at coordinates (1, 2), (2, -2), (2, 1), (2, 2), (3, -2), (3, 1), (4, -2), (4, 2).
+Step79: right. You can see blue walls at coordinates (1, 2), (2, -2), (2, 2), (2, 2), (4, -2), (3, 1), (4, -2), (4, 2).
+Step80: forward. You can see blue walls at coordinates (0, 2), (1, -2), (1, 1), (1, 2), (2, -2), (2, 1), (3, -2), (3, 2), (4, -2). You can see a grey flag at coordinate (3, 1).
+Step81: forward. You can see blue walls at coordinates (0, -2), (0, 1), (1, -2), (1, 1), (2, -2), (2, 2), (2, -2), (4, 2). You can see a blue flag at coordinate (4, -2). You can see a grey flag at coordinate (3, 1).
+Step82: forward. You can see blue walls at coordinates (0, -2), (0, 1), (1, -2), (1, 2), (2, -2), (3, 2), (4, -1). You can see a blue flag at coordinate (3, -1). You can see a yellow flag at coordinate (4, 0). You can see a grey flag at coordinate (2, 1).
+Step83: forward. You can see blue walls at coordinates (0, -2), (0, 2), (1, -2), (2, 2), (4, -1), (3, -2), (4, -1). You can see a blue flag at coordinate (2, -1). You can see a yellow flag at coordinate (3, 0). You can see a grey flag at coordinate (2, 1).
+Step84: forward. You can see blue walls at coordinates (0, -2), (1, 2), (2, -1), (3, -2), (3, -1), (4, -1), (4, 1), (4, 2). You can see a blue flag at coordinate (1, -1). You can see a yellow flag at coordinate (2, 0). You can see a grey flag at coordinate (0, 1).
+Step85: left. You can see blue walls at coordinates (0, 2), (1, -1), (2, -2), (2, -1), (3, -1), (3, 1), (3, 2), (4, -1). You can see a blue flag at coordinate (0, -1). You can see a yellow flag at coordinate (1, 0).
+Step86: forward. You can see blue walls at coordinates (0, -1), (1, -1), (1, 1), (1, 2), (2, -1), (3, -1), (3, 0), (3, 1), (3, 2).
+Step87: forward. You can see blue walls at coordinates (0, -1), (0, 1), (1, -1), (2, 0), (2, 0), (2, 1), (2, 2).
+Step88: forward. You can see blue walls at coordinates (0, -1), (1, -1), (1, 0), (0, 1), (1, 2).
+Step89: right. You can see blue walls at coordinates (0, -1), (1, -1), (1, 0), (1, 1), (1, 2).
+Step90: left. You can see blue walls at coordinates (0, -1), (1, -1), (1, 1), (2, 0), (3, -1), (3, 1), (4, -1), (4, 1), (4, 2). You can see a grey flag at coordinate (2, 2).
+Step91: forward. You can see blue walls at coordinates (0, -1), (0, 2), (1, -1), (2, -1), (2, 1), (3, -1), (3, 1),  (4, -1), (4, 0), (4, 1). You can see a grey flag at coordinate (1, 2).
+Step92: forward. You can see blue walls at coordinates (0, -1), (0, 1), (1, 0), (2, -1), (2, 1), (3, -1), (3, 1), (3, 2), (4, -1), (4, 0), (4, 1). You can see a grey flag at coordinate (1, 2).
+Step93: forward. You can see blue walls at coordinates (0, -1), (1, -1), (1, 1), (2, -1), (2, 1), (2, 2), (3, -1), (3, 0), (3, 1). You can see a grey flag at coordinate (0, 2).
+Step94: forward. You can see blue walls at coordinates (0, -1), (0, 1), (1, -1), (1, 1), (2, -1), (2, 0), (2, 1).
+Step95: forward. You can see blue walls at coordinates (0, -1), (0, 1), (1, -1), (1, 0), (1, 2).
+
+### YOUR RECONSTRUCTION ###
+First, reason step-by-step about your position and what you see.
+Finally, provide the final map summary in a new line, wrapped in &quot;&amp;&amp;&amp;&quot; delimiters. For example:
+&amp;&amp;&amp;
+empty spaces at coordinates: (1,1), (1,2), (2,1), (2,2), a red flag at coordinate (3,4) a green flag at coordinate (2,-2).
+&amp;&amp;&amp;
+</pre></div>
+        </div>
+        <div class="detail-block">
+          <h3>Correct Answer</h3>
+          <p>blue flag at (9, 3), brown flag at (12, 9), green flag at (13, 4), grey flag at (6, 9), orange flag at (9, 4), purple flag at (11, 5), red flag at (5, 10), yellow flag at (4, 8)</p>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
